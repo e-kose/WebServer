@@ -1,7 +1,15 @@
 #include <iostream>
-#include "include/server.hpp"
-int main(){
-	t_server_conf conf;
-	conf.ip = "127.01.1";
-	std::cout<<conf.ip<<"\n";
+#include "include/ServerConf.hpp"
+
+int main(int ac, char **av)
+{
+	if (ac != 2)
+	{
+		std::cerr << "Usage: " << av[0] << " <config_file>" << std::endl;
+		return 1;
+	}
+
+	return 0;
+
+
 }

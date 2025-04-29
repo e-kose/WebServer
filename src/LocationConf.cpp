@@ -1,8 +1,15 @@
 #include "../include/LocationConf.hpp"
 
-LocationConf::LocationConf() : path(""), autoIndex(false), upload_store(""), root(""), cgi_extension(""), cgi_path(""), methods(){
+LocationConf::LocationConf() : 
+	path(""),
+	autoIndex(false),
+	upload_store(""),
+	root(""),
+	cgi_extension(""),
+	cgi_path(""),
+	methods()
+{
 }
-
 LocationConf::LocationConf(const LocationConf& copy) {
 	*this = copy;
 }
@@ -64,3 +71,4 @@ void LocationConf::setCgiExtension(std::string cgi_extension) {
 void LocationConf::setCgiPath(std::string cgi_path) {
 	this->cgi_path = cgi_path;
 }
+
