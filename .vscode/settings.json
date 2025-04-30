@@ -67,14 +67,16 @@
 		"numbers": "cpp",
 		"ostream": "cpp",
 		"ranges": "cpp",
-		"span": "cpp"
+		"span": "cpp",
+		"__tree": "cpp",
+		"fstream": "cpp"
 	},
 	"github.copilot.enable": {
 		"*": false,
 		"plaintext": true,
 		"markdown": false,
 		"scminput": false,
-		"cpp": true,
+		"cpp": false,
 		"makefile": true,
 		"c": true,
 		"rust": false,

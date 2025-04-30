@@ -7,14 +7,15 @@
 #include <fstream>
 
 class Parser {
+	private:
+		std::string	filename;
+		std::ifstream	file;
+		std::string	line;
+		
 	public:
 		Parser();
 		~Parser();
 		Parser(const Parser &other);
 		Parser &operator=(const Parser &other);
 
-		std::vector<std::string> split(const std::string &str, char delimiter);
-		std::vector<std::string> parseConfigFile(const std::string &filename);
-		void parseLine(const std::string &line, std::map<std::string, std::string> &configMap);
-		void printConfig(const std::map<std::string, std::string> &configMap);
 };
