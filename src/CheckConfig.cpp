@@ -6,7 +6,7 @@
 /*   By: menasy <menasy@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/30 12:42:10 by menasy            #+#    #+#             */
-/*   Updated: 2025/05/01 15:38:42 by menasy           ###   ########.fr       */
+/*   Updated: 2025/05/01 16:27:38 by menasy           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -152,7 +152,7 @@ void CheckConfig::bracketsCheck(std::string str)
 		if (characterCounter(sub,'{') == characterCounter(sub,'}'))
 		{
 			serverStr = str.substr(0, index);
-			std::cout << "==================SERVER STR=================== \n" << serverStr << std::endl;
+			// std::cout << "==================SERVER STR=================== \n" << serverStr << std::endl;
 			checkElements(serverStr);
 			str = str.substr(serverStr.length(), str.length());
 			this->inServer = false;
@@ -180,14 +180,17 @@ std::string CheckConfig::fileHandler()
 }
 void CheckConfig::checkConfig() {
 	
+	std::string tmpRes;
 	try
 	{
 		checkFileExtensions();
-		bracketsCheck(fileHandler());
+		tmpRes = fileHandler();
+		bracketsCheck(tmpRes);
+		this->resConf = tmpRes;
+		std::cout << "==================CONFIGURATION FILE=================== \n" << this->resConf << std::endl;
 	}
 	catch(const std::exception& e)
 	{
 		std::cerr << e.what() << '\n';
 	}
-	std::cout << "============ SUCCESLY FINISHED ==============" << std::endl;
 }
