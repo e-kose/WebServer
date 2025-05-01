@@ -97,18 +97,16 @@ std::vector<ServerConf> Tokenizer::createConfVec(std::vector<std::string>& sepVe
 	int i;
 	
 	i = 0;
-	// std::cout << "*-----*->"<< *(sepVec.begin()) << std::endl;
-	// it = sepVec.begin()++;
-	// std::cout << "****************->" << *(++it)<< std::endl;
-	while (i < serverVec.size())
-	{
+	it = sepVec.begin();
+	it++;
+	while (i <= serverVec.size())
+	{	
+		int check = 0;
 		std::map<std::string, int> confKeyCounter = this->confKeyMap("Server");
-		for (;it != sepVec.end(); it++){
+		for (;it != sepVec.end() && check == 0 ; it++){
 			if (*it == "\nserver" && it != sepVec.begin() && ++it != sepVec.end()){
-				std::cout << i<< std::endl;
-				std::cout  << "*************Server block is not closed properly" << std::endl;
-				i++;
-				break;
+				check++;
+				continue;
 			} 
 			else if (*it == "\nlisten" && ++it != sepVec.end()){
 				confKeyCounter["listen"]++;
@@ -134,7 +132,7 @@ std::vector<ServerConf> Tokenizer::createConfVec(std::vector<std::string>& sepVe
 							serverVec[i].addErrorPage(*codeIt, *it);
 				}
 			}
-			else if (*it == "server_name" && ++it != sepVec.end() && ++confKeyCounter["server_name"]){
+			else if (*it == "\nserver_name" && ++it != sepVec.end() && ++confKeyCounter["server_name"]){
 				for(; *it != ";" ; it++) serverVec[i].addServerName(*it);
 			}
 			else if (*it == "index" && ++it != sepVec.end()){

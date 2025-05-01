@@ -6,7 +6,7 @@
 /*   By: ekose <ekose@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/30 12:39:27 by menasy            #+#    #+#             */
-/*   Updated: 2025/05/01 18:09:41 by ekose            ###   ########.fr       */
+/*   Updated: 2025/05/01 18:53:59 by ekose            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -69,7 +69,7 @@ void Parser::checkKeyCount(std::map<std::string, int> confKeyCounter)
 	std::map<std::string, int>::iterator it = confKeyCounter.begin();
 	for (; it != confKeyCounter.end(); it++)
 		if (it->second > 1){
-			std::cout << "Duplicate key found: " << it->first << std::endl;	
+			std::cout << "Duplicate key found: " << it->first  << it->second << std::endl;	
 			throw std::runtime_error("Duplicate key found");
 		}
 }

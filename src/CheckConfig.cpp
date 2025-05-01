@@ -6,7 +6,7 @@
 /*   By: ekose <ekose@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/30 12:42:10 by menasy            #+#    #+#             */
-/*   Updated: 2025/05/01 18:06:23 by ekose            ###   ########.fr       */
+/*   Updated: 2025/05/01 19:07:48 by ekose            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -190,7 +190,7 @@ void CheckConfig::checkConfig() {
 		Tokenizer tokenizer(this->resConf);
 		std::vector<std::string> tek = tokenizer.seperation();
 		tokenizer.createConfVec(tek);
-		std::cout << "==================CONFIGURATION FILE=================== \n" << this->resConf << std::endl;
+		// std::cout << "==================CONFIGURATION FILE=================== \n" << this->resConf << std::endl;
 	}
 	catch(const std::exception& e)
 	{
