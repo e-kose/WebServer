@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   CheckConfig.cpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ekose <ekose@student.42.fr>                +#+  +:+       +#+        */
+/*   By: menasy <menasy@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/30 12:42:10 by menasy            #+#    #+#             */
-/*   Updated: 2025/05/01 19:07:48 by ekose            ###   ########.fr       */
+/*   Updated: 2025/05/02 01:02:55 by menasy           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,15 +28,11 @@ CheckConfig &CheckConfig::operator=(const CheckConfig &other) {
 
 
 static std::string trimLine(const std::string& str) {
-    size_t start = 0;
-    while (start < str.length() && std::isspace(str[start]))
-        ++start;
-
-    size_t end = str.length();
-    while (end > start && std::isspace(str[end - 1]))
-        --end;
-
-    return str.substr(start, end - start);
+	std::string::size_type start = str.find_first_not_of(" \t\n");
+	if (start == std::string::npos)
+		return "";
+	std::string::size_type end = str.find_last_not_of(" \t\n");
+	return str.substr(start, end - start + 1);
 }
 
 void CheckConfig::checkFileExtensions() 
@@ -54,6 +50,15 @@ static size_t characterCounter(const std::string& str, char c)
 			counter++;
 	}
 	return counter;
+}
+static void convertChar(std::string str, char c)
+{
+	for (size_t i = 0; i < str.length(); i++)
+	{
+		if (str[i] == c)
+			str[i] = '@';
+	}
+	std::cout << "==================CONVERTED CHAR=================== \n" << str << std::endl;
 }
 static bool isJustCharacter(const std::string& str, char c)
 {
@@ -77,7 +82,7 @@ void CheckConfig::checkConfKey(const std::string& element)
 		if (element == this->confKey[i])
 			return;
 	}
-	throw std::runtime_error("Unknown directive KEYYYYY");
+	throw std::runtime_error("Unknown directive key: " + element);
 }
 static bool	semiColonCheck(const std::string& str)
 {
@@ -99,16 +104,25 @@ static bool	semiColonCheck(const std::string& str)
 }
 void CheckConfig::checkElements(std::string str)
 {
+	std::cout << "==================CHECK ELEMENTS=================== \n";
 	std::string::size_type pos;
 	std::string element, line, tmp = str;
 	size_t index = 1;
-	if (str.find_first_of("{") != std::string::npos && str[0] != '{')
+	if (str.find("server") != std::string::npos)
 	{
-		tmp = trimLine(str.substr(0,str.find_first_of("{")));
-		tmp = tmp.substr(0, tmp.find_first_of(" \t\n\0"));
+		if (str.find_first_of("{") != std::string::npos)
+		{
+			tmp = trimLine(str.substr(0, str.find_first_of("{")));
+			tmp = tmp.substr(0, tmp.find_first_of(" \t\n\0"));
+		}
+		else 
+			tmp = trimLine(str.substr(0,str.find_first_of(" \n\t")));	
 		if (tmp != "server")
-			throw std::runtime_error("Unknown directive");
+			throw std::runtime_error("Missing server directive");
 	}
+	else
+		throw std::runtime_error("Missing server directive!");
+
 	pos = str.find_first_of("{");
 	if (pos != std::string::npos && str[pos +1] && str[pos + 1] == '\n')
 		index = 2;
@@ -121,7 +135,7 @@ void CheckConfig::checkElements(std::string str)
 		line = trimLine(tmp.substr(0, pos + 1));
 		// std::cout << "==================LINE=================== \n" << line << std::endl;
 		if (!semiColonCheck(line))
-			throw std::runtime_error("Missing semicolon");
+			throw std::runtime_error("Missing semicolon: " + line);
 		element = line.substr(0,line.find_first_of(" \t\n\0"));
 		// std::cout << "==================ELEMENT=================== \n" << element << std::endl;
 		checkConfKey(element);
@@ -174,8 +188,12 @@ std::string CheckConfig::fileHandler()
 		trimedLine = trimLine(line);
 		if (trimedLine.empty() || trimedLine[0] == '#')	
 			continue;
-		destStr += trimedLine + "\n";
+		trimedLine += '\n';
+		destStr.append(trimedLine);
 	}
+	if (destStr.empty() || isJustCharacter(destStr, '\n') 
+		|| isJustCharacter(destStr, '\t') || isJustCharacter(destStr, ' ')) 
+		throw std::runtime_error("Empty file");
 	return destStr;
 }
 void CheckConfig::checkConfig() {
@@ -189,8 +207,8 @@ void CheckConfig::checkConfig() {
 		this->resConf = tmpRes;
 		Tokenizer tokenizer(this->resConf);
 		std::vector<std::string> tek = tokenizer.seperation();
-		tokenizer.createConfVec(tek);
-		// std::cout << "==================CONFIGURATION FILE=================== \n" << this->resConf << std::endl;
+		// tokenizer.createConfVec(tek);
+		std::cout << "==================SUCCESFULY FİNİSHED=================== \n";
 	}
 	catch(const std::exception& e)
 	{

@@ -30,8 +30,9 @@ std::vector<std::string> Tokenizer::seperation(){
 	std::string fullText;
 	std::vector<std::string> text;
 	std::string word;
-
+	
 	fullText = this->fullText;
+	// std::cout << "==================FULL TEXT=================== \n" << fullText << std::endl;
 	for (size_t i = 0; i < this->fullText.length(); i++){
 		if (fullText[i] == '{' || fullText[i] == '}' || fullText[i] == ';' || fullText[i] == ' '){
 			if (!word.empty()){
