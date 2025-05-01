@@ -22,17 +22,17 @@ LocationConf& LocationConf::operator=(const LocationConf& src) {
 	if (this == &src) {
 	   return (*this);
 	}
-	this->path = src.getPath();
-	this->methods = src.getMethods();
-	this->autoIndex = src.getAutoIndex();
-	this->upload_store = src.getUploadStore();
-	this->root = src.getRoot();
-	this->cgi_extension = src.getCgiExtension();
-	this->cgi_path = src.getCgiPath();
-	this->cgi_pass = src.getCgiPass();
-	this->index = src.getIndex();
-	this->try_files = src.getTryFiles();
-	this->return_ = src.getReturn();
+	this->path = src.path;
+	this->methods = src.methods;
+	this->autoIndex = src.autoIndex;
+	this->upload_store = src.upload_store;
+	this->root = src.root;
+	this->cgi_extension = src.cgi_extension;
+	this->cgi_path = src.cgi_path;
+	this->cgi_pass = src.cgi_pass;
+	this->index = src.index;
+	this->try_files = src.try_files;
+	this->return_ = src.return_;
 	return *this;
 }
 LocationConf::~LocationConf() {

@@ -6,7 +6,7 @@
 /*   By: menasy <menasy@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/30 12:42:10 by menasy            #+#    #+#             */
-/*   Updated: 2025/05/02 01:02:55 by menasy           ###   ########.fr       */
+/*   Updated: 2025/05/02 01:10:33 by menasy           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -207,7 +207,7 @@ void CheckConfig::checkConfig() {
 		this->resConf = tmpRes;
 		Tokenizer tokenizer(this->resConf);
 		std::vector<std::string> tek = tokenizer.seperation();
-		// tokenizer.createConfVec(tek);
+		tokenizer.createConfVec(tek);
 		std::cout << "==================SUCCESFULY FİNİSHED=================== \n";
 	}
 	catch(const std::exception& e)
