@@ -59,12 +59,14 @@ int Tokenizer::wordCounter(std::vector<std::string> vec, std::string searchWord)
 	}
 	return counter;
 }
+
 bool stringToBool(const std::string& str) {
     return (str == "on" || str == "1");
 }
 
 LocationConf Tokenizer::createLocConf(std::vector<std::string>::iterator& it, std::vector<std::string> & sepVec){
 	LocationConf locConf;
+
 	std::vector<std::string>::iterator end = sepVec.end();
 	for ( ; it != end; it++){
 		if ((it + 1) != end && *(it + 1) == "{") locConf.setPath(*it);
@@ -92,6 +94,7 @@ std::vector<ServerConf> Tokenizer::createConfVec(std::vector<std::string>& sepVe
 
 	std::vector<std::string>::iterator it;
 	std::vector<ServerConf> serverVec(wordCounter(sepVec, "server"));
+	std::map<std::string, int> confKeyCounter = this->confKeyMap("Server");
 	int i;
 
 	i = 0;
@@ -101,6 +104,7 @@ std::vector<ServerConf> Tokenizer::createConfVec(std::vector<std::string>& sepVe
 		for (;it != sepVec.end(); it++){
 			if (*it == "server" && ++it != sepVec.end()) continue;
 			else if (*it == "listen" && ++it != sepVec.end()){
+				confKeyCounter["listen"]++;
 				size_t pos = it->find(':');
 				if (pos != std::string::npos){
 					serverVec[i].setIp(it->substr(0,pos));
@@ -112,6 +116,7 @@ std::vector<ServerConf> Tokenizer::createConfVec(std::vector<std::string>& sepVe
 				}
 			}
 			else if (*it == "error_page" && ++it != sepVec.end()){
+				confKeyCounter["error_page"]++;
 				std::vector<int>			errorCode;
 				std::string					filePath;
 				std::vector<int>::iterator	codeIt;
@@ -122,20 +127,36 @@ std::vector<ServerConf> Tokenizer::createConfVec(std::vector<std::string>& sepVe
 							serverVec[i].addErrorPage(*codeIt, *it);
 				}
 			}
-			else if (*it == "server_name" && ++it != sepVec.end())
+			else if (*it == "server_name" && ++it != sepVec.end() && ++confKeyCounter["server_name"]){
 				for(; *it != ";" ; it++) serverVec[i].addServerName(*it);
-			else if (*it == "index" && ++it != sepVec.end())
+			}
+			else if (*it == "index" && ++it != sepVec.end()){
+				confKeyCounter["index"]++;
 				for(; *it != ";" ; it++) serverVec[i].addIndex(*it);
-			else if (*it == "root" && ++it != sepVec.end()) serverVec[i].setRoot(*it);
-			else if (*it == "access_log" && ++it != sepVec.end()) serverVec[i].setAccesLog(*it);
-			else if (*it == "error_log" && ++it != sepVec.end()) serverVec[i].setErrorLog(*it);
-			else if (*it == "client_max_body_size" && ++it != sepVec.end()) serverVec[i].setBodySize(std::atoi(it->c_str()));
+			}
+			else if (*it == "root" && ++it != sepVec.end()){
+				confKeyCounter["root"]++;
+				serverVec[i].setRoot(*it);
+			}
+			else if (*it == "access_log" && ++it != sepVec.end()){
+				confKeyCounter["access_log"]++;
+				serverVec[i].setAccesLog(*it);
+			} 
+			else if (*it == "error_log" && ++it != sepVec.end()){
+				confKeyCounter["error_log"]++;
+				serverVec[i].setErrorLog(*it);
+			}
+			else if (*it == "client_max_body_size" && ++it != sepVec.end()) {
+				confKeyCounter["client_max_body_size"]++;
+				serverVec[i].setBodySize(std::atoi(it->c_str()));
+			}
 			else if (*it == "location" && ++it != sepVec.end())
 			{
 				LocationConf tmpLoc = createLocConf(it, sepVec);
 				serverVec[i].addLocation(tmpLoc);
 			}
 		}
+		checkKeyCount(confKeyCounter);
 		i++;
 	}
 	return serverVec;

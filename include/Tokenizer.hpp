@@ -5,8 +5,9 @@
 #include <iostream>
 #include "ServerConf.hpp"
 #include <cstdlib>
+#include "Parser.hpp"
 
-class Tokenizer{
+class Tokenizer : public Parser{
 	private:
 		std::string	fullText;
 	public:
