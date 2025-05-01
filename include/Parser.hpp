@@ -10,7 +10,7 @@ class Parser {
 		std::string fileName;
 		std::ifstream confFile;
 		std::string resConf;
-		std::string confKey[12];
+		std::string confKey[18];
 	public:
 		Parser(std::string fileName);
 		~Parser();

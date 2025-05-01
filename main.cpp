@@ -1,7 +1,10 @@
 #include <iostream>
+#include <fstream>
+#include <sstream>
 #include "include/ServerConf.hpp"
 #include "include/Parser.hpp"
 #include "include/CheckConfig.hpp"
+#include "include/Tokenizer.hpp"
 
 int main(int ac, char **av)
 {

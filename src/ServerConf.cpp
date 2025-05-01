@@ -2,10 +2,10 @@
 
 ServerConf::ServerConf(): 
 	ip(""),
-	port(0),
+	port(7979),
 	root(""),
 	server_name(),
-	index(""),
+	index(),
 	body_size(0),
 	error_pages(),
 	locations()
@@ -44,7 +44,7 @@ std::string ServerConf::getRoot() const {
 std::vector<std::string> ServerConf::getServerName() const {
 	return this->server_name;
 }
-std::string ServerConf::getIndex() const {
+std::vector<std::string> ServerConf::getIndex() const {
 	return this->index;
 }
 size_t ServerConf::getBodySize() const {
@@ -55,6 +55,12 @@ std::map<int, std::string> ServerConf::getErrorPages() const {
 }
 std::vector<LocationConf> ServerConf::getLocations() const {
 	return this->locations;
+}
+std::string ServerConf::getErrorLog()const{
+	return this->error_log;
+}
+std::string ServerConf::getAccesLog()const{
+	return this->access_log;
 }
 void ServerConf::setIp(std::string ip) {
 	this->ip = ip;
@@ -68,7 +74,7 @@ void ServerConf::setRoot(std::string root) {
 void ServerConf::setServerName(std::vector<std::string>& server_name) {
 	this->server_name = server_name;
 }
-void ServerConf::setIndex(std::string index) {
+void ServerConf::setIndex(std::vector<std::string> index) {
 	this->index = index;
 }
 void ServerConf::setBodySize(size_t body_size) {
@@ -86,4 +92,16 @@ void ServerConf::addLocation(LocationConf& location) {
 }
 void ServerConf::addErrorPage(int code, std::string page) {
 	this->error_pages[code] = page;
+}
+void ServerConf::addServerName(std::string name){
+	this->server_name.push_back(name);
+}
+void ServerConf::addIndex(std::string index){
+	this->index.push_back(index);
+}
+void ServerConf::setErrorLog(std::string logFile){
+	this->error_log = logFile;
+}
+void ServerConf::setAccesLog(std::string logFile){
+	this->access_log = logFile;
 }
