@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   CheckConfig.cpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: menasy <menasy@student.42.fr>              +#+  +:+       +#+        */
+/*   By: ekose <ekose@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/30 12:42:10 by menasy            #+#    #+#             */
-/*   Updated: 2025/05/01 16:27:38 by menasy           ###   ########.fr       */
+/*   Updated: 2025/05/01 18:06:23 by ekose            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -187,6 +187,9 @@ void CheckConfig::checkConfig() {
 		tmpRes = fileHandler();
 		bracketsCheck(tmpRes);
 		this->resConf = tmpRes;
+		Tokenizer tokenizer(this->resConf);
+		std::vector<std::string> tek = tokenizer.seperation();
+		tokenizer.createConfVec(tek);
 		std::cout << "==================CONFIGURATION FILE=================== \n" << this->resConf << std::endl;
 	}
 	catch(const std::exception& e)

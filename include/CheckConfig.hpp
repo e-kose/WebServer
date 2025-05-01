@@ -3,16 +3,16 @@
 /*                                                        :::      ::::::::   */
 /*   CheckConfig.hpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: menasy <menasy@student.42.fr>              +#+  +:+       +#+        */
+/*   By: ekose <ekose@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/30 12:42:07 by menasy            #+#    #+#             */
-/*   Updated: 2025/05/01 13:45:16 by menasy           ###   ########.fr       */
+/*   Updated: 2025/05/01 18:04:24 by ekose            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef CheckConfig_HPP
 # define CheckConfig_HPP
-
+# include "Tokenizer.hpp"
 # include "Parser.hpp"
 # include <iostream>
 class CheckConfig : public Parser

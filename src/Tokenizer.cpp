@@ -94,16 +94,23 @@ std::vector<ServerConf> Tokenizer::createConfVec(std::vector<std::string>& sepVe
 
 	std::vector<std::string>::iterator it;
 	std::vector<ServerConf> serverVec(wordCounter(sepVec, "server"));
-	std::map<std::string, int> confKeyCounter = this->confKeyMap("Server");
 	int i;
-
+	
 	i = 0;
-	it = sepVec.begin()++;
+	// std::cout << "*-----*->"<< *(sepVec.begin()) << std::endl;
+	// it = sepVec.begin()++;
+	// std::cout << "****************->" << *(++it)<< std::endl;
 	while (i < serverVec.size())
 	{
+		std::map<std::string, int> confKeyCounter = this->confKeyMap("Server");
 		for (;it != sepVec.end(); it++){
-			if (*it == "server" && ++it != sepVec.end()) continue;
-			else if (*it == "listen" && ++it != sepVec.end()){
+			if (*it == "\nserver" && it != sepVec.begin() && ++it != sepVec.end()){
+				std::cout << i<< std::endl;
+				std::cout  << "*************Server block is not closed properly" << std::endl;
+				i++;
+				break;
+			} 
+			else if (*it == "\nlisten" && ++it != sepVec.end()){
 				confKeyCounter["listen"]++;
 				size_t pos = it->find(':');
 				if (pos != std::string::npos){
