@@ -6,7 +6,7 @@
 /*   By: menasy <menasy@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/30 12:42:10 by menasy            #+#    #+#             */
-/*   Updated: 2025/04/30 21:02:40 by menasy           ###   ########.fr       */
+/*   Updated: 2025/05/01 14:23:37 by menasy           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -55,6 +55,20 @@ static size_t characterCounter(const std::string& str, char c)
 	}
 	return counter;
 }
+static bool isJustCharacter(const std::string& str, char c)
+{
+	for (size_t i = 0; i < str.length(); i++)
+	{
+		if (str[i] != c)
+		{
+			if (str[i] == ' ' || str[i] == '\t' || str[i] == '\n')
+				continue;
+			else
+				return false;
+		}
+	}
+	return true;
+}
 
 void CheckConfig::checkConfKey(const std::string& element)
 {
@@ -65,11 +79,29 @@ void CheckConfig::checkConfKey(const std::string& element)
 	}
 	throw std::runtime_error("Unknown directive KEYYYYY");
 }
+static bool	semiColonCheck(const std::string& str)
+{
+	if (str.find_first_of(";") == std::string::npos)
+	{
+		if (isJustCharacter(str, '{') || isJustCharacter(str, '}') || str.find("location") != std::string::npos)
+			return true;
+		else
+			return false;
+	}
+	if (str.find_first_of(";") != std::string::npos)
+	{
+		if (isJustCharacter(str,';') || str.find_first_of(";") != str.length() -1)
+			return false;
+		else
+			return true;
+	}
+	return true;
+}
 void CheckConfig::checkElements(std::string str)
 {
-
-	std::string tmp = str;
-	std::string element, line;
+	std::string::size_type pos;
+	std::string element, line, tmp = str;
+	size_t index = 1;
 	if (str.find_first_of("{") != std::string::npos && str[0] != '{')
 	{
 		tmp = trimLine(str.substr(0,str.find_first_of("{")));
@@ -77,32 +109,33 @@ void CheckConfig::checkElements(std::string str)
 		if (tmp != "server")
 			throw std::runtime_error("Unknown directive");
 	}
-	tmp = str.substr(str.find_first_of("{") + 1, str.length());
-	std::string::size_type pos1;
-	std::cout << "TMP: \n" << tmp;
+	pos = str.find_first_of("{");
+	if (pos != std::string::npos && str[pos +1] && str[pos + 1] == '\n')
+		index = 2;
+	tmp = str.substr(str.find_first_of("{") + index, str.length());
 	while (true)
 	{
-		pos1 = tmp.find_first_of(';');
-		if (pos1 == std::string::npos)
+		pos = tmp.find_first_of('\n');
+		if (pos == std::string::npos)
 			break;
-		line = trimLine(tmp.substr(0, pos1 + 1));
-		std::cout << "LINE:" << line;
+		line = trimLine(tmp.substr(0, pos + 1));
+		// std::cout << "==================LINE=================== \n" << line << std::endl;
+		if (!semiColonCheck(line))
+			throw std::runtime_error("Missing semicolon");
 		element = line.substr(0,line.find_first_of(" \t\n\0"));
-		std::cout << "ELEMENT:" << element;
+		// std::cout << "==================ELEMENT=================== \n" << element << std::endl;
 		checkConfKey(element);
-		tmp = tmp.substr(pos1 +1, tmp.length());
-		std::cout << "TMP2:" << tmp<< std::endl;
+		tmp = tmp.substr(pos +1, tmp.length());
 	}
 }
 
-void CheckConfig::bracketsCheck(std::string& str)
+void CheckConfig::bracketsCheck(std::string str)
 {
-
-	if (characterCounter(str, '{') != characterCounter(str, '}'))
-		throw std::runtime_error("Unexpected end of file, expecting paranthesis");
 	std::string::size_type pos1, pos2;
 	std::string sub, serverStr, tmp;
 	size_t index = 0;
+	if (characterCounter(str, '{') != characterCounter(str, '}'))
+		throw std::runtime_error("Unexpected end of file, expecting paranthesis");
 	while (true)
 	{
 		if (!this->inServer)
@@ -115,40 +148,27 @@ void CheckConfig::bracketsCheck(std::string& str)
 		}
 		pos2 = tmp.find_first_of("}");
 		index += pos2 + 1;
-		sub = str.substr(pos1,  index);
+		sub = str.substr(pos1,  index - pos1);
 		if (characterCounter(sub,'{') == characterCounter(sub,'}'))
 		{
-			serverStr = str.substr(0, index + pos1);
-			std::cout << "SERVER STR: \n" << serverStr ;
+			serverStr = str.substr(0, index);
+			std::cout << "==================SERVER STR=================== \n" << serverStr << std::endl;
 			checkElements(serverStr);
 			str = str.substr(serverStr.length(), str.length());
 			this->inServer = false;
 			index = 0;
 		}
 		else
-		{
 			tmp = str.substr(index,str.length());
-		}
 	}
-	std::cout << "==========================" << std::endl;
 }
-// void	CheckConfig::semiColonCheck(const std::string& str)
-// {
-// 	std::string::size_type posBrackets = str.find_first_of("{");
-// 	this->inServer = true;
-// 	while (this->inServer)
-// 	{
-// 		std::string::size_type posSemiColon = str.find_first_of(";");
-// 	}
-// }
+
 std::string CheckConfig::fileHandler() 
 {
 	this->confFile.open(this->fileName.c_str());
 	if (!this->confFile.is_open())
 		throw std::runtime_error("No such file or directory");
-	std::string line;
-	std::string trimedLine;
-	std::string destStr;
+	std::string line, trimedLine, destStr;
 	while (std::getline(this->confFile, line))
 	{
 		trimedLine = trimLine(line);
@@ -156,7 +176,6 @@ std::string CheckConfig::fileHandler()
 			continue;
 		destStr += trimedLine + "\n";
 	}
-	bracketsCheck(destStr);
 	return destStr;
 }
 void CheckConfig::checkConfig() {
@@ -164,12 +183,11 @@ void CheckConfig::checkConfig() {
 	try
 	{
 		checkFileExtensions();
-		fileHandler();
-		
+		bracketsCheck(fileHandler());
 	}
 	catch(const std::exception& e)
 	{
 		std::cerr << e.what() << '\n';
 	}
-	
+	std::cout << "============ SUCCESLY FINISHED ==============" << std::endl;
 }

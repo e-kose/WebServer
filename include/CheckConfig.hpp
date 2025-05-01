@@ -6,7 +6,7 @@
 /*   By: menasy <menasy@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/30 12:42:07 by menasy            #+#    #+#             */
-/*   Updated: 2025/04/30 19:17:00 by menasy           ###   ########.fr       */
+/*   Updated: 2025/05/01 13:45:16 by menasy           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,9 +28,8 @@ class CheckConfig : public Parser
 		void checkConfig();
 		void checkFileExtensions() ;
 		std::string fileHandler();
-		void bracketsCheck(std::string& str);
+		void bracketsCheck(std::string str);
 		void checkElements(std::string str);
-		void semiColonCheck(const std::string& str);
 		void checkConfKey(const std::string& element);
 };
 #endif

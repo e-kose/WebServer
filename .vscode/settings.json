@@ -71,17 +71,17 @@
     "fstream": "cpp"
   },
   "github.copilot.enable": {
-    "*": false,
-    "plaintext": true,
-    "markdown": false,
-    "scminput": false,
-    "cpp": false,
-    "makefile": true,
-    "c": true,
-    "rust": false,
-    "dart": false,
-    "php": false
-  },
+	"*": false,
+	"plaintext": true,
+	"markdown": false,
+	"scminput": false,
+	"cpp": true,
+	"makefile": true,
+	"c": true,
+	"rust": false,
+	"dart": false,
+	"php": false
+},
   "C_Cpp_Runner.cCompilerPath": "gcc",
   "C_Cpp_Runner.cppCompilerPath": "g++",
   "C_Cpp_Runner.debuggerPath": "gdb",
