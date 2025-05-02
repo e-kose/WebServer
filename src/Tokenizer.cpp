@@ -86,8 +86,9 @@ LocationConf Tokenizer::createLocConf(std::vector<std::string>::iterator& it, st
 		else if (*it == "methods" && it++ != end && ++confKeyCounter["methods"])
 			for( ; *it != ";" ; it++)
 				locConf.addMethod(*it);
-		checkKeyCount(confKeyCounter);
 	}
+	checkKeyCount(confKeyCounter);
+	this->locationKeyCount.push_back(confKeyCounter);
 	return locConf;
 }
 
@@ -148,6 +149,7 @@ std::vector<ServerConf> Tokenizer::createConfVec(std::vector<std::string>& sepVe
 			}
 		}
 		checkKeyCount(confKeyCounter);
+		this->serverKeyCount.push_back(confKeyCounter);
 		confKeyCounter = this->confKeyMap("Server");
 		i++;
 	}

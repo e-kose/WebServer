@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   CheckConfig.hpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ekose <ekose@student.42.fr>                +#+  +:+       +#+        */
+/*   By: menasy <menasy@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/30 12:42:07 by menasy            #+#    #+#             */
-/*   Updated: 2025/05/03 00:24:33 by ekose            ###   ########.fr       */
+/*   Updated: 2025/05/03 00:35:03 by menasy           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,5 +34,9 @@ class CheckConfig : public Tokenizer
 		void bracketsCheck(std::string str);
 		void checkElements(std::string str);
 		void checkConfKey(const std::string& element);
+		void emptyValueCheck();
+		void checkValue();
+
+
 };
 #endif

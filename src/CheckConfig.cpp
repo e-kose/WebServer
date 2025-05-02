@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   CheckConfig.cpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ekose <ekose@student.42.fr>                +#+  +:+       +#+        */
+/*   By: menasy <menasy@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/30 12:42:10 by menasy            #+#    #+#             */
-/*   Updated: 2025/05/03 00:22:58 by ekose            ###   ########.fr       */
+/*   Updated: 2025/05/03 02:13:27 by menasy           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -199,6 +199,45 @@ std::string CheckConfig::fileHandler()
 		throw std::runtime_error("Empty file");
 	return destStr;
 }
+
+void CheckConfig::emptyValueCheck()
+{
+	//locationCount tum locationarı beraber alıyor hangi server için kaç tan locatin olduğunu bilmiyorum ona bakcam.
+	// etonun location valularını aldığı paramtereyi sayarak ulaşabilirim belki bakcam ona.
+	std::vector<ServerConf>::iterator itServerVal = this->serverConfVec.begin();
+	std::vector<std::map<std::string, int> >::iterator itServerKeyCount = this->serverKeyCount.begin();
+	
+	std::cout << "Size ServerCount: " << this->serverKeyCount.size()<< std::endl;
+	std::cout << "Size ServerConf: " << this->serverConfVec.size()<< std::endl;
+	std::cout << "Size LocationCount: " << this->locationKeyCount.size()<< std::endl;
+	
+	while (itServerKeyCount != this->serverKeyCount.end() && itServerVal != this->serverConfVec.end())
+	{
+		std::map<std::string, int>::iterator itServerMap = itServerKeyCount->begin();
+		std::vector<std::map<std::string, int> > ::iterator itLocationCountKey = this->locationKeyCount.begin();
+		std::cout << "==================SERVER KEY=================== \n";
+		while (itServerMap != itServerKeyCount->end())
+		{
+			
+			std::cout << "first: " << itServerMap->first << " -> " << itServerMap->second << std::endl;
+			itServerMap++;
+		}
+		// std::map<std::string, int>::iterator itLocationMap = itLocationCountKey->begin();
+		// while (itLocationMap != itLocationCountKey->end())
+		// {
+		// 	std::cout<< "first: " << itLocationMap->first << " -> " << itLocationMap->second << std::endl;
+		// 	itLocationMap++;
+		// }
+		// std::cout<< "first: " << itServerMap->first << " -> " << itServerMap->second << std::endl;
+		// itLocationCountKey++;		
+		itServerKeyCount++;
+		itServerVal++;
+	}
+}
+void CheckConfig::checkValue()
+{
+	emptyValueCheck();
+}
 void CheckConfig::checkConfig() {
 	
 	try
@@ -208,7 +247,8 @@ void CheckConfig::checkConfig() {
 		bracketsCheck(this->fullText);
 		std::vector<std::string> tek = this->seperation();
 		this->serverConfVec =  this->createConfVec(tek);
-		this->printServerConfVec(this->serverConfVec);
+		checkValue();
+		// this->printServerConfVec(this->serverConfVec);
 		std::cout << "==================SUCCESFULY FİNİSHED=================== \n";
 	}
 	catch(const std::exception& e)
