@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   CheckConfig.cpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ekose <ekose@student.42.fr>                +#+  +:+       +#+        */
+/*   By: menasy <menasy@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/30 12:42:10 by menasy            #+#    #+#             */
-/*   Updated: 2025/05/01 20:40:22 by ekose            ###   ########.fr       */
+/*   Updated: 2025/05/02 01:10:33 by menasy           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,15 +28,11 @@ CheckConfig &CheckConfig::operator=(const CheckConfig &other) {
 
 
 static std::string trimLine(const std::string& str) {
-    size_t start = 0;
-    while (start < str.length() && std::isspace(str[start]))
-        ++start;
-
-    size_t end = str.length();
-    while (end > start && std::isspace(str[end - 1]))
-        --end;
-
-    return str.substr(start, end - start);
+	std::string::size_type start = str.find_first_not_of(" \t\n");
+	if (start == std::string::npos)
+		return "";
+	std::string::size_type end = str.find_last_not_of(" \t\n");
+	return str.substr(start, end - start + 1);
 }
 
 void CheckConfig::checkFileExtensions() 
@@ -54,6 +50,15 @@ static size_t characterCounter(const std::string& str, char c)
 			counter++;
 	}
 	return counter;
+}
+static void convertChar(std::string str, char c)
+{
+	for (size_t i = 0; i < str.length(); i++)
+	{
+		if (str[i] == c)
+			str[i] = '@';
+	}
+	std::cout << "==================CONVERTED CHAR=================== \n" << str << std::endl;
 }
 static bool isJustCharacter(const std::string& str, char c)
 {
@@ -77,7 +82,7 @@ void CheckConfig::checkConfKey(const std::string& element)
 		if (element == this->confKey[i])
 			return;
 	}
-	throw std::runtime_error("Unknown directive KEYYYYY");
+	throw std::runtime_error("Unknown directive key: " + element);
 }
 static bool	semiColonCheck(const std::string& str)
 {
@@ -99,16 +104,25 @@ static bool	semiColonCheck(const std::string& str)
 }
 void CheckConfig::checkElements(std::string str)
 {
+	std::cout << "==================CHECK ELEMENTS=================== \n";
 	std::string::size_type pos;
 	std::string element, line, tmp = str;
 	size_t index = 1;
-	if (str.find_first_of("{") != std::string::npos && str[0] != '{')
+	if (str.find("server") != std::string::npos)
 	{
-		tmp = trimLine(str.substr(0,str.find_first_of("{")));
-		tmp = tmp.substr(0, tmp.find_first_of(" \t\n\0"));
+		if (str.find_first_of("{") != std::string::npos)
+		{
+			tmp = trimLine(str.substr(0, str.find_first_of("{")));
+			tmp = tmp.substr(0, tmp.find_first_of(" \t\n\0"));
+		}
+		else 
+			tmp = trimLine(str.substr(0,str.find_first_of(" \n\t")));	
 		if (tmp != "server")
-			throw std::runtime_error("Unknown directive");
+			throw std::runtime_error("Missing server directive");
 	}
+	else
+		throw std::runtime_error("Missing server directive!");
+
 	pos = str.find_first_of("{");
 	if (pos != std::string::npos && str[pos +1] && str[pos + 1] == '\n')
 		index = 2;
@@ -121,7 +135,7 @@ void CheckConfig::checkElements(std::string str)
 		line = trimLine(tmp.substr(0, pos + 1));
 		// std::cout << "==================LINE=================== \n" << line << std::endl;
 		if (!semiColonCheck(line))
-			throw std::runtime_error("Missing semicolon");
+			throw std::runtime_error("Missing semicolon: " + line);
 		element = line.substr(0,line.find_first_of(" \t\n\0"));
 		// std::cout << "==================ELEMENT=================== \n" << element << std::endl;
 		checkConfKey(element);
@@ -174,8 +188,12 @@ std::string CheckConfig::fileHandler()
 		trimedLine = trimLine(line);
 		if (trimedLine.empty() || trimedLine[0] == '#')	
 			continue;
-		destStr += trimedLine + "\n";
+		trimedLine += '\n';
+		destStr.append(trimedLine);
 	}
+	if (destStr.empty() || isJustCharacter(destStr, '\n') 
+		|| isJustCharacter(destStr, '\t') || isJustCharacter(destStr, ' ')) 
+		throw std::runtime_error("Empty file");
 	return destStr;
 }
 void CheckConfig::checkConfig() {
@@ -189,78 +207,8 @@ void CheckConfig::checkConfig() {
 		this->resConf = tmpRes;
 		Tokenizer tokenizer(this->resConf);
 		std::vector<std::string> tek = tokenizer.seperation();
-		std::vector<ServerConf> conf = tokenizer.createConfVec(tek);
-		// std::cout << "==================CONFIGURATION FILE=================== \n" << this->resConf << std::endl;
-
-		std::cout << "==================SERVER CONFIGURATION=================== \n";
-		std::vector<ServerConf>::iterator it = conf.begin();
-	for (; it != conf.end() ; it++)
-	{
-		
-		std::cout << "Server IP: " << it->getIp() << std::endl;
-		std::cout << "Server Port: " << it->getPort() << std::endl;
-		std::cout << "Server Root: " << it->getRoot() << std::endl;
-		std::cout << "Server Name: ";
-		std::vector<std::string> servername = it->getServerName();
-		std::vector<std::string>::iterator it2 = servername.begin();
-		for (; it2 != servername.end() ; it2++)
-			std::cout << *it2 << " ";
-		std::cout << std::endl;
-		std::cout << "Server Index: ";
-		std::vector<std::string> index = it->getIndex();
-		std::vector<std::string>::iterator it3 = index.begin();
-		for (; it3 != index.end() ; it3++)
-			std::cout << *it3 << " ";
-		std::cout << std::endl;
-		std::cout << "Server Body Size: " << it->getBodySize() << std::endl;
-		std::cout << "Server Error Log: " << it->getErrorLog() << std::endl;
-		std::cout << "Server Access Log: " << it->getAccesLog() << std::endl;
-		std::cout << "Server Error Pages: ";
-		std::map<int, std::string> erorpages = it->getErrorPages();
-		std::map<int, std::string>::iterator end = erorpages.end();
-		std::map<int, std::string>::iterator it4 = erorpages.begin();
-		for (; it4 != end; it4++)
-			std::cout << it4->first << " " << it4->second << " ";
-		std::cout << std::endl;
-		std::cout << "Server Locations: ";
-		std::vector<LocationConf> locations = it->getLocations();
-		int i = 0;
-		for (; i < locations.size() ; i++)
-		{
-			std::cout << "Location Path: " << locations[i].getPath() << std::endl;
-			std::cout << "Location AutoIndex: " << locations[i].getAutoIndex() << std::endl;
-			std::cout << "Location Root: " << locations[i].getRoot() << std::endl;
-			std::cout << "Location Cgi Extension: " << locations[i].getCgiExtension() << std::endl;
-			std::cout << "Location Cgi Path: " << locations[i].getCgiPath() << std::endl;
-			std::cout << "Location Cgi Pass: " << locations[i].getCgiPass() << std::endl;
-			std::cout << "Location Upload Store: " << locations[i].getUploadStore() << std::endl;
-			std::cout << "Location Methods: ";
-			std::vector<std::string> methods = locations[i].getMethods();
-			std::vector<std::string>::iterator it6 = methods.begin();
-			for (; it6 != methods.end() ; it6++)
-				std::cout << *it6 << " ";
-			std::cout << std::endl;
-			std::cout << "Location Try Files: ";
-			std::vector<std::string> tryfiles = locations[i].getTryFiles();
-			std::vector<std::string>::iterator it7 = tryfiles.begin();
-			for (; it7 != tryfiles.end() ; it7++)
-				std::cout << *it7 << " ";
-			std::cout << std::endl;
-			std::cout << "Location Index: ";
-			std::vector<std::string> index = locations[i].getIndex();
-			std::vector<std::string>::iterator it8 = index.begin();
-			for (; it8 != index.end() ; it8++)
-				std::cout << *it8 << " ";
-			std::cout << std::endl;
-			std::map<int, std::string> retur = locations[i].getReturn();
-			std::map<int ,std::string>::iterator it9 = retur.begin();
-			for (; it9 != retur.end() ; it9++)
-				std::cout << it9->first << " " << it9->second << " ";
-			std::cout << std::endl;
-			std::cout << "----------------------------------------" << std::endl;
-		}
-	}
-		
+		tokenizer.createConfVec(tek);
+		std::cout << "==================SUCCESFULY FİNİSHED=================== \n";
 	}
 	catch(const std::exception& e)
 	{
