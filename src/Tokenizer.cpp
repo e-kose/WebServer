@@ -42,7 +42,7 @@ std::vector<std::string> Tokenizer::seperation(){
 			if (fullText[i] == '{' || fullText[i] == '}' || fullText[i] == ';')
 				text.push_back(std::string(1, fullText[i]));
 			}
-		else
+		else if (fullText[i] != '\n')
 			word.push_back(fullText[i]);
 	}
 	if (!word.empty())
@@ -55,7 +55,7 @@ int Tokenizer::wordCounter(std::vector<std::string> vec, std::string searchWord)
 	std::vector<std::string>::iterator it;
 	counter = 0;
 	for (it = vec.begin(); it != vec.end(); it++){
-		if(*it == searchWord || *it == "\n"+searchWord)
+		if(*it == searchWord || *it == ""+searchWord)
 			counter++;
 	}
 	return counter;
@@ -73,19 +73,19 @@ LocationConf Tokenizer::createLocConf(std::vector<std::string>::iterator& it, st
 	for ( ; it != end; it++){
 		if ((it + 1) != end && *(it + 1) == "{") locConf.setPath(*it);
 		else if (*it == "}") break;
-		else if (*it == "\nroot" && it++ != end && ++confKeyCounter["root"]) locConf.setRoot(*it);
-		else if (*it == "\ncgi_pass" && it++ != end && ++confKeyCounter["cgi_pass"]) locConf.setCgiPass(*it);
-		else if (*it == "\ncgi_ext" && it++ != end && ++confKeyCounter["cgi_ext"]) locConf.setCgiExtension(*it);
-		else if (*it == "\nupload_dir" && it++ != end && ++confKeyCounter["upload_dir"]) locConf.setUploadStore(*it);
-		else if (*it == "\nautoindex" && it++ != end && ++confKeyCounter["autoindex"]) locConf.setAutoIndex(stringToBool(*it));
-		else if (*it =="\nreturn" && it++ != end && ++confKeyCounter["return"]) locConf.addReturn(std::atoi(it->c_str()), *(++it));
-		else if (*it == "\ntry_files" && it++ != end && ++confKeyCounter["try_files"])
+		else if (*it == "root" && it++ != end && ++confKeyCounter["root"]) locConf.setRoot(*it);
+		else if (*it == "cgi_pass" && it++ != end && ++confKeyCounter["cgi_pass"]) locConf.setCgiPass(*it);
+		else if (*it == "cgi_ext" && it++ != end && ++confKeyCounter["cgi_ext"]) locConf.setCgiExtension(*it);
+		else if (*it == "upload_dir" && it++ != end && ++confKeyCounter["upload_dir"]) locConf.setUploadStore(*it);
+		else if (*it == "autoindex" && it++ != end && ++confKeyCounter["autoindex"]) locConf.setAutoIndex(stringToBool(*it));
+		else if (*it =="return" && it++ != end && ++confKeyCounter["return"]) locConf.addReturn(std::atoi(it->c_str()), *(++it));
+		else if (*it == "try_files" && it++ != end && ++confKeyCounter["try_files"])
 			for( ; *it != ";" ; it++)
 				locConf.addTryFiles(*it);
-		else if (*it == "\nindex" && it++ != end && ++confKeyCounter["index"])
+		else if (*it == "index" && it++ != end && ++confKeyCounter["index"])
 			for( ; *it != ";" ; it++)
 				locConf.addIndex(*it);
-		else if (*it == "\nmethods" && it++ != end && ++confKeyCounter["methods"])
+		else if (*it == "methods" && it++ != end && ++confKeyCounter["methods"])
 			for( ; *it != ";" ; it++)
 				locConf.addMethod(*it);
 		checkKeyCount(confKeyCounter);
@@ -97,21 +97,19 @@ std::vector<ServerConf> Tokenizer::createConfVec(std::vector<std::string>& sepVe
 
 	std::vector<std::string>::iterator it;
 	std::vector<ServerConf> serverVec(wordCounter(sepVec, "server"));
+	std::map<std::string, int> confKeyCounter;
 	int i;
 	
 	i = 0;
-	it = sepVec.begin();
-	it++;
-	std::map<std::string, int> confKeyCounter = this->confKeyMap("Server");
+	it = sepVec.begin()++;
+	confKeyCounter = this->confKeyMap("Server");
 	while (i < serverVec.size())
 	{
-		int check = 0;
-		for (;it != sepVec.end() && check == 0 ; it++){
-			if (*it == "\nserver" && it != sepVec.begin() && ++it != sepVec.end()){
-				check++;
-				continue;
+		for (;it != sepVec.end(); it++){
+			if (*it == "server" && it != sepVec.begin() && ++it != sepVec.end()){
+				break;
 			} 
-			else if (*it == "\nlisten" && ++it != sepVec.end() && ++confKeyCounter["listen"]){
+			else if (*it == "listen" && ++it != sepVec.end() && ++confKeyCounter["listen"]){
 				size_t pos = it->find(':');
 				if (pos != std::string::npos){
 					serverVec[i].setIp(it->substr(0,pos));
@@ -122,7 +120,7 @@ std::vector<ServerConf> Tokenizer::createConfVec(std::vector<std::string>& sepVe
 					serverVec[i].setPort(7979);
 				}
 			}
-			else if (*it == "\nerror_page" && ++it != sepVec.end()){
+			else if (*it == "error_page" && ++it != sepVec.end()){
 				std::vector<int>			errorCode;
 				std::string					filePath;
 				std::vector<int>::iterator	codeIt;
@@ -133,19 +131,19 @@ std::vector<ServerConf> Tokenizer::createConfVec(std::vector<std::string>& sepVe
 							serverVec[i].addErrorPage(*codeIt, *it);
 				}
 			}
-			else if (*it == "\nserver_name" && ++it != sepVec.end() && ++confKeyCounter["server_name"])
+			else if (*it == "server_name" && ++it != sepVec.end() && ++confKeyCounter["server_name"])
 				for(; *it != ";" ; it++) serverVec[i].addServerName(*it);
-			else if (*it == "\nindex" && ++it != sepVec.end() && ++confKeyCounter["index"])
+			else if (*it == "index" && ++it != sepVec.end() && ++confKeyCounter["index"])
 				for(; *it != ";" ; it++) serverVec[i].addIndex(*it);
-			else if (*it == "\nroot" && ++it != sepVec.end() && ++confKeyCounter["root"])
+			else if (*it == "root" && ++it != sepVec.end() && ++confKeyCounter["root"])
 				serverVec[i].setRoot(*it);
-			else if (*it == "\naccess_log" && ++it != sepVec.end() && ++confKeyCounter["access_log"])
+			else if (*it == "access_log" && ++it != sepVec.end() && ++confKeyCounter["access_log"])
 				serverVec[i].setAccesLog(*it);
-			else if (*it == "\nerror_log" && ++it != sepVec.end() && ++confKeyCounter["error_log"])
+			else if (*it == "error_log" && ++it != sepVec.end() && ++confKeyCounter["error_log"])
 				serverVec[i].setErrorLog(*it);
-			else if (*it == "\nclient_max_body_size" && ++it != sepVec.end() && ++confKeyCounter["client_max_body_size"])
+			else if (*it == "client_max_body_size" && ++it != sepVec.end() && ++confKeyCounter["client_max_body_size"])
 				serverVec[i].setBodySize(std::atoi(it->c_str()));
-			else if (*it == "\nlocation" && ++it != sepVec.end())
+			else if (*it == "location" && ++it != sepVec.end())
 			{
 				LocationConf tmpLoc = createLocConf(it, sepVec);
 				serverVec[i].addLocation(tmpLoc);
