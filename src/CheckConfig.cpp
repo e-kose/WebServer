@@ -6,7 +6,7 @@
 /*   By: menasy <menasy@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/30 12:42:10 by menasy            #+#    #+#             */
-/*   Updated: 2025/05/02 01:10:33 by menasy           ###   ########.fr       */
+/*   Updated: 2025/05/02 15:51:42 by menasy           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -104,7 +104,7 @@ static bool	semiColonCheck(const std::string& str)
 }
 void CheckConfig::checkElements(std::string str)
 {
-	std::cout << "==================CHECK ELEMENTS=================== \n";
+	// std::cout << "==================CHECK ELEMENTS=================== \n";
 	std::string::size_type pos;
 	std::string element, line, tmp = str;
 	size_t index = 1;
@@ -207,7 +207,8 @@ void CheckConfig::checkConfig() {
 		this->resConf = tmpRes;
 		Tokenizer tokenizer(this->resConf);
 		std::vector<std::string> tek = tokenizer.seperation();
-		tokenizer.createConfVec(tek);
+		this->serverConfVec =  tokenizer.createConfVec(tek);
+		this->printServerConfVec(this->serverConfVec);
 		std::cout << "==================SUCCESFULY FİNİSHED=================== \n";
 	}
 	catch(const std::exception& e)

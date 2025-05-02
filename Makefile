@@ -1,7 +1,8 @@
 NAME = webserv
 CC = c++
 CFLAGS = -Wall -Wextra -Werror -std=c++98 -fsanitize=address
-SRCS = main.cpp src/Parser.cpp src/CheckConfig.cpp src/LocationConf.cpp src/ServerConf.cpp src/Tokenizer.cpp
+SRCS = main.cpp src/Parser.cpp src/CheckConfig.cpp src/LocationConf.cpp src/ServerConf.cpp src/Tokenizer.cpp \
+		WebServer.cpp
 OBJS = $(SRCS:.cpp=.o)
 
 all: $(NAME)
