@@ -6,7 +6,7 @@
 /*   By: ekose <ekose@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/02 15:40:04 by menasy            #+#    #+#             */
-/*   Updated: 2025/05/02 16:36:54 by ekose            ###   ########.fr       */
+/*   Updated: 2025/05/02 17:43:43 by ekose            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,19 +16,15 @@
 #include <vector>
 #include <string>
 #include <map>
+#include <iterator>
 #include <sys/socket.h>
-#include <netinet/in.h>
-#include <unistd.h>
 #include <arpa/inet.h>
-#include <fcntl.h>
-#include <cstring>
-#include <sys/types.h>
-#include <sys/stat.h>
-# include "ServerConf.hpp"
+#include "ServerConf.hpp"
+#include "unistd.h"
 class WebServer {
 	private:
 		std::vector<ServerConf> serverConfVec;
-		std::map<int, ServerConf&> socketMap; 
+		std::map<int, ServerConf> socketMap; 
 	public:
 		WebServer();
 		WebServer(std::vector<ServerConf>& serverConfVec);
@@ -37,6 +33,8 @@ class WebServer {
 		~WebServer();
 		
 		void initSocket();
+		bool isExistIpAndPort(const std::string& ip, int port);
+		
 		
 		
 
