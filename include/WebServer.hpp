@@ -6,7 +6,7 @@
 /*   By: ekose <ekose@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/02 15:40:04 by menasy            #+#    #+#             */
-/*   Updated: 2025/05/02 17:43:43 by ekose            ###   ########.fr       */
+/*   Updated: 2025/05/03 00:16:26 by ekose            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,8 +34,5 @@ class WebServer {
 		
 		void initSocket();
 		bool isExistIpAndPort(const std::string& ip, int port);
-		
-		
-		
 
 };

@@ -3,27 +3,20 @@
 /*                                                        :::      ::::::::   */
 /*   Parser.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: menasy <menasy@student.42.fr>              +#+  +:+       +#+        */
+/*   By: ekose <ekose@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/30 12:39:27 by menasy            #+#    #+#             */
-/*   Updated: 2025/05/02 15:38:49 by menasy           ###   ########.fr       */
+/*   Updated: 2025/05/03 00:21:58 by ekose            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../include/Parser.hpp"
 
 Parser::Parser(){initKey();}
-Parser::Parser(std::string fileName) : fileName(fileName) 
-{
-	initKey();
-}
 
 Parser::~Parser() {}
-Parser::Parser(const Parser &other) : fileName(other.fileName) {}
+Parser::Parser(const Parser &other){}
 Parser &Parser::operator=(const Parser &other) {
-	if (this != &other) {
-		fileName = other.fileName;
-	}
 	return *this;
 }
 

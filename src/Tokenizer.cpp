@@ -1,12 +1,8 @@
 #include "../include/Tokenizer.hpp"
 
-Tokenizer::Tokenizer(): fullText(""){}
+Tokenizer::Tokenizer(): Parser(){}
 
-Tokenizer::Tokenizer(std::string fullText){
-	this->fullText = (fullText);
-}
-
-Tokenizer::Tokenizer(const Tokenizer& copy) {
+Tokenizer::Tokenizer(const Tokenizer& copy): Parser(copy) {
 	*this = copy;
 }
 
@@ -14,9 +10,12 @@ Tokenizer& Tokenizer::operator=(const Tokenizer& src) {
 	if (this == &src) {
 	   return (*this);
 	}
+	Parser::operator=(src);
 	this->fullText = src.getFullText();
 	return *this;
 }
+
+Tokenizer::~Tokenizer(){}
 
 std::string Tokenizer::getFullText()const{
 	return this->fullText;
@@ -32,7 +31,6 @@ std::vector<std::string> Tokenizer::seperation(){
 	std::string word;
 	
 	fullText = this->fullText;
-	// std::cout << "==================FULL TEXT=================== \n" << fullText << std::endl;
 	for (size_t i = 0; i < this->fullText.length(); i++){
 		if (fullText[i] == '{' || fullText[i] == '}' || fullText[i] == ';' || fullText[i] == ' '){
 			if (!word.empty()){

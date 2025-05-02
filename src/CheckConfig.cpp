@@ -3,25 +3,28 @@
 /*                                                        :::      ::::::::   */
 /*   CheckConfig.cpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: menasy <menasy@student.42.fr>              +#+  +:+       +#+        */
+/*   By: ekose <ekose@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/30 12:42:10 by menasy            #+#    #+#             */
-/*   Updated: 2025/05/02 15:51:42 by menasy           ###   ########.fr       */
+/*   Updated: 2025/05/03 00:22:58 by ekose            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../include/CheckConfig.hpp"
 #include <unistd.h>
-CheckConfig::CheckConfig(std::string argv) : Parser(argv) {
+
+CheckConfig::CheckConfig():Tokenizer(){}
+CheckConfig::CheckConfig(std::string argv) {
+	this->fileName = argv;
 	inServer = false;
 }
 CheckConfig::~CheckConfig() {
 }
-CheckConfig::CheckConfig(const CheckConfig &other) : Parser(other) {
+CheckConfig::CheckConfig(const CheckConfig &other) : Tokenizer(other) {
 }
 CheckConfig &CheckConfig::operator=(const CheckConfig &other) {
 	if (this != &other) {
-		Parser::operator=(other);
+		Tokenizer::operator=(other);
 	}
 	return *this;
 }
@@ -198,16 +201,13 @@ std::string CheckConfig::fileHandler()
 }
 void CheckConfig::checkConfig() {
 	
-	std::string tmpRes;
 	try
 	{
 		checkFileExtensions();
-		tmpRes = fileHandler();
-		bracketsCheck(tmpRes);
-		this->resConf = tmpRes;
-		Tokenizer tokenizer(this->resConf);
-		std::vector<std::string> tek = tokenizer.seperation();
-		this->serverConfVec =  tokenizer.createConfVec(tek);
+		this->fullText = fileHandler();
+		bracketsCheck(this->fullText);
+		std::vector<std::string> tek = this->seperation();
+		this->serverConfVec =  this->createConfVec(tek);
 		this->printServerConfVec(this->serverConfVec);
 		std::cout << "==================SUCCESFULY FİNİSHED=================== \n";
 	}

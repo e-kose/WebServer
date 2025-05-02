@@ -7,15 +7,16 @@
 #include <cstdlib>
 #include "Parser.hpp"
 
+
 class Tokenizer : public Parser{
-	private:
+	protected:
 		std::string	fullText;
 	public:
 		//Construtor and Desctructor
 		Tokenizer();
-		Tokenizer(std::string fullText);
 		Tokenizer(const Tokenizer& copy);
 		Tokenizer& operator=(const Tokenizer& src);
+		~Tokenizer();
 		
 		//Getter Setter
 		std::string		getFullText()const;
