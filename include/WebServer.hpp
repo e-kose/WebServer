@@ -6,7 +6,7 @@
 /*   By: ekose <ekose@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/02 15:40:04 by menasy            #+#    #+#             */
-/*   Updated: 2025/05/03 00:16:26 by ekose            ###   ########.fr       */
+/*   Updated: 2025/05/03 16:33:58 by ekose            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,10 +21,14 @@
 #include <arpa/inet.h>
 #include "ServerConf.hpp"
 #include "unistd.h"
+#include <fcntl.h>
+#include <poll.h>
+
 class WebServer {
 	private:
-		std::vector<ServerConf> serverConfVec;
-		std::map<int, ServerConf> socketMap; 
+		std::vector<ServerConf>			serverConfVec;
+		std::map<int, ServerConf>		socketMap;
+		std::map<int, ServerConf*>		clientToServerMap;
 	public:
 		WebServer();
 		WebServer(std::vector<ServerConf>& serverConfVec);
@@ -32,7 +36,8 @@ class WebServer {
 		WebServer &operator=(const WebServer &other);
 		~WebServer();
 		
-		void initSocket();
-		bool isExistIpAndPort(const std::string& ip, int port);
-
+		void	setNonBlocking(int);
+		void	initSocket();
+		bool	isExistIpAndPort(const std::string&, int);
+		void	runServer();
 };

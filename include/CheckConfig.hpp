@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   CheckConfig.hpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: menasy <menasy@student.42.fr>              +#+  +:+       +#+        */
+/*   By: ekose <ekose@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/30 12:42:07 by menasy            #+#    #+#             */
-/*   Updated: 2025/05/03 00:35:03 by menasy           ###   ########.fr       */
+/*   Updated: 2025/05/03 16:20:33 by ekose            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,7 +14,9 @@
 # define CheckConfig_HPP
 # include "Tokenizer.hpp"
 # include "Tokenizer.hpp"
+# include "WebServer.hpp"
 # include <iostream>
+
 class CheckConfig : public Tokenizer
 {
 	private:
