@@ -31,7 +31,20 @@ ServerConf &ServerConf::operator=(const ServerConf &other) {
 }
 ServerConf::~ServerConf() {
 }
-
+static bool isJustCharacter(const std::string& str, char c)
+{
+	for (size_t i = 0; i < str.length(); i++)
+	{
+		if (str[i] != c)
+		{
+			if (str[i] == ' ' || str[i] == '\t' || str[i] == '\n')
+				continue;
+			else
+				return false;
+		}
+	}
+	return true;
+}
 std::string ServerConf::getIp() const {
 	return this->ip;
 }
@@ -63,21 +76,27 @@ std::string ServerConf::getAccesLog()const{
 	return this->access_log;
 }
 void ServerConf::setIp(std::string ip) {
+
+	std::cout << "IP: " << ip << std::endl;
 	this->ip = ip;
 }
 void ServerConf::setPort(int port) {
+	std::cout << "PORT: " << port << std::endl;
 	this->port = port;
 }
 void ServerConf::setRoot(std::string root) {
+	std::cout << "ROOT: " << root << std::endl; 
 	this->root = root;
 }
 void ServerConf::setServerName(std::vector<std::string>& server_name) {
+	
 	this->server_name = server_name;
 }
 void ServerConf::setIndex(std::vector<std::string> index) {
 	this->index = index;
 }
 void ServerConf::setBodySize(size_t body_size) {
+	std::cout << "BODY SIZE: " << body_size << std::endl;
 	this->body_size = body_size;
 }
 void ServerConf::setErrorPages(std::map<int, std::string>& error_pages) {

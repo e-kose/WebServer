@@ -6,7 +6,7 @@
 /*   By: menasy <menasy@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/30 12:42:10 by menasy            #+#    #+#             */
-/*   Updated: 2025/05/03 02:13:27 by menasy           ###   ########.fr       */
+/*   Updated: 2025/05/04 18:50:16 by menasy           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,52 +30,13 @@ CheckConfig &CheckConfig::operator=(const CheckConfig &other) {
 }
 
 
-static std::string trimLine(const std::string& str) {
-	std::string::size_type start = str.find_first_not_of(" \t\n");
-	if (start == std::string::npos)
-		return "";
-	std::string::size_type end = str.find_last_not_of(" \t\n");
-	return str.substr(start, end - start + 1);
-}
+
 
 void CheckConfig::checkFileExtensions() 
 {
 	std::string ext = this->fileName.substr(this->fileName.find_last_of(".") + 1);
 	if (ext != "conf" )
 		throw std::runtime_error("File extension is not .conf");
-}
-static size_t characterCounter(const std::string& str, char c)
-{
-	size_t counter = 0;
-	for (size_t i = 0; i < str.length(); i++)
-	{
-		if (str[i] == c)
-			counter++;
-	}
-	return counter;
-}
-static void convertChar(std::string str, char c)
-{
-	for (size_t i = 0; i < str.length(); i++)
-	{
-		if (str[i] == c)
-			str[i] = '@';
-	}
-	std::cout << "==================CONVERTED CHAR=================== \n" << str << std::endl;
-}
-static bool isJustCharacter(const std::string& str, char c)
-{
-	for (size_t i = 0; i < str.length(); i++)
-	{
-		if (str[i] != c)
-		{
-			if (str[i] == ' ' || str[i] == '\t' || str[i] == '\n')
-				continue;
-			else
-				return false;
-		}
-	}
-	return true;
 }
 
 void CheckConfig::checkConfKey(const std::string& element)
@@ -85,26 +46,9 @@ void CheckConfig::checkConfKey(const std::string& element)
 		if (element == this->confKey[i])
 			return;
 	}
-	throw std::runtime_error("Unknown directive key: " + element);
+	throw std::runtime_error("Failed directive: " + element);
 }
-static bool	semiColonCheck(const std::string& str)
-{
-	if (str.find_first_of(";") == std::string::npos)
-	{
-		if (isJustCharacter(str, '{') || isJustCharacter(str, '}') || str.find("location") != std::string::npos)
-			return true;
-		else
-			return false;
-	}
-	if (str.find_first_of(";") != std::string::npos)
-	{
-		if (isJustCharacter(str,';') || str.find_first_of(";") != str.length() -1)
-			return false;
-		else
-			return true;
-	}
-	return true;
-}
+
 void CheckConfig::checkElements(std::string str)
 {
 	// std::cout << "==================CHECK ELEMENTS=================== \n";
@@ -115,11 +59,11 @@ void CheckConfig::checkElements(std::string str)
 	{
 		if (str.find_first_of("{") != std::string::npos)
 		{
-			tmp = trimLine(str.substr(0, str.find_first_of("{")));
+			tmp = HelperClass::trimLine(str.substr(0, str.find_first_of("{")));
 			tmp = tmp.substr(0, tmp.find_first_of(" \t\n\0"));
 		}
 		else 
-			tmp = trimLine(str.substr(0,str.find_first_of(" \n\t")));	
+			tmp = HelperClass::trimLine(str.substr(0,str.find_first_of(" \n\t")));	
 		if (tmp != "server")
 			throw std::runtime_error("Missing server directive");
 	}
@@ -135,9 +79,9 @@ void CheckConfig::checkElements(std::string str)
 		pos = tmp.find_first_of('\n');
 		if (pos == std::string::npos)
 			break;
-		line = trimLine(tmp.substr(0, pos + 1));
+		line = HelperClass::trimLine(tmp.substr(0, pos + 1));
 		// std::cout << "==================LINE=================== \n" << line << std::endl;
-		if (!semiColonCheck(line))
+		if (!HelperClass::semiColonCheck(line))
 			throw std::runtime_error("Missing semicolon: " + line);
 		element = line.substr(0,line.find_first_of(" \t\n\0"));
 		// std::cout << "==================ELEMENT=================== \n" << element << std::endl;
@@ -151,7 +95,7 @@ void CheckConfig::bracketsCheck(std::string str)
 	std::string::size_type pos1, pos2;
 	std::string sub, serverStr, tmp;
 	size_t index = 0;
-	if (characterCounter(str, '{') != characterCounter(str, '}'))
+	if (HelperClass::characterCounter(str, '{') != HelperClass::characterCounter(str, '}'))
 		throw std::runtime_error("Unexpected end of file, expecting paranthesis");
 	while (true)
 	{
@@ -166,7 +110,7 @@ void CheckConfig::bracketsCheck(std::string str)
 		pos2 = tmp.find_first_of("}");
 		index += pos2 + 1;
 		sub = str.substr(pos1,  index - pos1);
-		if (characterCounter(sub,'{') == characterCounter(sub,'}'))
+		if (HelperClass::characterCounter(sub,'{') == HelperClass::characterCounter(sub,'}'))
 		{
 			serverStr = str.substr(0, index);
 			// std::cout << "==================SERVER STR=================== \n" << serverStr << std::endl;
@@ -188,48 +132,61 @@ std::string CheckConfig::fileHandler()
 	std::string line, trimedLine, destStr;
 	while (std::getline(this->confFile, line))
 	{
-		trimedLine = trimLine(line);
+		trimedLine = HelperClass::trimLine(line);
 		if (trimedLine.empty() || trimedLine[0] == '#')	
 			continue;
 		trimedLine += '\n';
 		destStr.append(trimedLine);
 	}
-	if (destStr.empty() || isJustCharacter(destStr, '\n') 
-		|| isJustCharacter(destStr, '\t') || isJustCharacter(destStr, ' ')) 
+	if (destStr.empty() || HelperClass::isJustCharacter(destStr, '\n') 
+		|| HelperClass::isJustCharacter(destStr, '\t') || HelperClass::isJustCharacter(destStr, ' ')) 
 		throw std::runtime_error("Empty file");
 	return destStr;
 }
 
+// bool checkMapKeyCount(std::vector<ServerConf>::iterator itServerValTmp, const std::map<std::string, int>::iterator& itServerMapKeyCount)
+// {
+// 	if (tServerMapKeyCount[])
+// }
 void CheckConfig::emptyValueCheck()
 {
-	//locationCount tum locationarı beraber alıyor hangi server için kaç tan locatin olduğunu bilmiyorum ona bakcam.
-	// etonun location valularını aldığı paramtereyi sayarak ulaşabilirim belki bakcam ona.
 	std::vector<ServerConf>::iterator itServerVal = this->serverConfVec.begin();
 	std::vector<std::map<std::string, int> >::iterator itServerKeyCount = this->serverKeyCount.begin();
-	
+	std::vector<std::map<std::string, int> > ::iterator itLocationKeyCount = this->locationKeyCount.begin();
+
+	size_t i = 0;
 	std::cout << "Size ServerCount: " << this->serverKeyCount.size()<< std::endl;
 	std::cout << "Size ServerConf: " << this->serverConfVec.size()<< std::endl;
 	std::cout << "Size LocationCount: " << this->locationKeyCount.size()<< std::endl;
+	std::cout << "SİZE: " <<  itServerVal->getLocations().size() << std::endl;
 	
 	while (itServerKeyCount != this->serverKeyCount.end() && itServerVal != this->serverConfVec.end())
 	{
+		i = 0;
 		std::map<std::string, int>::iterator itServerMap = itServerKeyCount->begin();
-		std::vector<std::map<std::string, int> > ::iterator itLocationCountKey = this->locationKeyCount.begin();
-		std::cout << "==================SERVER KEY=================== \n";
+		std::cout << "==================>SERVER KEY<=================== \n";
 		while (itServerMap != itServerKeyCount->end())
 		{
-			
 			std::cout << "first: " << itServerMap->first << " -> " << itServerMap->second << std::endl;
+			// if (itServerMap->second > 0 && checkMapKeyCount(itServerVal,itServerMap))
+			// {
+			// 	throw std::runtime_error("Key value can not be empty !" + itServerMap->first);
+			// }
+				
+			
 			itServerMap++;
 		}
-		// std::map<std::string, int>::iterator itLocationMap = itLocationCountKey->begin();
-		// while (itLocationMap != itLocationCountKey->end())
-		// {
-		// 	std::cout<< "first: " << itLocationMap->first << " -> " << itLocationMap->second << std::endl;
-		// 	itLocationMap++;
-		// }
-		// std::cout<< "first: " << itServerMap->first << " -> " << itServerMap->second << std::endl;
-		// itLocationCountKey++;		
+		while (i++ < itServerVal->getLocations().size())
+		{
+			std::cout << "=============== LOCATİON ===============\n";
+			std::map<std::string, int>::iterator itLocationMap = itLocationKeyCount->begin();
+			while (itLocationMap != itLocationKeyCount->end())
+			{
+				std::cout<< "first: " << itLocationMap->first << " -> " << itLocationMap->second << std::endl;
+				itLocationMap++;
+			}
+			itLocationKeyCount++;		
+		}
 		itServerKeyCount++;
 		itServerVal++;
 	}
@@ -247,7 +204,7 @@ void CheckConfig::checkConfig() {
 		bracketsCheck(this->fullText);
 		std::vector<std::string> tek = this->seperation();
 		this->serverConfVec =  this->createConfVec(tek);
-		checkValue();
+		// checkValue();
 		// this->printServerConfVec(this->serverConfVec);
 		std::cout << "==================SUCCESFULY FİNİSHED=================== \n";
 	}

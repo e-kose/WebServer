@@ -6,7 +6,7 @@
 /*   By: menasy <menasy@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/30 12:42:07 by menasy            #+#    #+#             */
-/*   Updated: 2025/05/03 00:35:03 by menasy           ###   ########.fr       */
+/*   Updated: 2025/05/04 18:46:40 by menasy           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,6 +15,7 @@
 # include "Tokenizer.hpp"
 # include "Tokenizer.hpp"
 # include <iostream>
+# include "HelperClass.hpp"
 class CheckConfig : public Tokenizer
 {
 	private:

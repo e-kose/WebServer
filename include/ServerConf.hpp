@@ -26,6 +26,7 @@ class ServerConf {
 		ServerConf(const ServerConf &other);
 		ServerConf &operator=(const ServerConf &other);
 		
+		
 		// GET Functions
 		int getPort() const;
 		size_t						getBodySize() const;
