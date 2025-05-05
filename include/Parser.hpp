@@ -9,8 +9,6 @@ class Parser {
 	protected:
 		std::string confKey[18];
 		std::vector<ServerConf> serverConfVec;
-		std::vector<std::map<std::string, int> > serverKeyCount;
-		std::vector<std::map<std::string, int> > locationKeyCount;
 	public:
 		Parser();
 		~Parser();
