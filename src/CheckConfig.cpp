@@ -6,7 +6,7 @@
 /*   By: menasy <menasy@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/30 12:42:10 by menasy            #+#    #+#             */
-/*   Updated: 2025/05/04 18:50:16 by menasy           ###   ########.fr       */
+/*   Updated: 2025/05/05 17:39:59 by menasy           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -135,6 +135,8 @@ std::string CheckConfig::fileHandler()
 		trimedLine = HelperClass::trimLine(line);
 		if (trimedLine.empty() || trimedLine[0] == '#')	
 			continue;
+		else if (trimedLine.find("#") != std::string::npos)
+			trimedLine = trimedLine.substr(0, trimedLine.find("#"));
 		trimedLine += '\n';
 		destStr.append(trimedLine);
 	}
@@ -144,10 +146,7 @@ std::string CheckConfig::fileHandler()
 	return destStr;
 }
 
-// bool checkMapKeyCount(std::vector<ServerConf>::iterator itServerValTmp, const std::map<std::string, int>::iterator& itServerMapKeyCount)
-// {
-// 	if (tServerMapKeyCount[])
-// }
+
 void CheckConfig::emptyValueCheck()
 {
 	std::vector<ServerConf>::iterator itServerVal = this->serverConfVec.begin();

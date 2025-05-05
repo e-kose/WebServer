@@ -38,6 +38,7 @@ LocationConf& LocationConf::operator=(const LocationConf& src) {
 LocationConf::~LocationConf() {
 }
 std::string LocationConf::getPath() const {
+
 	return this->path;
 }
 std::vector<std::string> LocationConf::getMethods() const {
@@ -71,47 +72,72 @@ std::vector<std::string> LocationConf::getIndex()const{
 	return this->index;
 }
 void LocationConf::setPath(std::string path) {
-	this->path = path;
+	std::string tmpValue = HelperClass::checkEmptyAndTrim(path, "Path");
+	this->path = tmpValue;
 }
-void LocationConf::setMethods(std::vector<std::string> methods) {
-	this->methods = methods;
+void LocationConf::setMethods(std::vector<std::string> methods) {//Kullanılmıyor
+
+	std::string tmpValue;
+	for (size_t i = 0; i < methods.size(); i++) {
+		tmpValue = HelperClass::checkEmptyAndTrim(methods[i], "Method");
+		if (tmpValue == "GET" || tmpValue == "POST" || tmpValue == "DELETE") {
+			this->methods.push_back(tmpValue);
+		} 
+		else
+			throw std::runtime_error("Invalid method"); 
+	}
 }
-void LocationConf::setAutoIndex(bool autoIndex) {
+void LocationConf::setAutoIndex(bool autoIndex) {// Bunun kontrolu alındığı yerde yapıldı
 	this->autoIndex = autoIndex;
 }
 void LocationConf::setUploadStore(std::string upload_store) {
-	this->upload_store = upload_store;
+	std::string tmpValue = HelperClass::checkEmptyAndTrim(upload_store, "Upload store");
+	this->upload_store = tmpValue;
 }
 void LocationConf::setRoot(std::string root) {
-	this->root = root;
+	std::string tmpValue = HelperClass::checkEmptyAndTrim(root, "Root");
+	this->root = tmpValue;
 }
 void LocationConf::setCgiExtension(std::string cgi_extension) {
-	this->cgi_extension = cgi_extension;
+	std::string tmpValue = HelperClass::checkEmptyAndTrim(cgi_extension, "Cgi extension");
+	this->cgi_extension = tmpValue;
 }
 void LocationConf::setCgiPath(std::string cgi_path) {
-	this->cgi_path = cgi_path;
+	std::string tmpValue = HelperClass::checkEmptyAndTrim(cgi_path, "Cgi path");
+	this->cgi_path = tmpValue;
 }
 void LocationConf::setCgiPass(std::string cgi_pass) {
-	this->cgi_pass = cgi_pass;
+	std::string tmpValue = HelperClass::checkEmptyAndTrim(cgi_pass, "Cgi pass");
+	this->cgi_pass = tmpValue;
 }
-void LocationConf::setTryFiles(std::vector<std::string> try_files) {
-	this->try_files = try_files;
+
+void LocationConf::addMethod(std::string method){ 
+	if (method == ";" && this->methods.size() != 0)
+		return;
+	std::string tmpValue = HelperClass::checkEmptyAndTrim(method, "Method");
+	if (tmpValue == "GET" || tmpValue == "POST" || tmpValue == "DELETE") {
+		this->methods.push_back(tmpValue);
+	} 
+	else
+		throw std::runtime_error("Invalid method");
 }
-void LocationConf::setReturn(std::map<int, std::string> link){
-	this->return_ = link;
+void LocationConf::addTryFiles(std::string file){ 
+	if (file == ";" && this->try_files.size() != 0)
+		return;
+	std::string tmpValue = HelperClass::checkEmptyAndTrim(file, "Try files");
+	this->try_files.push_back(tmpValue);
 }
-void LocationConf::setIndex(std::vector<std::string> index) {
-	this->index = index;
-}
-void LocationConf::addMethod(std::string method){
-	this->methods.push_back(method);
-}
-void LocationConf::addTryFiles(std::string file){
-	this->try_files.push_back(file);
-}
-void LocationConf::addIndex(std::string file){
-	this->index.push_back(file);
+void LocationConf::addIndex(std::string file){ 
+
+	if (file == ";" && this->index.size() != 0)
+		return;
+	std::string tmpValue = HelperClass::checkEmptyAndTrim(file, "Index");
+	this->index.push_back(tmpValue);
 }
 void LocationConf::addReturn(int code, std::string link){
-	this->return_[code] = link;
+
+	if (code < 100 || code > 599)
+		throw std::runtime_error("Invalid return code");
+	std::string tmpValue = HelperClass::checkEmptyAndTrim(link, "Return");
+	this->return_[code] = tmpValue;
 }

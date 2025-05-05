@@ -38,8 +38,11 @@ std::vector<std::string> Tokenizer::seperation(){
 				word.clear();
 			}
 			if (fullText[i] == '{' || fullText[i] == '}' || fullText[i] == ';')
+			{
 				text.push_back(std::string(1, fullText[i]));
+				text.push_back("\n");
 			}
+		}
 		else if (fullText[i] != '\n')
 			word.push_back(fullText[i]);
 	}
@@ -60,7 +63,9 @@ int Tokenizer::wordCounter(std::vector<std::string> vec, std::string searchWord)
 }
 
 bool stringToBool(const std::string& str) {
-    return (str == "on" || str == "1");
+	
+	std::string tmpValue = HelperClass::trimLine(str);
+    return (tmpValue == "on" || tmpValue == "1");
 }
 
 LocationConf Tokenizer::createLocConf(std::vector<std::string>::iterator& it, std::vector<std::string> & sepVec){
@@ -76,15 +81,20 @@ LocationConf Tokenizer::createLocConf(std::vector<std::string>::iterator& it, st
 		else if (*it == "cgi_ext" && it++ != end && ++confKeyCounter["cgi_ext"]) locConf.setCgiExtension(*it);
 		else if (*it == "upload_dir" && it++ != end && ++confKeyCounter["upload_dir"]) locConf.setUploadStore(*it);
 		else if (*it == "autoindex" && it++ != end && ++confKeyCounter["autoindex"]) locConf.setAutoIndex(stringToBool(*it));
-		else if (*it =="return" && it++ != end && ++confKeyCounter["return"]) locConf.addReturn(std::atoi(it->c_str()), *(++it));
+		else if (*it =="return" && it++ != end && ++confKeyCounter["return"])
+		{
+			int code = std::atoi(it->c_str());
+			locConf.addReturn(code,*(++it));
+		} 
+			
 		else if (*it == "try_files" && it++ != end && ++confKeyCounter["try_files"])
-			for( ; *it != ";" ; it++)
+			for( ; *it != "\n" ; it++)
 				locConf.addTryFiles(*it);
 		else if (*it == "index" && it++ != end && ++confKeyCounter["index"])
-			for( ; *it != ";" ; it++)
+			for( ; *it != "\n" ; it++)
 				locConf.addIndex(*it);
 		else if (*it == "methods" && it++ != end && ++confKeyCounter["methods"])
-			for( ; *it != ";" ; it++)
+			for( ; *it != "\n" ; it++)
 				locConf.addMethod(*it);
 	}
 	checkKeyCount(confKeyCounter);
@@ -123,17 +133,19 @@ std::vector<ServerConf> Tokenizer::createConfVec(std::vector<std::string>& sepVe
 				std::vector<int>			errorCode;
 				std::string					filePath;
 				std::vector<int>::iterator	codeIt;
-				for( ; *it != ";" ; it++){
+				for( ; *it != "\n" ; it++){
 					if (std::atoi(it->c_str()) != 0) errorCode.push_back(std::atoi(it->c_str()));
 					else 
 						for(codeIt = errorCode.begin() ; codeIt != errorCode.end() ; codeIt++)
 							serverVec[i].addErrorPage(*codeIt, *it);
 				}
+				if (errorCode.size() == 0)
+					serverVec[i].addErrorPage(0, *(it));
 			}
 			else if (*it == "server_name" && ++it != sepVec.end() && ++confKeyCounter["server_name"])
-				for(; *it != ";" ; it++) serverVec[i].addServerName(*it);
+				for(; *it != "\n" ; it++) serverVec[i].addServerName(*it);
 			else if (*it == "index" && ++it != sepVec.end() && ++confKeyCounter["index"])
-				for(; *it != ";" ; it++) serverVec[i].addIndex(*it);
+				for(; *it != "\n" ; it++) serverVec[i].addIndex(*it);
 			else if (*it == "root" && ++it != sepVec.end() && ++confKeyCounter["root"])
 				serverVec[i].setRoot(*it);
 			else if (*it == "access_log" && ++it != sepVec.end() && ++confKeyCounter["access_log"])

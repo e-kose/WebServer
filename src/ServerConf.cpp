@@ -31,20 +31,7 @@ ServerConf &ServerConf::operator=(const ServerConf &other) {
 }
 ServerConf::~ServerConf() {
 }
-static bool isJustCharacter(const std::string& str, char c)
-{
-	for (size_t i = 0; i < str.length(); i++)
-	{
-		if (str[i] != c)
-		{
-			if (str[i] == ' ' || str[i] == '\t' || str[i] == '\n')
-				continue;
-			else
-				return false;
-		}
-	}
-	return true;
-}
+
 std::string ServerConf::getIp() const {
 	return this->ip;
 }
@@ -75,52 +62,61 @@ std::string ServerConf::getErrorLog()const{
 std::string ServerConf::getAccesLog()const{
 	return this->access_log;
 }
-void ServerConf::setIp(std::string ip) {
-
-	std::cout << "IP: " << ip << std::endl;
-	this->ip = ip;
+void ServerConf::setIp(std::string ip) 
+{
+	std::string tmpValue = HelperClass::trimLine(ip);
+	if (tmpValue == "localhost")
+		tmpValue = "127.0.0.1";
+	this->ip = tmpValue;
 }
-void ServerConf::setPort(int port) {
-	std::cout << "PORT: " << port << std::endl;
+void ServerConf::setPort(int port) 
+{
+	if (port < 0 || port > 65535)
+		throw std::runtime_error("Invalid port number");
 	this->port = port;
 }
 void ServerConf::setRoot(std::string root) {
-	std::cout << "ROOT: " << root << std::endl; 
-	this->root = root;
+	std::string tmpValue = HelperClass::checkEmptyAndTrim(root, "Root");
+	this->root = tmpValue;
 }
-void ServerConf::setServerName(std::vector<std::string>& server_name) {
-	
-	this->server_name = server_name;
-}
-void ServerConf::setIndex(std::vector<std::string> index) {
-	this->index = index;
-}
+
+
 void ServerConf::setBodySize(size_t body_size) {
-	std::cout << "BODY SIZE: " << body_size << std::endl;
+	if (body_size <= 0)
+		throw std::runtime_error("Invalid body size");
 	this->body_size = body_size;
-}
-void ServerConf::setErrorPages(std::map<int, std::string>& error_pages) {
-	this->error_pages = error_pages;
-}
-void ServerConf::setLocations(std::vector<LocationConf>& locations) {
-	this->locations = locations;
 }
 
 void ServerConf::addLocation(LocationConf& location) {
 	this->locations.push_back(location);
 }
 void ServerConf::addErrorPage(int code, std::string page) {
-	this->error_pages[code] = page;
+	if (code < 100 || code > 599)
+		throw std::runtime_error("Invalid error code");
+	if (page == ";" && this->error_pages.size() != 0 && this->error_pages[code] != "")
+		return;
+	std::string tmpValue = HelperClass::checkEmptyAndTrim(page, "Error page");
+	this->error_pages[code] = tmpValue;
 }
 void ServerConf::addServerName(std::string name){
-	this->server_name.push_back(name);
+	if (name == ";" && this->server_name.size() != 0)
+		return;
+	std::string tmpValue = HelperClass::checkEmptyAndTrim(name, "Server name");
+	this->server_name.push_back(tmpValue);
 }
 void ServerConf::addIndex(std::string index){
-	this->index.push_back(index);
+	if (index == ";" && this->index.size() != 0)
+		return;
+	std::string tmpValue = HelperClass::checkEmptyAndTrim(index, "Index");
+	this->index.push_back(tmpValue);
 }
 void ServerConf::setErrorLog(std::string logFile){
-	this->error_log = logFile;
+	std::string tmpValue = HelperClass::checkEmptyAndTrim(logFile, "Error log");
+	this->error_log = tmpValue;
 }
 void ServerConf::setAccesLog(std::string logFile){
-	this->access_log = logFile;
+	std::string tmpValue = HelperClass::checkEmptyAndTrim(logFile, "Access log");
+	this->access_log = tmpValue;
 }
+
+

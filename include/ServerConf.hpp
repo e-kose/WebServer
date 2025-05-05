@@ -3,6 +3,7 @@
 #include <iostream>
 #include <vector>
 #include "../include/LocationConf.hpp"
+#include "../include/HelperClass.hpp"
 #include <map>
 #include <string>
 
@@ -54,4 +55,6 @@ class ServerConf {
 		void						addErrorPage(int code, std::string page);
 		void						addServerName(std::string name);
 		void						addIndex(std::string);
+
+		
 };

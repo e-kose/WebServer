@@ -6,6 +6,7 @@
 #include "ServerConf.hpp"
 #include <cstdlib>
 #include "Parser.hpp"
+#include "HelperClass.hpp"
 
 
 class Tokenizer : public Parser{

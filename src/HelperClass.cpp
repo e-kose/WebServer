@@ -65,3 +65,34 @@ std::string HelperClass::trimLine(const std::string& str) {
 	std::string::size_type end = str.find_last_not_of(" \t\n");
 	return str.substr(start, end - start + 1);
 }
+
+std::vector<std::string> HelperClass::splitString(const std::string& str, char c)
+{
+	std::vector<std::string> result;
+	std::string::size_type start = 0;
+	std::string::size_type end = str.find(c);
+
+	while (end != std::string::npos) {
+		result.push_back(trimLine(str.substr(start, end - start)));
+		start = end + 1;
+		end = str.find(c, start);
+	}
+	result.push_back(str.substr(start));
+
+	return result;
+}
+std::string HelperClass::checkEmptyAndTrim(std::string& value, std::string errCode)
+{
+	std::string trimmedValue = trimLine(value);
+	if (trimmedValue.empty() || isJustCharacter(trimmedValue, ';'))
+		throw std::runtime_error(errCode + ": Value can not be empty");
+	return trimmedValue;
+}
+
+void HelperClass::printVector(const std::vector<std::string>& vec)
+{
+	for (size_t i = 0; i < vec.size(); i++)
+	{
+		std::cout << "vec[" << i << "] = " << vec[i] << std::endl;
+	}
+}
