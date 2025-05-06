@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   HelperClass.hpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: menasy <menasy@student.42.fr>              +#+  +:+       +#+        */
+/*   By: ekose <ekose@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/04 18:10:20 by menasy            #+#    #+#             */
-/*   Updated: 2025/05/05 16:42:57 by menasy           ###   ########.fr       */
+/*   Updated: 2025/05/06 14:56:19 by ekose            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,6 +17,7 @@
 #include <vector>
 #include <map>
 #include <iterator>
+#include <fstream>
 
 class HelperClass
 {
@@ -33,6 +34,6 @@ class HelperClass
 		static std::vector<std::string> splitString(const std::string& str, char c);
 		static std::string checkEmptyAndTrim(std::string& value, std::string errorMsg);
 		static void printVector(const std::vector<std::string>& vec);
-
+		static void	writeToFile(std::string, std::string);
 
 };

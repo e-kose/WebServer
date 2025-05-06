@@ -96,3 +96,21 @@ void HelperClass::printVector(const std::vector<std::string>& vec)
 		std::cout << "vec[" << i << "] = " << vec[i] << std::endl;
 	}
 }
+
+void	HelperClass::writeToFile(std::string fileName, std::string message)
+{
+	std::ofstream ofs;
+	ofs.open(fileName.c_str(), std::ofstream::out | std::ios_base::app);
+	std::time_t now = std::time(NULL);
+    std::string timeStr = std::ctime(&now); // Zamanı string'e çevir
+    timeStr.erase(timeStr.length() - 1);  
+	if (ofs.is_open())
+	{
+		ofs << "["<< timeStr << "] " << message << std::endl;
+		ofs.close();
+	}
+	else
+		std::cerr << "["<< timeStr << "] "<< "Error opening file: " << fileName << std::endl;
+
+
+}

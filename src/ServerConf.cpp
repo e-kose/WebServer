@@ -8,9 +8,10 @@ ServerConf::ServerConf():
 	index(),
 	body_size(0),
 	error_pages(),
-	locations()
-{
-}
+	locations(),
+	access_log(""),
+	error_log("")
+{}
 ServerConf::ServerConf(const ServerConf &other) {
 	*this = other;
 }
@@ -22,11 +23,13 @@ ServerConf &ServerConf::operator=(const ServerConf &other) {
 	this->ip = other.ip;
 	this->port = other.port;
 	this->root = other.root;
+	this->access_log = other.access_log;
+	this->error_log = other.error_log;
+	this->error_pages = other.error_pages;
+	this->locations = other.locations;
 	this->server_name = other.server_name;
 	this->index = other.index;
 	this->body_size = other.body_size;
-	this->error_pages = other.error_pages;
-	this->locations = other.locations;
 	return *this;
 }
 ServerConf::~ServerConf() {
@@ -59,7 +62,7 @@ std::vector<LocationConf> ServerConf::getLocations() const {
 std::string ServerConf::getErrorLog()const{
 	return this->error_log;
 }
-std::string ServerConf::getAccesLog()const{
+std::string ServerConf::getAccessLog()const{
 	return this->access_log;
 }
 void ServerConf::setIp(std::string ip) 

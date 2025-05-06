@@ -34,7 +34,7 @@ class ServerConf {
 		std::string					getIp() const;
 		std::string					getRoot() const;
 		std::string					getErrorLog()const;
-		std::string					getAccesLog()const;
+		std::string					getAccessLog()const;
 		std::vector<std::string>	getIndex() const;
 		std::vector<std::string>	getServerName() const;
 		std::vector<LocationConf>	getLocations() const;
