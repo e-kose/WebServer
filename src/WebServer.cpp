@@ -3,23 +3,16 @@
 /*                                                        :::      ::::::::   */
 /*   WebServer.cpp                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: menasy <menasy@student.42.fr>              +#+  +:+       +#+        */
+/*   By: ekose <ekose@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/02 15:50:42 by menasy            #+#    #+#             */
-/*   Updated: 2025/05/05 18:29:23 by menasy           ###   ########.fr       */
+/*   Updated: 2025/05/06 17:20:49 by ekose            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../include/WebServer.hpp"
 
-
-WebServer::WebServer() 
-{
-	initSocket();
-	runServer();
-}
-
-WebServer::WebServer(std::vector<ServerConf>& serverConfVec) : serverConfVec(serverConfVec) 
+WebServer::WebServer(std::vector<ServerConf>& serverConfVec) : serverConfVec(serverConfVec)
 {
 	initSocket();
 	runServer();
@@ -38,13 +31,30 @@ WebServer &WebServer::operator=(const WebServer &other)
 WebServer::~WebServer()
 {
 	for (std::map<int, ServerConf>::iterator it = socketMap.begin(); it != socketMap.end(); ++it)
-	close(it->first);
+		close(it->first);
+	for (std::vector<pollfd>::iterator it = pollVec.begin(); it != pollVec.end(); ++it)
+		close(it->fd);
 }
 
 void	WebServer::setNonBlocking(int fd)
 {
 	// BAKALIM BUNA
 	fcntl(fd, F_SETFL, fcntl(fd, F_GETFL) | O_NONBLOCK);
+}
+
+void 	WebServer::closeCliSocket(int fd)
+{
+	if (fd >= 0)
+	{
+		for (std::vector<pollfd>::iterator it = pollVec.begin(); it != pollVec.end(); it++)
+		{
+			if (it->fd == fd)
+			{
+				pollVec.erase(it); 
+				break;
+			}
+		}
+	}
 }
 
 bool	WebServer::isExistIpAndPort(const std::string& ip, int port)
@@ -59,18 +69,47 @@ bool	WebServer::isExistIpAndPort(const std::string& ip, int port)
 	return false;
 }
 
+void	WebServer::pollfdVecCreat()
+{
+	std::map<int, ServerConf>::iterator socketIt = this->socketMap.begin();
+	
+	for (; socketIt != this->socketMap.end(); socketIt++)
+	{
+		pollfd fd = {socketIt->first, (POLLIN | POLLOUT | POLLERR), 0};
+		pollVec.push_back(fd);
+	}	
+}
+
+std::string WebServer::socketInfo(int sockfd)
+{
+	std::ostringstream oss;
+	sockaddr_in addr;
+	socklen_t addrlen = sizeof(addr);
+	if (getpeername(sockfd, (sockaddr*)&addr, &addrlen) == -1)
+	{
+		oss << "Error getting socket info: " << strerror(errno);
+		close(sockfd);
+		return "";
+	}
+	oss << "Socket info: " << inet_ntoa(addr.sin_addr) << ":" << ntohs(addr.sin_port);
+	return oss.str();
+}
+
 void	WebServer::initSocket()
 {
-	for (int i = 0; i < this->serverConfVec.size(); i++){
+	for (int i = 0; i < this->serverConfVec.size(); i++)
+	{
 		sockaddr_in hint;
 		int sockfd;
 		int opt = 1;
 		int inetPtnStatus;
 		ServerConf& conf = serverConfVec[i];
+		std::ostringstream oss;
+		oss << conf.getPort();
 		
 		if (isExistIpAndPort(conf.getIp(), conf.getPort()))
 		{
-			std::cerr << "Duplicate IP and Port in configuration: " << conf.getIp() << ":" << conf.getPort() << std::endl;
+			HelperClass::writeToFile(conf.getErrorLog(), "Duplicate IP and Port in configuration: " + conf.getIp() + ":" + oss.str());
 			continue;
 		}
 		if ((sockfd = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP)) < 0)
@@ -87,85 +126,70 @@ void	WebServer::initSocket()
 			throw std::runtime_error("Inet_pton Failed");
 		if (bind(sockfd, (sockaddr*)&hint, sizeof(hint)) == -1){
 			if (errno == EADDRINUSE)
-				std::cerr << "Port in use: " << conf.getIp() << ":" << conf.getPort() << std::endl;
+				HelperClass::writeToFile(conf.getErrorLog(), "Port in use: " + conf.getIp()+ ":" + oss.str());
 			else
-				perror("Bind");
+				HelperClass::writeToFile(conf.getErrorLog(), "Bind error: " + std::string(strerror(errno)));
 			close(sockfd);
 			continue;
 		}
 		if (listen(sockfd, SOMAXCONN) == -1)
-		{
-			std::ostringstream oss;
-			oss << "Listen failed on socket for " << conf.getIp() << ":" << conf.getPort();
-			throw std::runtime_error(oss.str());
-		}
+			throw std::runtime_error("Listen failed on socket for " + conf.getIp() + ":" + oss.str());
 		this->socketMap[sockfd] = (this->serverConfVec[i]);
 	}
-	std::cout << "------> " << serverConfVec.size()<< std::endl;
 }
 
+void	WebServer::pollInEvent(pollfd& pollStruct)
+{
+	std::map<int, ServerConf>::iterator socketIt;
+	// Yeni client mi geldi kontrol etmek için
+	ServerConf* match = NULL;
+	for (socketIt = socketMap.begin(); socketIt != socketMap.end(); socketIt++)
+	{
+		if (socketIt->first == pollStruct.fd)
+		{
+			match = &socketIt->second; 
+			break;
+		}
+	}
+	// Yeni Clientten veri Geldi İse
+	if (match)
+	{
+		int	clientSock = accept(pollStruct.fd, NULL, NULL);
+		if (clientSock < 0)
+			return HelperClass::writeToFile(match->getErrorLog(), "Connection Refused");
+		this->setNonBlocking(clientSock);
+		pollfd clientFd = {clientSock, (POLLIN | POLLOUT | POLLERR), 0};
+		pollVec.push_back(clientFd);
+		this->clientToServerMap[clientFd.fd] = match;
+		HelperClass::writeToFile(match->getAccessLog(), "New connection from client: " + socketInfo(clientSock));
+	}
+	// Mevcut clientten veri geldi ise
+	else
+	{
+		char buffer[1024] = {};
+		int readByte = recv(pollStruct.fd, buffer, sizeof(buffer), 0);
+		if (readByte <= 0)
+		{
+			std::cout << "Client ayrıldı\n";
+			this->closeCliSocket(pollStruct.fd);
+		}
+		else
+			std::cout << buffer << std::endl;
+	}
+}
 
 void	WebServer::runServer()
 {
-	std::vector<pollfd> pollVec;
-	std::map<int, ServerConf>::iterator socketIt = this->socketMap.begin();
-	
-	for (; socketIt != this->socketMap.end(); socketIt++)
-	{
-		pollfd fd = {socketIt->first, (POLLIN | POLLOUT | POLLERR), 0};
-		pollVec.push_back(fd);
-	}
-
+	this->pollfdVecCreat();
 	while (true)
 	{
 		int result = poll(pollVec.data(), pollVec.size(), -1);
 		if (result < 0)
 			throw std::runtime_error("poll() error. Terminating server.");
-		
 		for (int i = 0; i < pollVec.size(); i++)
 		{
 			if (pollVec[i].revents & POLLIN)
-			{
-				// Yeni client mi geldi kontrol etmek için
-				ServerConf* match = NULL;
-				for (socketIt = socketMap.begin(); socketIt != socketMap.end(); socketIt++)
-				{
-					if (socketIt->first == pollVec[i].fd)
-					{
-						match = &socketIt->second; 
-						break;
-					}
-				}
-				// Yeni Clientten veri Geldi İse
-				if (match)
-				{
-					int	clientSock = accept(pollVec[i].fd, NULL, NULL);
-					if (clientSock < 0)
-						throw std::runtime_error("Socket Not Create");
-					this->setNonBlocking(clientSock);
-					pollfd clientFd = {clientSock, (POLLIN | POLLOUT | POLLERR), 0};
-					pollVec.push_back(clientFd);
-					this->clientToServerMap[clientFd.fd] = match;
-					//////////////////////|| ACCES LOG EKLENEBİLİR||////////////////////////
-					std::cout << "New connection arrived " << clientSock << std::endl;
-				}
-				// Mevcut clientten veri geldi ise
-				else
-				{
-					std::cout << this->clientToServerMap[pollVec[i].fd]->getIndex()[0]<<std::endl;
-					char buffer[1024] = {};
-					int readByte = recv(pollVec[i].fd, buffer, sizeof(buffer), 0);
-					if (readByte < 0)
-					{
-						std::cout << "Client ayrıldı\n";
-						close(pollVec[i].fd);
-						pollVec.erase(pollVec.begin() + i);
-						i--;
-					}
-					else
-						std::cout << buffer << std::endl;
-				}
-			}
+				this->pollInEvent(pollVec[i]);
 		}
 	}
 	

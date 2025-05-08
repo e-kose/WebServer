@@ -6,7 +6,7 @@
 /*   By: menasy <menasy@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/30 12:42:10 by menasy            #+#    #+#             */
-/*   Updated: 2025/05/06 15:43:00 by menasy           ###   ########.fr       */
+/*   Updated: 2025/05/08 12:37:53 by menasy           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -159,7 +159,6 @@ void CheckConfig::checkConfig() {
 		std::vector<std::string> tek = this->seperation();
 		this->serverConfVec =  this->createConfVec(tek);
 		std::cout << "==================SUCCESFULY FİNİSHED=================== \n";
-
 		WebServer web(serverConfVec);
 	}
 	catch(const std::exception& e)
