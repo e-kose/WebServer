@@ -54,7 +54,7 @@ class ServerConf {
 		void						addLocation(LocationConf& location);
 		void						addErrorPage(int code, std::string page);
 		void						addServerName(std::string name);
-		void						addIndex(std::string);
+		void						addIndex(std::string);		
 
 		
 };

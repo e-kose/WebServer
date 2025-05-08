@@ -58,11 +58,22 @@ bool	HelperClass::semiColonCheck(const std::string& str)
 	return true;
 }
 
-std::string HelperClass::trimLine(const std::string& str) {
+std::string HelperClass::trimLine(const std::string& str) 
+{
+	
 	std::string::size_type start = str.find_first_not_of(" \t\n");
 	if (start == std::string::npos)
 		return "";
 	std::string::size_type end = str.find_last_not_of(" \t\n");
+	return str.substr(start, end - start + 1);
+}
+
+std::string HelperClass::trimWithCharacter(const std::string& str, std::string characters)
+{
+	std::string::size_type start = str.find_first_not_of(characters);
+	if (start == std::string::npos)
+		return "";
+	std::string::size_type end = str.find_last_not_of(characters);
 	return str.substr(start, end - start + 1);
 }
 
@@ -111,6 +122,15 @@ void	HelperClass::writeToFile(std::string fileName, std::string message)
 	}
 	else
 		std::cerr << "["<< timeStr << "] "<< "Error opening file: " << fileName << std::endl;
+}
 
 
+std::string HelperClass::createAndMove(std::string& str, std::string character)
+{
+	std::string dest;
+	std::string::size_type pos;
+	pos = str.find_first_of(character.c_str());
+	dest = str.substr(0, pos);
+	str = str.substr(pos + 1,str.length());
+	return dest;
 }

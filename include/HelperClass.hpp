@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   HelperClass.hpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ekose <ekose@student.42.fr>                +#+  +:+       +#+        */
+/*   By: menasy <menasy@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/04 18:10:20 by menasy            #+#    #+#             */
-/*   Updated: 2025/05/06 14:56:19 by ekose            ###   ########.fr       */
+/*   Updated: 2025/05/08 19:04:11 by menasy           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,6 +28,7 @@ class HelperClass
 		~HelperClass();
 	public:
 		static std::string trimLine(const std::string& str);
+		static std::string trimWithCharacter(const std::string& str, std::string characters);
 		static bool	semiColonCheck(const std::string& str);
 		static bool isJustCharacter(const std::string& str, char c);
 		static size_t characterCounter(const std::string& str, char c);
@@ -35,5 +36,7 @@ class HelperClass
 		static std::string checkEmptyAndTrim(std::string& value, std::string errorMsg);
 		static void printVector(const std::vector<std::string>& vec);
 		static void	writeToFile(std::string, std::string);
+		static std::string createAndMove(std::string& str, std::string character);
+
 
 };

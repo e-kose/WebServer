@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   WebServer.cpp                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ekose <ekose@student.42.fr>                +#+  +:+       +#+        */
+/*   By: menasy <menasy@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/02 15:50:42 by menasy            #+#    #+#             */
-/*   Updated: 2025/05/06 17:20:49 by ekose            ###   ########.fr       */
+/*   Updated: 2025/05/08 20:37:58 by menasy           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -138,8 +138,9 @@ void	WebServer::initSocket()
 	}
 }
 
-void	WebServer::pollInEvent(pollfd& pollStruct)
+HttpRequest*	WebServer::pollInEvent(pollfd& pollStruct)
 {
+	HttpRequest* httpRequest = NULL;
 	std::map<int, ServerConf>::iterator socketIt;
 	// Yeni client mi geldi kontrol etmek için
 	ServerConf* match = NULL;
@@ -156,7 +157,10 @@ void	WebServer::pollInEvent(pollfd& pollStruct)
 	{
 		int	clientSock = accept(pollStruct.fd, NULL, NULL);
 		if (clientSock < 0)
-			return HelperClass::writeToFile(match->getErrorLog(), "Connection Refused");
+		{
+			HelperClass::writeToFile(match->getErrorLog(), "Connection Refused");
+			return NULL;
+		}
 		this->setNonBlocking(clientSock);
 		pollfd clientFd = {clientSock, (POLLIN | POLLOUT | POLLERR), 0};
 		pollVec.push_back(clientFd);
@@ -174,12 +178,29 @@ void	WebServer::pollInEvent(pollfd& pollStruct)
 			this->closeCliSocket(pollStruct.fd);
 		}
 		else
-			std::cout << buffer << std::endl;
+		{
+			httpRequest = this->parseRecv(std::string(buffer));
+		}
 	}
+	return httpRequest;
+}
+
+// void	WebServer::pollOutEvent(pollfd& pollStruct)
+// {
+	
+// }
+
+HttpRequest* WebServer::parseRecv(const std::string& request)
+{
+	HttpRequest* httpRequest = new HttpRequest();
+	httpRequest->parseRequest(request);
+	return httpRequest;
+	
 }
 
 void	WebServer::runServer()
 {
+	HttpRequest* httpRequest = NULL;
 	this->pollfdVecCreat();
 	while (true)
 	{
@@ -189,7 +210,14 @@ void	WebServer::runServer()
 		for (int i = 0; i < pollVec.size(); i++)
 		{
 			if (pollVec[i].revents & POLLIN)
-				this->pollInEvent(pollVec[i]);
+				httpRequest = this->pollInEvent(pollVec[i]);
+			// std::cout << "BOOOODDDDY\n" << httpRequest->getBody() << std::endl;
+			// if (pollVec[i].revents & POLLOUT)
+			// {
+			// 	std::cout << "POLL OUT EVENT" << std::endl;
+			// 	// Handle POLLOUT event here
+			// }
+			
 		}
 	}
 	

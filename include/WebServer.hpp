@@ -6,7 +6,7 @@
 /*   By: menasy <menasy@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/02 15:40:04 by menasy            #+#    #+#             */
-/*   Updated: 2025/05/08 12:36:48 by menasy           ###   ########.fr       */
+/*   Updated: 2025/05/08 16:58:30 by menasy           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,6 +21,7 @@
 #include <arpa/inet.h>
 #include "ServerConf.hpp"
 #include "HelperClass.hpp"
+#include "HttpRequest.hpp"
 #include <fcntl.h>
 #include <poll.h>
 #include <errno.h>
@@ -37,9 +38,11 @@ class WebServer {
 		std::map<int, ServerConf>		socketMap;
 		std::map<int, ServerConf*>		clientToServerMap;
 		void							pollfdVecCreat();
-		void							pollInEvent(pollfd&);
+		HttpRequest*					pollInEvent(pollfd&);
 		std::string						socketInfo(int);
 		void							closeCliSocket(int);
+		void							pollOutEvent(pollfd& pollStruct);
+
 	public:
 		WebServer(std::vector<ServerConf>& serverConfVec);
 		WebServer(const WebServer &other);
@@ -50,4 +53,6 @@ class WebServer {
 		void	initSocket();
 		bool	isExistIpAndPort(const std::string&, int);
 		void	runServer();
+		HttpRequest* parseRecv(const std::string& request);
+
 };
