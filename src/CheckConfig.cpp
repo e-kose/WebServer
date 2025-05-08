@@ -6,7 +6,7 @@
 /*   By: menasy <menasy@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/30 12:42:10 by menasy            #+#    #+#             */
-/*   Updated: 2025/05/05 18:23:37 by menasy           ###   ########.fr       */
+/*   Updated: 2025/05/06 15:43:00 by menasy           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -113,7 +113,6 @@ void CheckConfig::bracketsCheck(std::string str)
 		if (HelperClass::characterCounter(sub,'{') == HelperClass::characterCounter(sub,'}'))
 		{
 			serverStr = str.substr(0, index);
-			// std::cout << "==================SERVER STR=================== \n" << serverStr << std::endl;
 			checkElements(serverStr);
 			str = str.substr(serverStr.length(), str.length());
 			this->inServer = false;
@@ -126,11 +125,12 @@ void CheckConfig::bracketsCheck(std::string str)
 
 std::string CheckConfig::fileHandler() 
 {
-	this->confFile.open(this->fileName.c_str());
-	if (!this->confFile.is_open())
+	std::ifstream confFile;
+	confFile.open(this->fileName.c_str());
+	if (!confFile.is_open())
 		throw std::runtime_error("No such file or directory");
 	std::string line, trimedLine, destStr;
-	while (std::getline(this->confFile, line))
+	while (std::getline(confFile, line))
 	{
 		trimedLine = HelperClass::trimLine(line);
 		if (trimedLine.empty() || trimedLine[0] == '#')	
@@ -143,6 +143,7 @@ std::string CheckConfig::fileHandler()
 	if (destStr.empty() || HelperClass::isJustCharacter(destStr, '\n') 
 		|| HelperClass::isJustCharacter(destStr, '\t') || HelperClass::isJustCharacter(destStr, ' ')) 
 		throw std::runtime_error("Empty file");
+	confFile.close();
 	return destStr;
 }
 
