@@ -6,7 +6,7 @@
 /*   By: menasy <menasy@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/02 15:50:42 by menasy            #+#    #+#             */
-/*   Updated: 2025/05/09 17:21:55 by menasy           ###   ########.fr       */
+/*   Updated: 2025/05/09 17:44:14 by menasy           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,7 +30,7 @@ WebServer &WebServer::operator=(const WebServer &other)
 
 WebServer::~WebServer()
 {
-	for (std::map<int, ServerConf>::iterator it = socketMap.begin(); it != socketMap.end(); ++it)
+	for (std::map<int, std::vector<ServerConf> >::iterator it = socketMap.begin(); it != socketMap.end(); ++it)
 		close(it->first);
 	for (std::vector<pollfd>::iterator it = pollVec.begin(); it != pollVec.end(); ++it)
 		close(it->fd);
@@ -57,13 +57,16 @@ void 	WebServer::closeCliSocket(int fd)
 	}
 }
 
-bool	WebServer::isExistIpAndPort(const std::string& ip, int port)
+bool	WebServer::isExistIpAndPort(ServerConf& conf)
 {
-	std::map<int,ServerConf>::iterator it;
+	std::map<int,std::vector<ServerConf> >::iterator it;
 	it = this->socketMap.begin();
 	while(it != this->socketMap.end()){
-		if (it->second.getIp() == ip && it->second.getPort() == port)
+		if (it->second[0].getIp() == conf.getIp() && it->second[0].getPort() == conf.getPort())
+		{
+			it->second.push_back(conf);
 			return true;
+		}
 		it++;
 	}
 	return false;
@@ -71,7 +74,7 @@ bool	WebServer::isExistIpAndPort(const std::string& ip, int port)
 
 void	WebServer::pollfdVecCreat()
 {
-	std::map<int, ServerConf>::iterator socketIt = this->socketMap.begin();
+	std::map<int, std::vector<ServerConf> >::iterator socketIt = this->socketMap.begin();
 	
 	for (; socketIt != this->socketMap.end(); socketIt++)
 	{
@@ -80,19 +83,33 @@ void	WebServer::pollfdVecCreat()
 	}	
 }
 
-std::string WebServer::socketInfo(int sockfd)
+std::string WebServer::socketInfo(sockaddr_in& addr, int clientSock)
 {
 	std::ostringstream oss;
-	sockaddr_in addr;
-	socklen_t addrlen = sizeof(addr);
-	if (getpeername(sockfd, (sockaddr*)&addr, &addrlen) == -1)
-	{
-		oss << "Error getting socket info: " << strerror(errno);
-		close(sockfd);
-		return "";
-	}
+	sockaddr_in hint;
+	socklen_t addrlen = sizeof(hint);
 	oss << "Socket info: " << inet_ntoa(addr.sin_addr) << ":" << ntohs(addr.sin_port);
+	if (getsockname(clientSock, (sockaddr*)&hint, &addrlen) == -1)
+	{
+		oss << "Error getting socket name: " << strerror(errno);
+		return oss.str();
+	}
+	oss << " -> " << inet_ntoa(hint.sin_addr) << ":" << ntohs(hint.sin_port);
 	return oss.str();
+}
+
+ServerConf& WebServer::searchServerConf(std::vector<ServerConf>& confVec, std::string& serverName)
+{
+	for (size_t i = 0; i < confVec.size(); i++)
+	{
+		std::vector<std::string> serverNames = confVec[i].getServerName();
+		for (size_t j = 0; j < serverNames.size(); j++)
+		{
+			if (serverNames[j] == serverName)
+				return confVec[i];
+		}
+	}
+	return confVec[0];
 }
 
 void	WebServer::initSocket()
@@ -107,7 +124,7 @@ void	WebServer::initSocket()
 		std::ostringstream oss;
 		oss << conf.getPort();
 		
-		if (isExistIpAndPort(conf.getIp(), conf.getPort()))
+		if (isExistIpAndPort(conf))
 		{
 			HelperClass::writeToFile(conf.getErrorLog(), "Duplicate IP and Port in configuration: " + conf.getIp() + ":" + oss.str());
 			continue;
@@ -134,41 +151,42 @@ void	WebServer::initSocket()
 		}
 		if (listen(sockfd, SOMAXCONN) == -1)
 			throw std::runtime_error("Listen failed on socket for " + conf.getIp() + ":" + oss.str());
-		this->socketMap[sockfd] = (this->serverConfVec[i]);
+		this->socketMap[sockfd].push_back(this->serverConfVec[i]);
 	}
 }
 
 HttpRequest*	WebServer::pollInEvent(pollfd& pollStruct)
 {
+	int check = 0;
 	HttpRequest* httpRequest = NULL;
-	std::map<int, ServerConf>::iterator socketIt;
+	std::map<int, std::vector<ServerConf> >::iterator socketIt;
 	// Yeni client mi geldi kontrol etmek için
-	ServerConf* match = NULL;
 	for (socketIt = socketMap.begin(); socketIt != socketMap.end(); socketIt++)
 	{
+		// Yeni Clientten veri Geldi İse
 		if (socketIt->first == pollStruct.fd)
 		{
-			match = &socketIt->second; 
+			sockaddr_in addr;
+			socklen_t addrlen = sizeof(addr);
+			int	clientSock = accept(pollStruct.fd, (sockaddr*)&addr, &addrlen);
+			if (clientSock < 0)
+			{
+				for (int j = 0; j < socketIt->second.size(); j++)
+				{
+					if (socketIt->second[j].getPort() == ntohs(addr.sin_port))
+						HelperClass::writeToFile(socketIt->second[j].getErrorLog(), "Accept error: " + std::string(strerror(errno)));
+				}
+				return NULL;
+			}
+			this->setNonBlocking(clientSock);
+			pollfd clientFd = {clientSock, (POLLIN | POLLOUT | POLLERR), 0};
+			pollVec.push_back(clientFd);
+			check = 1;
 			break;
 		}
 	}
-	// Yeni Clientten veri Geldi İse
-	if (match)
-	{
-		int	clientSock = accept(pollStruct.fd, NULL, NULL);
-		if (clientSock < 0)
-		{
-			HelperClass::writeToFile(match->getErrorLog(), "Connection Refused");
-			return NULL;
-		}
-		this->setNonBlocking(clientSock);
-		pollfd clientFd = {clientSock, (POLLIN | POLLOUT | POLLERR), 0};
-		pollVec.push_back(clientFd);
-		this->clientToServerMap[clientFd.fd] = match;
-		HelperClass::writeToFile(match->getAccessLog(), "New connection from client: " + socketInfo(clientSock));
-	}
 	// Mevcut clientten veri geldi ise
-	else
+	if (check == 0)
 	{
 		char buffer[1024] = {};
 		int readByte = recv(pollStruct.fd, buffer, sizeof(buffer), 0);
@@ -179,8 +197,9 @@ HttpRequest*	WebServer::pollInEvent(pollfd& pollStruct)
 		}
 		else
 		{
-			std::cout << "//////////// ELSE ///////////\n";
 			httpRequest = this->parseRecv(std::string(buffer));
+			// this->clientToServerMap[pollStruct.fd] = &this->searchServerConf(serverConfVec, httpRequest->getHeaders()[0]["Host"]);
+			std::cout << "fd : " << pollStruct.fd << std::endl;
 		}
 	}
 	return httpRequest;

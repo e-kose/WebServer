@@ -118,7 +118,8 @@
     "utility": "cpp",
     "numbers": "cpp",
     "sstream": "cpp",
-    "__hash_table": "cpp"
+    "__hash_table": "cpp",
+    "__config": "cpp"
   },
   "C_Cpp.codeAnalysis.clangTidy.enabled": true,
   "C_Cpp.codeAnalysis.clangTidy.checks": "unused-*,-unused-exception-parameter"
