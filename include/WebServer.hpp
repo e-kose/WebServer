@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   WebServer.hpp                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: menasy <menasy@student.42.fr>              +#+  +:+       +#+        */
+/*   By: ekose <ekose@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/02 15:40:04 by menasy            #+#    #+#             */
-/*   Updated: 2025/05/08 16:58:30 by menasy           ###   ########.fr       */
+/*   Updated: 2025/05/09 16:48:21 by ekose            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,13 +35,14 @@ class WebServer {
 		WebServer();
 		std::vector<pollfd>				pollVec;
 		std::vector<ServerConf>&		serverConfVec;
-		std::map<int, ServerConf>		socketMap;
+		std::map<int, std::vector<ServerConf>>	socketMap;
 		std::map<int, ServerConf*>		clientToServerMap;
 		void							pollfdVecCreat();
 		HttpRequest*					pollInEvent(pollfd&);
-		std::string						socketInfo(int);
+		std::string						socketInfo(sockaddr_in&, int);
 		void							closeCliSocket(int);
 		void							pollOutEvent(pollfd& pollStruct);
+		
 
 	public:
 		WebServer(std::vector<ServerConf>& serverConfVec);
@@ -49,10 +50,10 @@ class WebServer {
 		WebServer &operator=(const WebServer &other);
 		~WebServer();
 		
-		void	setNonBlocking(int);
-		void	initSocket();
-		bool	isExistIpAndPort(const std::string&, int);
-		void	runServer();
-		HttpRequest* parseRecv(const std::string& request);
-
+		void			setNonBlocking(int);
+		void			initSocket();
+		bool			isExistIpAndPort(ServerConf&);
+		void			runServer();
+		HttpRequest*	parseRecv(const std::string& request);
+		ServerConf&		searchServerConf(std::vector<ServerConf>& , std::string&);
 };
