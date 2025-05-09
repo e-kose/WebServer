@@ -6,7 +6,7 @@
 /*   By: menasy <menasy@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/02 15:40:04 by menasy            #+#    #+#             */
-/*   Updated: 2025/05/08 16:58:30 by menasy           ###   ########.fr       */
+/*   Updated: 2025/05/09 16:58:24 by menasy           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -41,7 +41,7 @@ class WebServer {
 		HttpRequest*					pollInEvent(pollfd&);
 		std::string						socketInfo(int);
 		void							closeCliSocket(int);
-		void							pollOutEvent(pollfd& pollStruct);
+		void 							pollOutEvent(pollfd& pollStruct, HttpRequest* httpRequest);
 
 	public:
 		WebServer(std::vector<ServerConf>& serverConfVec);

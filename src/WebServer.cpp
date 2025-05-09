@@ -6,7 +6,7 @@
 /*   By: menasy <menasy@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/02 15:50:42 by menasy            #+#    #+#             */
-/*   Updated: 2025/05/08 20:37:58 by menasy           ###   ########.fr       */
+/*   Updated: 2025/05/09 17:21:55 by menasy           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -179,16 +179,15 @@ HttpRequest*	WebServer::pollInEvent(pollfd& pollStruct)
 		}
 		else
 		{
+			std::cout << "//////////// ELSE ///////////\n";
 			httpRequest = this->parseRecv(std::string(buffer));
 		}
 	}
 	return httpRequest;
 }
 
-// void	WebServer::pollOutEvent(pollfd& pollStruct)
-// {
-	
-// }
+
+
 
 HttpRequest* WebServer::parseRecv(const std::string& request)
 {
@@ -197,7 +196,36 @@ HttpRequest* WebServer::parseRecv(const std::string& request)
 	return httpRequest;
 	
 }
-
+void WebServer::pollOutEvent(pollfd& pollStruct, HttpRequest* httpRequest)
+{
+	if (httpRequest == NULL)
+	{
+		std::cout << "HttpRequest is NULL" << std::endl;
+		return;
+	}
+	std::cout << "POLL_OUT_GET METHOD:" << httpRequest->getMethod() << std::endl;
+	if (httpRequest->getMethod() == "GET")
+	{
+		std::string path = "../htmlFiles/";
+		if (httpRequest->getPath() == "/")
+			path += "index.html";
+		else
+			path += httpRequest->getPath();
+		std::ifstream indexFile(path.c_str());
+	}
+	else if (httpRequest->getMethod() == "POST")
+	{
+		std::cout << "POST METHOD" << std::endl;
+	}
+	else if (httpRequest->getMethod() == "DELETE")
+	{
+		std::cout << "DELETE METHOD" << std::endl;
+	}
+	else
+	{
+		std::cout << "UNKNOWN METHOD" << std::endl;
+	}
+}
 void	WebServer::runServer()
 {
 	HttpRequest* httpRequest = NULL;
@@ -210,14 +238,22 @@ void	WebServer::runServer()
 		for (int i = 0; i < pollVec.size(); i++)
 		{
 			if (pollVec[i].revents & POLLIN)
-				httpRequest = this->pollInEvent(pollVec[i]);
-			// std::cout << "BOOOODDDDY\n" << httpRequest->getBody() << std::endl;
+			{
+				std::cout << "POLL IN EVENT" << std::endl;
+				httpRequest = this->pollInEvent(pollVec[i]); // delete yapmayı unutma 
+				if (httpRequest)
+				{
+					std::cout << "METHOD: " << httpRequest->getMethod() << std::endl;
+					std::cout << "PATH: " << httpRequest->getPath() << std::endl;
+					std::cout << "HOSTNAME: " << httpRequest->getHostName() << std::endl;
+				}
+			}
 			// if (pollVec[i].revents & POLLOUT)
 			// {
+			// 	sleep(3);
 			// 	std::cout << "POLL OUT EVENT" << std::endl;
-			// 	// Handle POLLOUT event here
+			// 	this->pollOutEvent(pollVec[i], httpRequest);
 			// }
-			
 		}
 	}
 	
