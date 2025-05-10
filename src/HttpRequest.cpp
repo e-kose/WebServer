@@ -6,7 +6,7 @@
 /*   By: menasy <menasy@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/08 16:36:39 by menasy            #+#    #+#             */
-/*   Updated: 2025/05/09 17:24:10 by menasy           ###   ########.fr       */
+/*   Updated: 2025/05/10 17:43:04 by menasy           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,6 +24,8 @@ HttpRequest::HttpRequest() {
 	this->queryString = "";
 	this->queryParams.clear();
 	this->bodyVec.clear();
+	this->hostName = "";
+	
 }
 HttpRequest::HttpRequest(const HttpRequest &other) {
 	*this = other;
@@ -38,6 +40,8 @@ HttpRequest &HttpRequest::operator=(const HttpRequest &other) {
 		this->body = other.body;
 		this->queryString = other.queryString;
 		this->queryParams = other.queryParams;
+		this->bodyVec = other.bodyVec;
+		this->hostName = other.hostName;
 	}
 	return *this;
 }
@@ -80,17 +84,9 @@ void HttpRequest::setMethod(const std::string method) {
 	this->method = method;
 }
 
-void HttpRequest::setPath(const std::string path) {
-	if (!HelperClass::isJustCharacter(path, '/'))
-	{
-		std::string::size_type pos = path.find_first_of('/');
-		if (pos != std::string::npos)
-			this->path = path.substr(pos + 1, path.length() - pos -1);
-		else
-			this->path = path;
-	}
-	else
-		this->path = HelperClass::trimLine(path);
+void HttpRequest::setPath(const std::string path) 
+{
+	this->path = HelperClass::trimLine(path);
 }
 
 void HttpRequest::setVersion(const std::string version) {
@@ -136,14 +132,12 @@ std::map<std::string, std::string>  HttpRequest::parseHeader(std::string& parseS
 			break;
 		std::string key = HelperClass::trimLine(line.substr(0, pos));
 		std::string value = HelperClass::trimLine(line.substr(pos + 1, line.length() - pos));
-		std::cout << "HEADER_KEY-------> " << key << std::endl;
-		std::cout << "HEADER_VALUE-------> " << value << std::endl;
 		if (key.empty() || value.empty())
 			throw std::runtime_error("Key or value is empty"); // Bnu geçici kodum kaldırılabilir.
 		destMap[key] = value;
 	}
 	this->setHostName(destMap["Host"]);
-	std::cout << "------------ HEADERmap -------------" << std::endl;
+	// std::cout << "------------ HEADERmap -------------" << std::endl;
 	return destMap;
 }
 std::map<std::string, std::string>  HttpRequest::parseBody()
@@ -165,17 +159,13 @@ std::map<std::string, std::string>  HttpRequest::parseBody()
 				i++;
 			value =  HelperClass::trimWithCharacter(this->body.substr(pos, i - pos),"\"\",\t\n ");
 			pos = i + 1;
-			std::cout << "BODY_KEY-------> " << key << std::endl;
-			std::cout << "BODY_VALUE-------> " << value << std::endl;
 			destMap[key] = value;
 		}
 	}
-	std::cout << "------------ BodyMap -------------" << std::endl;
 	return destMap;
 }
 void HttpRequest::parseRequest(const std::string& request) 
 {
-	std::cout << "========= Parsing request ==========\n" << request << std::endl;
 	std::string tmpReq = request;
 	
 	this->setMethod(HelperClass::createAndMove(tmpReq," "));
@@ -187,17 +177,13 @@ void HttpRequest::parseRequest(const std::string& request)
 	else 
 		this->setVersion(HelperClass::createAndMove(tmpReq,"\n"));
 	this->setHeaders(this->parseHeader(tmpReq));
-	if (tmpReq.find_first_of("{") == std::string::npos)
+	if (tmpReq.find_first_of("{") == std::string::npos && !tmpReq.empty())
 	{
 		this->setBody("");
 		return ;
 	}
 	this->setBody(tmpReq.substr(tmpReq.find_first_of("{"), tmpReq.find_last_of("}") - tmpReq.find_first_of("{")));
 	this->setBodyVec(this->parseBody());
-	std::cout << "**************** HTTP PARSE COMPLETED *****************" << std::endl;
-	std::cout << "Method: " << this->getMethod() << std::endl;
-	std::cout << "Path: " << this->getPath() << std::endl;
-	std::cout << "Version: " << this->getVersion() << std::endl;
 
 }
 

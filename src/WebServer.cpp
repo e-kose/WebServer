@@ -6,7 +6,7 @@
 /*   By: menasy <menasy@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/02 15:50:42 by menasy            #+#    #+#             */
-/*   Updated: 2025/05/09 17:44:14 by menasy           ###   ########.fr       */
+/*   Updated: 2025/05/10 18:26:30 by menasy           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -111,6 +111,14 @@ ServerConf& WebServer::searchServerConf(std::vector<ServerConf>& confVec, std::s
 	}
 	return confVec[0];
 }
+HttpRequest* WebServer::parseRecv(const std::string& request)
+{
+	std:: cout << "================== REQUEST ================== \n"  << request << std::endl;
+	HttpRequest* httpRequest = new HttpRequest();
+	httpRequest->parseRequest(request);
+	return httpRequest;
+	
+}
 
 void	WebServer::initSocket()
 {
@@ -199,22 +207,19 @@ HttpRequest*	WebServer::pollInEvent(pollfd& pollStruct)
 		{
 			httpRequest = this->parseRecv(std::string(buffer));
 			// this->clientToServerMap[pollStruct.fd] = &this->searchServerConf(serverConfVec, httpRequest->getHeaders()[0]["Host"]);
-			std::cout << "fd : " << pollStruct.fd << std::endl;
+			std::cout << "PollIn_fd : " << pollStruct.fd << std::endl;
 		}
 	}
 	return httpRequest;
 }
 
-
-
-
-HttpRequest* WebServer::parseRecv(const std::string& request)
+void WebServer::getMethodHandler(HttpRequest* httpRequest, pollfd& pollStruct)
 {
-	HttpRequest* httpRequest = new HttpRequest();
-	httpRequest->parseRequest(request);
-	return httpRequest;
+	std::vector<ServerConf> serverConfVec = this->socketMap[pollStruct.fd];
+	std::string path = httpRequest->getPath();
 	
 }
+
 void WebServer::pollOutEvent(pollfd& pollStruct, HttpRequest* httpRequest)
 {
 	if (httpRequest == NULL)
@@ -222,15 +227,10 @@ void WebServer::pollOutEvent(pollfd& pollStruct, HttpRequest* httpRequest)
 		std::cout << "HttpRequest is NULL" << std::endl;
 		return;
 	}
-	std::cout << "POLL_OUT_GET METHOD:" << httpRequest->getMethod() << std::endl;
 	if (httpRequest->getMethod() == "GET")
 	{
-		std::string path = "../htmlFiles/";
-		if (httpRequest->getPath() == "/")
-			path += "index.html";
-		else
-			path += httpRequest->getPath();
-		std::ifstream indexFile(path.c_str());
+		this->getMethodHandler(httpRequest, pollStruct);
+		
 	}
 	else if (httpRequest->getMethod() == "POST")
 	{
@@ -258,21 +258,24 @@ void	WebServer::runServer()
 		{
 			if (pollVec[i].revents & POLLIN)
 			{
-				std::cout << "POLL IN EVENT" << std::endl;
+				std::cout << "POLLFD: " << pollVec[i].fd << std::endl;
 				httpRequest = this->pollInEvent(pollVec[i]); // delete yapmayı unutma 
 				if (httpRequest)
 				{
 					std::cout << "METHOD: " << httpRequest->getMethod() << std::endl;
 					std::cout << "PATH: " << httpRequest->getPath() << std::endl;
 					std::cout << "HOSTNAME: " << httpRequest->getHostName() << std::endl;
+					pollVec[i].events = POLLOUT;
 				}
 			}
-			// if (pollVec[i].revents & POLLOUT)
-			// {
-			// 	sleep(3);
-			// 	std::cout << "POLL OUT EVENT" << std::endl;
-			// 	this->pollOutEvent(pollVec[i], httpRequest);
-			// }
+			if (pollVec[i].revents & POLLOUT)
+			{
+				std::cout << "POLL OUT EVENT" << std::endl;
+				this->pollOutEvent(pollVec[i], httpRequest);	
+				
+				pollVec[i].events = POLLIN;
+			}
+			
 		}
 	}
 	

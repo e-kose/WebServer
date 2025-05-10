@@ -6,7 +6,7 @@
 /*   By: menasy <menasy@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/04 18:10:20 by menasy            #+#    #+#             */
-/*   Updated: 2025/05/08 19:04:11 by menasy           ###   ########.fr       */
+/*   Updated: 2025/05/10 17:32:52 by menasy           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,6 +18,7 @@
 #include <map>
 #include <iterator>
 #include <fstream>
+#include <sstream>
 
 class HelperClass
 {
@@ -37,6 +38,8 @@ class HelperClass
 		static void printVector(const std::vector<std::string>& vec);
 		static void	writeToFile(std::string, std::string);
 		static std::string createAndMove(std::string& str, std::string character);
+		static std::string readHtmlFile(const std::string& path);
+		static std::string createHttpResponse(const std::string& htmlContent);
 
 
 };

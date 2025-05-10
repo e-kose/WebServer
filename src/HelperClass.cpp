@@ -134,3 +134,30 @@ std::string HelperClass::createAndMove(std::string& str, std::string character)
 	str = str.substr(pos + 1,str.length());
 	return dest;
 }
+
+
+std::string HelperClass::readHtmlFile(const std::string& path) 
+{
+    std::ifstream file(path.c_str());
+    if (!file.is_open()) {
+        return ""; // Hatayı işlicem kalsın bi 
+    }
+    std::stringstream buffer;
+    buffer << file.rdbuf();
+    return buffer.str();
+}
+
+std::string HelperClass::createHttpResponse(const std::string& htmlContent) 
+{
+	std::ostringstream ss;
+
+	ss << htmlContent.size();
+    std::string response = 
+        "HTTP/1.1 200 OK\r\n"
+        "Content-Type: text/html; charset=UTF-8\r\n"
+        "Content-Length: " + ss.str() + "\r\n"
+        "Connection: close\r\n"
+        "\r\n" // Başlık ve gövdeyi ayıran boş satır
+        + htmlContent;
+    return response;
+}
