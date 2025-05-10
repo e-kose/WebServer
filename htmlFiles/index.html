@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8" />
+	<title>HTTP Client</title>
+	<style>
+		body {
+			font-family: sans-serif;
+			padding: 20px;
+			background: #f5f5f5;
+		}
+
+		input,
+		button,
+		textarea {
+			padding: 8px;
+			margin: 6px 0;
+			width: 100%;
+		}
+
+		.box {
+			background: white;
+			padding: 20px;
+			border-radius: 10px;
+			max-width: 500px;
+			margin: auto;
+			box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+		}
+	</style>
+</head>
+
+<body>
+	<div class="box">
+		<h2>Test HTTP Requests</h2>
+
+		<label for="userId">User ID (for GET / DELETE):</label>
+		<input type="text" id="userId" placeholder="e.g., 5" />
+
+		<label for="postData">POST JSON Body:</label>
+		<textarea id="postData" rows="4">{ "name": "Mehmet", "message": "Selam!" }</textarea>
+
+		<button onclick="sendGet()">Send GET</button>
+		<button onclick="sendPost()">Send POST</button>
+		<button onclick="sendDelete()">Send DELETE</button>
+
+		<h3>Response:</h3>
+		<pre id="responseBox"></pre>
+	</div>
+
+	<script>
+		const serverUrl = "http://localhost:8080";
+
+		function sendGet() {
+			const id = document.getElementById("userId").value;
+			fetch(`${serverUrl}/users/${id}`, {
+				method: "GET",
+			})
+				.then(res => res.text())
+				.then(data => document.getElementById("responseBox").textContent = data);
+		}
+
+		function sendPost() {
+			const body = document.getElementById("postData").value;
+			fetch(`${serverUrl}/users`, {
+				method: "POST",
+				headers: { "Content-Type": "application/json" },
+				body: body
+			})
+				.then(res => res.text())
+				.then(data => document.getElementById("responseBox").textContent = data);
+		}
+
+		function sendDelete() {
+			const id = document.getElementById("userId").value;
+			fetch(`${serverUrl}/users/${id}`, {
+				method: "DELETE",
+			})
+				.then(res => res.text())
+				.then(data => document.getElementById("responseBox").textContent = data);
+		}
+	</script>
+</body>
+
+</html>

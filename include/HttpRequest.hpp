@@ -25,8 +25,9 @@ class HttpRequest
 		std::string method;								// GET, POST, etc.
 		std::string path;   							// /users/5
 		std::string version;							// HTTP/1.1
-		std::vector<std::map<std::string, std::string> > headers; 	// Tüm HTTP headerları
-		std::vector<std::map<std::string, std::string> > bodyVec;
+		std::string hostName;
+		std::map<std::string, std::string>headers; 	// Tüm HTTP headerları
+		std::map<std::string, std::string>bodyVec;
 
 		std::string body;								// içerik kısmı json falan 
 		std::string queryString;						// /search?q=test ise q=test bu olacak mı bilmiyroum daha
@@ -39,26 +40,28 @@ class HttpRequest
 		~HttpRequest();
 		
 		void parseRequest(const std::string& request);
-		std::vector<std::map<std::string, std::string> > parseHeader(std::string& parseStr);
-		std::vector<std::map<std::string, std::string> > parseBody();
+		std::map<std::string, std::string> parseHeader(std::string& parseStr);
+		std::map<std::string, std::string> parseBody();
 
 		
 		std::string getMethod() const;
 		std::string getPath() const;
 		std::string getVersion() const;
+		std::string getHostName() const;
 		size_t getContentLength() const;
-		std::vector<std::map<std::string, std::string> >getHeaders() const;
+		std::map<std::string, std::string>getHeaders() const;
 		std::string getBody() const;
-		std::vector<std::map<std::string, std::string> > getBodyVec() const;
+		std::map<std::string, std::string> getBodyVec() const;
 		std::map<std::string, std::string> getQueryParams() const;
 
 		void setMethod(const std::string method);
 		void setPath(const std::string path);
 		void setVersion(const std::string version);
+		void setHostName(const std::string hostName);
 		void setContentLength(size_t length);
-		void setHeaders(const  std::vector<std::map<std::string, std::string> > headers);
+		void setHeaders(const  std::map<std::string, std::string> headers);
 		void setBody(const std::string body);
-		void setBodyVec(const std::vector<std::map<std::string, std::string> > bodyVec);
+		void setBodyVec(const std::map<std::string, std::string> bodyVec);
 		void setQueryParams(const std::map<std::string, std::string> queryParams);
 		void setQueryString(const std::string queryString);
 		
