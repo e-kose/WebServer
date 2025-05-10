@@ -6,7 +6,7 @@
 /*   By: menasy <menasy@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/04 18:10:20 by menasy            #+#    #+#             */
-/*   Updated: 2025/05/10 17:32:52 by menasy           ###   ########.fr       */
+/*   Updated: 2025/05/11 00:56:44 by menasy           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,6 +40,6 @@ class HelperClass
 		static std::string createAndMove(std::string& str, std::string character);
 		static std::string readHtmlFile(const std::string& path);
 		static std::string createHttpResponse(const std::string& htmlContent);
-
+		static std::string mergeDirectory(const std::string& rootPath, const std::string& httpPath);
 
 };

@@ -26,6 +26,7 @@ class HttpRequest
 		std::string path;   							// /users/5
 		std::string version;							// HTTP/1.1
 		std::string hostName;
+		std::string requestFile;
 		std::map<std::string, std::string>headers; 	// Tüm HTTP headerları
 		std::map<std::string, std::string>bodyVec;
 
@@ -49,6 +50,7 @@ class HttpRequest
 		std::string getVersion() const;
 		std::string getHostName() const;
 		size_t getContentLength() const;
+		std::string getRequestFile() const;
 		std::map<std::string, std::string>getHeaders() const;
 		std::string getBody() const;
 		std::map<std::string, std::string> getBodyVec() const;
@@ -58,6 +60,7 @@ class HttpRequest
 		void setPath(const std::string path);
 		void setVersion(const std::string version);
 		void setHostName(const std::string hostName);
+		void setRequestFile(const std::string requestFile);
 		void setContentLength(size_t length);
 		void setHeaders(const  std::map<std::string, std::string> headers);
 		void setBody(const std::string body);

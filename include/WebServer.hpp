@@ -6,7 +6,7 @@
 /*   By: menasy <menasy@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/02 15:40:04 by menasy            #+#    #+#             */
-/*   Updated: 2025/05/10 17:47:55 by menasy           ###   ########.fr       */
+/*   Updated: 2025/05/11 01:36:37 by menasy           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -53,9 +53,11 @@ class WebServer {
 		void			initSocket();
 		bool			isExistIpAndPort(ServerConf&);
 		void			runServer();
-		HttpRequest*	parseRecv(const std::string& request);
-		ServerConf&		searchServerConf(std::vector<ServerConf>& , std::string&);
+		HttpRequest*	parseRecv(const std::string&);
+		ServerConf&		searchServerConf(std::vector<ServerConf>& , std::string);
 
-		void getMethodHandler(HttpRequest* httpRequest, pollfd& pollStruct);
+		std::string findRequest(HttpRequest* httpRequest, pollfd& pollStruct);
+		void tryFiles(const LocationConf& locConf, const std::string& httpPath, const std::string& rootPath);
+
 
 };

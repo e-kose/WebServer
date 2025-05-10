@@ -6,7 +6,7 @@
 /*   By: menasy <menasy@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/08 16:36:39 by menasy            #+#    #+#             */
-/*   Updated: 2025/05/10 17:43:04 by menasy           ###   ########.fr       */
+/*   Updated: 2025/05/11 01:27:41 by menasy           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -69,6 +69,9 @@ std::string HttpRequest::getBody() const {
 std::string HttpRequest::getHostName() const {
 	return hostName;
 }
+std::string HttpRequest::getRequestFile() const {
+	return requestFile;
+}
 std::map<std::string, std::string> HttpRequest::getBodyVec() const {
 	return bodyVec;
 }
@@ -84,9 +87,28 @@ void HttpRequest::setMethod(const std::string method) {
 	this->method = method;
 }
 
+void HttpRequest::setRequestFile(const std::string requestFile) {
+	this->requestFile = requestFile;
+}
+
 void HttpRequest::setPath(const std::string path) 
 {
-	this->path = HelperClass::trimLine(path);
+	std::string tmpPath = path;
+	if (path.find_first_of("?") != std::string::npos)
+	{
+		tmpPath = HelperClass::trimLine(path.substr(0, path.find_first_of("?")));
+		this->setQueryString(HelperClass::trimLine(path.substr(path.find_first_of("?") + 1, path.length())));
+	}
+	if (HelperClass::characterCounter(tmpPath, '/') == 1)
+		this->path = HelperClass::trimLine(tmpPath);
+	else
+	{
+		this->path = HelperClass::trimLine(tmpPath.substr(tmpPath.find_first_of('/'), tmpPath.find_last_of('/')));
+		this->setRequestFile(HelperClass::trimLine(tmpPath.substr(tmpPath.find_last_of('/') + 1, tmpPath.length())));
+	}
+		
+	
+
 }
 
 void HttpRequest::setVersion(const std::string version) {
@@ -116,7 +138,9 @@ void HttpRequest::setQueryParams(const std::map<std::string, std::string> queryP
 	this->queryParams = queryParams;
 }
 
-
+void HttpRequest::setQueryString(const std::string queryString) {
+	this->queryString = queryString;
+}
 std::map<std::string, std::string>  HttpRequest::parseHeader(std::string& parseStr)
 {
 	std::map<std::string, std::string> destMap;
