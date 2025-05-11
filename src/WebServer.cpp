@@ -6,7 +6,7 @@
 /*   By: menasy <menasy@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/02 15:50:42 by menasy            #+#    #+#             */
-/*   Updated: 2025/05/11 01:36:49 by menasy           ###   ########.fr       */
+/*   Updated: 2025/05/11 13:12:41 by menasy           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -226,13 +226,10 @@ std::string WebServer::findRequest(HttpRequest* httpRequest, pollfd& pollStruct)
 	std::cout << "GET METHOD HANDLER" << std::endl;
 	ServerConf* serverConfMap = this->clientToServerMap[pollStruct.fd];
 	std::vector<LocationConf> locVec = serverConfMap->getLocations();
-	std::string httpPath , mergedPath;
-	size_t rootIndex = 0;		
+	std::string httpPath , mergedPath;	
 	httpPath = httpRequest->getPath();
 	for (size_t i = 0; i < locVec.size(); i++)
 	{
-		if (locVec[i].getPath() == "/")
-			rootIndex = i;
 		if (httpPath == locVec[i].getPath())
 		{
 			if (locVec[i].getRoot().empty())
@@ -244,11 +241,6 @@ std::string WebServer::findRequest(HttpRequest* httpRequest, pollfd& pollStruct)
 			break ;
 		}
 	}
-	// if (mergedPath.empty())
-	// {
-	//    bunu dıştaki methoddaa yapacağım.
-	// 	tryFiles(locVec[rootIndex], httpPath, serverConfMap->getRoot());
-	// }
 	std::cout << "MERGED PATH: " << mergedPath << std::endl;
 	return mergedPath;
 }
