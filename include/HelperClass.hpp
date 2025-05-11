@@ -6,7 +6,7 @@
 /*   By: menasy <menasy@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/04 18:10:20 by menasy            #+#    #+#             */
-/*   Updated: 2025/05/11 17:21:10 by menasy           ###   ########.fr       */
+/*   Updated: 2025/05/11 21:21:23 by menasy           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,8 +42,10 @@ class HelperClass
 		static void	writeToFile(std::string, std::string);
 		static std::string createAndMove(std::string& str, std::string character);
 		static std::string readHtmlFile(const std::string& path);
-		static std::string createHttpResponse(const std::string& htmlContent);
+		static std::string createHttpResponse(
+			const std::string& statusCode, const std::string& statusMessage,
+			const std::string& contentType, const std::string& body); 
 		static std::string mergeDirectory(const std::string& rootPath, const std::string& httpPath);
-		static std::string createErrorResponse(const std::string& errPage, const std::map<int, std::string>& errMap, const std::string& rootPAth);
+		static std::string createErrorResponse(const std::string& errPage, std::string statusMsg, const std::map<int, std::string>& errMap, const std::string& rootPAth);
 
 };

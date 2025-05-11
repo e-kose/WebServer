@@ -1,85 +1,148 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-	<meta charset="UTF-8" />
-	<title>HTTP Client</title>
-	<style>
-		body {
-			font-family: sans-serif;
-			padding: 20px;
-			background: #f5f5f5;
-		}
+    <meta charset="UTF-8">
+    <title>42 WebServer Test</title>
+    <style>
+        body {
+            background-color: #1a1a1a;
+            color: #ffffff;
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 20px;
+        }
 
-		input,
-		button,
-		textarea {
-			padding: 8px;
-			margin: 6px 0;
-			width: 100%;
-		}
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
 
-		.box {
-			background: white;
-			padding: 20px;
-			border-radius: 10px;
-			max-width: 500px;
-			margin: auto;
-			box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-		}
-	</style>
+        .test-section {
+            background-color: #2d2d2d;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+        }
+
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+
+        button:hover {
+            opacity: 0.8;
+        }
+
+        input[type="text"], textarea {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            background-color: #333;
+            border: 1px solid #444;
+            color: white;
+            border-radius: 4px;
+        }
+
+        .response {
+            background-color: #333;
+            padding: 15px;
+            margin-top: 10px;
+            border-radius: 4px;
+            white-space: pre-wrap;
+        }
+    </style>
 </head>
-
 <body>
-	<div class="box">
-		<h2>Test HTTP Requests</h2>
+    <div class="container">
+        <h1>42 WebServer Test Panel</h1>
 
-		<label for="userId">User ID (for GET / DELETE):</label>
-		<input type="text" id="userId" placeholder="e.g., 5" />
+        <!-- GET Test -->
+        <div class="test-section">
+            <h2>GET Test</h2>
+            <button onclick="testGet()">Test GET Request</button>
+            <div id="getResponse" class="response"></div>
+        </div>
 
-		<label for="postData">POST JSON Body:</label>
-		<textarea id="postData" rows="4">{ "name": "Mehmet", "message": "Selam!" }</textarea>
+        <!-- POST Test -->
+        <div class="test-section">
+            <h2>POST Test</h2>
+            <textarea id="postData" placeholder='{"name":"test", "value":42}'></textarea>
+            <button onclick="testPost()">Test POST Request</button>
+            <div id="postResponse" class="response"></div>
+        </div>
 
-		<button onclick="sendGet()">Send GET</button>
-		<button onclick="sendPost()">Send POST</button>
-		<button onclick="sendDelete()">Send DELETE</button>
+        <!-- DELETE Test -->
+        <div class="test-section">
+            <h2>DELETE Test</h2>
+            <input type="text" id="deleteId" placeholder="Item ID to delete">
+            <button onclick="testDelete()" style="background-color: #f44336;">Test DELETE Request</button>
+            <div id="deleteResponse" class="response"></div>
+        </div>
+    </div>
 
-		<h3>Response:</h3>
-		<pre id="responseBox"></pre>
-	</div>
+    <script>
+        function testGet() {
+            fetch('/api/items')
+                .then(response => response.text())
+                .then(data => {
+                    document.getElementById('getResponse').innerHTML = colorizeJson(data);
+                })
+                .catch(error => showError('getResponse', error));
+        }
 
-	<script>
-		const serverUrl = "http://localhost:8080";
+        function testPost() {
+            const postData = document.getElementById('postData').value;
+            fetch('/api/items', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: postData
+            })
+            .then(response => response.text())
+            .then(data => {
+                document.getElementById('postResponse').innerHTML = colorizeJson(data);
+            })
+            .catch(error => showError('postResponse', error));
+        }
 
-		function sendGet() {
-			const id = document.getElementById("userId").value;
-			fetch(`${serverUrl}/users/${id}`, {
-				method: "GET",
-			})
-				.then(res => res.text())
-				.then(data => document.getElementById("responseBox").textContent = data);
-		}
+        function testDelete() {
+            const itemId = document.getElementById('deleteId').value;
+            if(!itemId) {
+                alert("Please enter an ID to delete");
+                return;
+            }
+            
+            fetch(`/api/items/${itemId}`, {
+                method: 'DELETE'
+            })
+            .then(response => response.text())
+            .then(data => {
+                document.getElementById('deleteResponse').innerHTML = colorizeJson(data);
+            })
+            .catch(error => showError('deleteResponse', error));
+        }
 
-		function sendPost() {
-			const body = document.getElementById("postData").value;
-			fetch(`${serverUrl}/users`, {
-				method: "POST",
-				headers: { "Content-Type": "application/json" },
-				body: body
-			})
-				.then(res => res.text())
-				.then(data => document.getElementById("responseBox").textContent = data);
-		}
+        function colorizeJson(raw) {
+            try {
+                const json = JSON.parse(raw);
+                return JSON.stringify(json, null, 4)
+                    .replace(/ /g, '&nbsp;')
+                    .replace(/\n/g, '<br>');
+            } catch {
+                return `<span style="color: #ff6666">${raw}</span>`;
+            }
+        }
 
-		function sendDelete() {
-			const id = document.getElementById("userId").value;
-			fetch(`${serverUrl}/users/${id}`, {
-				method: "DELETE",
-			})
-				.then(res => res.text())
-				.then(data => document.getElementById("responseBox").textContent = data);
-		}
-	</script>
+        function showError(elementId, error) {
+            const element = document.getElementById(elementId);
+            element.innerHTML = `<span style="color: #ff4444">Error: ${error.message}</span>`;
+        }
+    </script>
 </body>
-
 </html>

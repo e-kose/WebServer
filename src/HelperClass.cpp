@@ -147,34 +147,35 @@ std::string HelperClass::readHtmlFile(const std::string& path)
     return buffer.str();
 }
 
-std::string HelperClass::createHttpResponse(const std::string& htmlContent) 
+std::string HelperClass::createHttpResponse(
+	const std::string& statusCode, const std::string& statusMessage,
+	const std::string& contentType, const std::string& body) 
 {
 	std::ostringstream ss;
-
-	ss << htmlContent.size();
-    std::string response = 
-        "HTTP/1.1 200 OK\r\n"
-        "Content-Type: text/html; charset=UTF-8\r\n"
-        "Content-Length: " + ss.str() + "\r\n"
-        "Connection: close\r\n"
-        "\r\n" // Başlık ve gövdeyi ayıran boş satır
-        + htmlContent;
-    return response;
+	ss << body.size();	
+	std::string response = "HTTP/1.1 " + statusCode + " " + statusMessage + "\r\n";
+	response += "Content-Type: " + contentType + "\r\n";
+	response += "Content-Length: " + ss.str() + "\r\n";
+	response += "Connection: close\r\n"; 
+	response += "\r\n";
+	response += body;	
+	return response;
 }
+
 
 std::string HelperClass::mergeDirectory(const std::string& rootPath, const std::string& httpPath)
 {
 	return(rootPath + httpPath);
 }
 
-std::string HelperClass::createErrorResponse(const std::string& errPage, const std::map<int, std::string>& errMap, const std::string& rootPAth)
+std::string HelperClass::createErrorResponse(const std::string& errPage, std::string statusMsg, const std::map<int, std::string>& errMap, const std::string& rootPAth)
 {
-	int errCode = std::atoi(errPage.c_str());
+	int statusCode = std::atoi(errPage.c_str());
 	for (std::map<int, std::string>::const_iterator it = errMap.begin(); it != errMap.end(); it++)
 	{
-		if (it->first == errCode)
+		if (it->first == statusCode)
 		{
-			return createHttpResponse(mergeDirectory(rootPAth, it->second));
+			return createHttpResponse(errPage,statusMsg,"text/html",readHtmlFile(mergeDirectory(rootPAth, it->second)));
 		}
 	}
 	return "";
