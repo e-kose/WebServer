@@ -6,7 +6,7 @@
 /*   By: ekose <ekose@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/08 16:36:39 by menasy            #+#    #+#             */
-/*   Updated: 2025/05/09 22:37:11 by ekose            ###   ########.fr       */
+/*   Updated: 2025/05/10 18:36:10 by ekose            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,6 +24,8 @@ HttpRequest::HttpRequest() {
 	this->queryString = "";
 	this->queryParams.clear();
 	this->bodyVec.clear();
+	this->hostName = "";
+	
 }
 HttpRequest::HttpRequest(const HttpRequest &other) {
 	*this = other;
@@ -38,6 +40,8 @@ HttpRequest &HttpRequest::operator=(const HttpRequest &other) {
 		this->body = other.body;
 		this->queryString = other.queryString;
 		this->queryParams = other.queryParams;
+		this->bodyVec = other.bodyVec;
+		this->hostName = other.hostName;
 	}
 	return *this;
 }
@@ -80,17 +84,9 @@ void HttpRequest::setMethod(const std::string method) {
 	this->method = method;
 }
 
-void HttpRequest::setPath(const std::string path) {
-	if (!HelperClass::isJustCharacter(path, '/'))
-	{
-		std::string::size_type pos = path.find_first_of('/');
-		if (pos != std::string::npos)
-			this->path = path.substr(pos + 1, path.length() - pos -1);
-		else
-			this->path = path;
-	}
-	else
-		this->path = HelperClass::trimLine(path);
+void HttpRequest::setPath(const std::string path) 
+{
+	this->path = HelperClass::trimLine(path);
 }
 
 void HttpRequest::setVersion(const std::string version) {
@@ -180,7 +176,7 @@ void HttpRequest::parseRequest(const std::string& request)
 	else 
 		this->setVersion(HelperClass::createAndMove(tmpReq,"\n"));
 	this->setHeaders(this->parseHeader(tmpReq));
-	if (tmpReq.find_first_of("{") == std::string::npos)
+	if (tmpReq.find_first_of("{") == std::string::npos && !tmpReq.empty())
 	{
 		this->setBody("");
 		return ;

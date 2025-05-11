@@ -6,7 +6,7 @@
 /*   By: ekose <ekose@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/02 15:50:42 by menasy            #+#    #+#             */
-/*   Updated: 2025/05/10 17:51:54 by ekose            ###   ########.fr       */
+/*   Updated: 2025/05/10 18:41:23 by ekose            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,7 +30,7 @@ WebServer &WebServer::operator=(const WebServer &other)
 
 WebServer::~WebServer()
 {
-	for (std::map<int, std::vector<ServerConf>>::iterator it = socketMap.begin(); it != socketMap.end(); ++it)
+	for (std::map<int, std::vector<ServerConf> >::iterator it = socketMap.begin(); it != socketMap.end(); ++it)
 		close(it->first);
 	for (std::vector<pollfd>::iterator it = pollVec.begin(); it != pollVec.end(); ++it)
 		close(it->fd);
@@ -59,7 +59,7 @@ void 	WebServer::closeCliSocket(int fd)
 
 bool	WebServer::isExistIpAndPort(ServerConf& conf)
 {
-	std::map<int,std::vector<ServerConf>>::iterator it;
+	std::map<int,std::vector<ServerConf> >::iterator it;
 	it = this->socketMap.begin();
 	while(it != this->socketMap.end()){
 		if (it->second[0].getIp() == conf.getIp() && it->second[0].getPort() == conf.getPort())
@@ -74,7 +74,7 @@ bool	WebServer::isExistIpAndPort(ServerConf& conf)
 
 void	WebServer::pollfdVecCreat()
 {
-	std::map<int, std::vector<ServerConf>>::iterator socketIt = this->socketMap.begin();
+	std::map<int, std::vector<ServerConf> >::iterator socketIt = this->socketMap.begin();
 	
 	for (; socketIt != this->socketMap.end(); socketIt++)
 	{
@@ -110,6 +110,14 @@ ServerConf& WebServer::searchServerConf(std::vector<ServerConf>& confVec, std::s
 		}
 	}
 	return confVec[0];
+}
+HttpRequest* WebServer::parseRecv(const std::string& request)
+{
+	std:: cout << "================== REQUEST ================== \n"  << request << std::endl;
+	HttpRequest* httpRequest = new HttpRequest();
+	httpRequest->parseRequest(request);
+	return httpRequest;
+	
 }
 
 void	WebServer::initSocket()
@@ -159,7 +167,7 @@ HttpRequest*	WebServer::pollInEvent(pollfd& pollStruct)
 {
 	int check = 0;
 	HttpRequest* httpRequest = NULL;
-	std::map<int, std::vector<ServerConf>>::iterator socketIt;
+	std::map<int, std::vector<ServerConf> >::iterator socketIt;
 	// Yeni client mi geldi kontrol etmek için
 	for (socketIt = socketMap.begin(); socketIt != socketMap.end(); socketIt++)
 	{
@@ -197,28 +205,45 @@ HttpRequest*	WebServer::pollInEvent(pollfd& pollStruct)
 		}
 		else
 		{
-			
 			httpRequest = this->parseRecv(std::string(buffer));
 			// this->clientToServerMap[pollStruct.fd] = &this->searchServerConf(serverConfVec, httpRequest->getHeaders()[0]["Host"]);
-			std::cout << "fd : " << pollStruct.fd << std::endl;
+			std::cout << "PollIn_fd : " << pollStruct.fd << std::endl;
 		}
 	}
 	return httpRequest;
 }
 
-// void	WebServer::pollOutEvent(pollfd& pollStruct)
-// {
-	
-// }
-
-HttpRequest* WebServer::parseRecv(const std::string& request)
+void WebServer::getMethodHandler(HttpRequest* httpRequest, pollfd& pollStruct)
 {
-	HttpRequest* httpRequest = new HttpRequest();
-	httpRequest->parseRequest(request);
-	return httpRequest;
-	
+	std::vector<ServerConf> serverConfVec = this->socketMap[pollStruct.fd];
+	std::string path = httpRequest->getPath();
 }
 
+void WebServer::pollOutEvent(pollfd& pollStruct, HttpRequest* httpRequest)
+{
+	if (httpRequest == NULL)
+	{
+		std::cout << "HttpRequest is NULL" << std::endl;
+		return;
+	}
+	if (httpRequest->getMethod() == "GET")
+	{
+		this->getMethodHandler(httpRequest, pollStruct);
+		
+	}
+	else if (httpRequest->getMethod() == "POST")
+	{
+		std::cout << "POST METHOD" << std::endl;
+	}
+	else if (httpRequest->getMethod() == "DELETE")
+	{
+		std::cout << "DELETE METHOD" << std::endl;
+	}
+	else
+	{
+		std::cout << "UNKNOWN METHOD" << std::endl;
+	}
+}
 void	WebServer::runServer()
 {
 	HttpRequest* httpRequest = NULL;
@@ -231,13 +256,24 @@ void	WebServer::runServer()
 		for (int i = 0; i < pollVec.size(); i++)
 		{
 			if (pollVec[i].revents & POLLIN)
-				httpRequest = this->pollInEvent(pollVec[i]);
-			// std::cout << "BOOOODDDDY\n" << httpRequest->getBody() << std::endl;
-			// if (pollVec[i].revents & POLLOUT)
-			// {
-			// 	std::cout << "POLL OUT EVENT" << std::endl;
-			// 	// Handle POLLOUT event here
-			// }
+			{
+				std::cout << "POLLFD: " << pollVec[i].fd << std::endl;
+				httpRequest = this->pollInEvent(pollVec[i]); // delete yapmayı unutma 
+				if (httpRequest)
+				{
+					std::cout << "METHOD: " << httpRequest->getMethod() << std::endl;
+					std::cout << "PATH: " << httpRequest->getPath() << std::endl;
+					std::cout << "HOSTNAME: " << httpRequest->getHostName() << std::endl;
+					pollVec[i].events = POLLOUT;
+				}
+			}
+			if (pollVec[i].revents & POLLOUT)
+			{
+				std::cout << "POLL OUT EVENT" << std::endl;
+				this->pollOutEvent(pollVec[i], httpRequest);	
+				
+				pollVec[i].events = POLLIN;
+			}
 			
 		}
 	}

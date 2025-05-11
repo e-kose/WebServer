@@ -6,7 +6,7 @@
 /*   By: ekose <ekose@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/02 15:40:04 by menasy            #+#    #+#             */
-/*   Updated: 2025/05/10 17:52:14 by ekose            ###   ########.fr       */
+/*   Updated: 2025/05/10 18:36:26 by ekose            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,14 +35,13 @@ class WebServer {
 		WebServer();
 		std::vector<pollfd>				pollVec;
 		std::vector<ServerConf>&		serverConfVec;
-		std::map<int, std::vector<ServerConf>>	socketMap;
+		std::map<int, std::vector<ServerConf> >	socketMap;
 		std::map<int, ServerConf*>		clientToServerMap;
 		void							pollfdVecCreat();
 		HttpRequest*					pollInEvent(pollfd&);
 		std::string						socketInfo(sockaddr_in&, int);
 		void							closeCliSocket(int);
-		void							pollOutEvent(pollfd& pollStruct);
-		
+		void 							pollOutEvent(pollfd& pollStruct, HttpRequest* httpRequest);
 
 	public:
 		WebServer(std::vector<ServerConf>& serverConfVec);
@@ -56,4 +55,7 @@ class WebServer {
 		void			runServer();
 		HttpRequest*	parseRecv(const std::string& request);
 		ServerConf&		searchServerConf(std::vector<ServerConf>& , std::string&);
+
+		void getMethodHandler(HttpRequest* httpRequest, pollfd& pollStruct);
+
 };
