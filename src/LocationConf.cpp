@@ -125,6 +125,8 @@ void LocationConf::addTryFiles(std::string file){
 	if (file == ";" && this->try_files.size() != 0)
 		return;
 	std::string tmpValue = HelperClass::checkEmptyAndTrim(file, "Try files");
+	if(tmpValue[0] == '=')
+		tmpValue = tmpValue.substr(1);
 	this->try_files.push_back(tmpValue);
 }
 void LocationConf::addIndex(std::string file){ 

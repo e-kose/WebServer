@@ -161,3 +161,8 @@ std::string HelperClass::createHttpResponse(const std::string& htmlContent)
         + htmlContent;
     return response;
 }
+
+std::string HelperClass::mergeDirectory(const std::string& rootPath, const std::string& httpPath)
+{
+	return(rootPath + httpPath);
+}

@@ -53,9 +53,11 @@ class WebServer {
 		void			initSocket();
 		bool			isExistIpAndPort(ServerConf&);
 		void			runServer();
-		HttpRequest*	parseRecv(const std::string& request);
-		ServerConf&		searchServerConf(std::vector<ServerConf>& , std::string&);
+		HttpRequest*	parseRecv(const std::string&);
+		ServerConf&		searchServerConf(std::vector<ServerConf>& , std::string);
 
-		void getMethodHandler(HttpRequest* httpRequest, pollfd& pollStruct);
+		std::string findRequest(HttpRequest* httpRequest, pollfd& pollStruct);
+		void tryFiles(const LocationConf& locConf, const std::string& httpPath, const std::string& rootPath);
+
 
 };
