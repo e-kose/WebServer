@@ -6,7 +6,7 @@
 /*   By: menasy <menasy@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/08 16:36:39 by menasy            #+#    #+#             */
-/*   Updated: 2025/05/11 01:27:41 by menasy           ###   ########.fr       */
+/*   Updated: 2025/05/11 17:19:01 by menasy           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -72,6 +72,9 @@ std::string HttpRequest::getHostName() const {
 std::string HttpRequest::getRequestFile() const {
 	return requestFile;
 }
+std::string HttpRequest::getContentType() const {
+	return contentType;
+}
 std::map<std::string, std::string> HttpRequest::getBodyVec() const {
 	return bodyVec;
 }
@@ -90,6 +93,9 @@ void HttpRequest::setMethod(const std::string method) {
 void HttpRequest::setRequestFile(const std::string requestFile) {
 	this->requestFile = requestFile;
 }
+void HttpRequest::setContentType(const std::string contentType) {
+	this->contentType = contentType;
+}
 
 void HttpRequest::setPath(const std::string path) 
 {
@@ -106,9 +112,6 @@ void HttpRequest::setPath(const std::string path)
 		this->path = HelperClass::trimLine(tmpPath.substr(tmpPath.find_first_of('/'), tmpPath.find_last_of('/')));
 		this->setRequestFile(HelperClass::trimLine(tmpPath.substr(tmpPath.find_last_of('/') + 1, tmpPath.length())));
 	}
-		
-	
-
 }
 
 void HttpRequest::setVersion(const std::string version) {
@@ -161,6 +164,7 @@ std::map<std::string, std::string>  HttpRequest::parseHeader(std::string& parseS
 		destMap[key] = value;
 	}
 	this->setHostName(destMap["Host"]);
+	this->setContentType(destMap["Content-Type"]);
 	// std::cout << "------------ HEADERmap -------------" << std::endl;
 	return destMap;
 }
@@ -206,7 +210,7 @@ void HttpRequest::parseRequest(const std::string& request)
 		this->setBody("");
 		return ;
 	}
-	this->setBody(tmpReq.substr(tmpReq.find_first_of("{"), tmpReq.find_last_of("}") - tmpReq.find_first_of("{")));
+	this->setBody(tmpReq.substr(tmpReq.find_first_of("{"), tmpReq.find_last_of("}") - tmpReq.find_first_of("{") + 1));
 	this->setBodyVec(this->parseBody());
 
 }

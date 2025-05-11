@@ -90,6 +90,12 @@ void ServerConf::setBodySize(size_t body_size) {
 	this->body_size = body_size;
 }
 
+void	ServerConf::setLocations(std::vector<LocationConf>& locations)
+{
+	this->locations = locations;
+}
+
+
 void ServerConf::addLocation(LocationConf& location) {
 	this->locations.push_back(location);
 }

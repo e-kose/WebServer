@@ -166,3 +166,17 @@ std::string HelperClass::mergeDirectory(const std::string& rootPath, const std::
 {
 	return(rootPath + httpPath);
 }
+
+std::string HelperClass::createErrorResponse(const std::string& errPage, const std::map<int, std::string>& errMap, const std::string& rootPAth)
+{
+	int errCode = std::atoi(errPage.c_str());
+	for (std::map<int, std::string>::const_iterator it = errMap.begin(); it != errMap.end(); it++)
+	{
+		if (it->first == errCode)
+		{
+			return createHttpResponse(mergeDirectory(rootPAth, it->second));
+		}
+	}
+	return "";
+}
+

@@ -6,7 +6,7 @@
 /*   By: menasy <menasy@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/04 18:10:20 by menasy            #+#    #+#             */
-/*   Updated: 2025/05/11 00:56:44 by menasy           ###   ########.fr       */
+/*   Updated: 2025/05/11 17:21:10 by menasy           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,7 +19,10 @@
 #include <iterator>
 #include <fstream>
 #include <sstream>
+#include <unistd.h>
+#include <cstdlib>
 
+class ServerConf;
 class HelperClass
 {
 	private:
@@ -41,5 +44,6 @@ class HelperClass
 		static std::string readHtmlFile(const std::string& path);
 		static std::string createHttpResponse(const std::string& htmlContent);
 		static std::string mergeDirectory(const std::string& rootPath, const std::string& httpPath);
+		static std::string createErrorResponse(const std::string& errPage, const std::map<int, std::string>& errMap, const std::string& rootPAth);
 
 };
