@@ -6,7 +6,7 @@
 /*   By: menasy <menasy@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/02 15:50:42 by menasy            #+#    #+#             */
-/*   Updated: 2025/05/11 22:20:26 by menasy           ###   ########.fr       */
+/*   Updated: 2025/05/12 11:48:44 by menasy           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -237,7 +237,7 @@ void WebServer::fillTryFiles(LocationConf& locConf, const std::string& httpPath,
 		if (!contentFile.empty())
 		{
 			sendMessage = HelperClass::createHttpResponse("200","OK", "text/html", contentFile);
-			send(pollStruct.fd, sendMessage.c_str(), sendMessage.length(), 0);
+			sendHandler(pollStruct,sendMessage);
 			return ;
 		}
 	}
@@ -245,15 +245,12 @@ void WebServer::fillTryFiles(LocationConf& locConf, const std::string& httpPath,
 	{
 		errPage = tryFilesVec[tryFilesVec.size() -1];
 		sendMessage = HelperClass::createErrorResponse(errPage,"not found", serverConfMap->getErrorPages(), newRoot);
-		if (!sendMessage.empty())
-			send(pollStruct.fd, errPage.c_str(), errPage.length(), 0);
-		else	
-			throw std::runtime_error("Error page not found");
+		this->sendHandler(pollStruct,sendMessage);
 	}
 		
 }
 
-bool WebServer::methodIsExist(const std::vector<std::string>& locMethodsvec, const std::string& requestMethod, ServerConf* srvConf, int fd)
+bool WebServer::methodIsExist(const std::vector<std::string>& locMethodsvec, const std::string& requestMethod, ServerConf* srvConf, pollfd& pollStruct)
 {
 	for (size_t i = 0; i < locMethodsvec.size(); i++)
 	{
@@ -263,10 +260,48 @@ bool WebServer::methodIsExist(const std::vector<std::string>& locMethodsvec, con
 		{
 			std::string sendMessage;
 			sendMessage = HelperClass::createErrorResponse("405", "Method Not Allowed",srvConf->getErrorPages(),srvConf->getRoot());	
-			send(fd, sendMessage.c_str(), sendMessage.length(), 0);
+			sendHandler(pollStruct,sendMessage);
 		}
 	}
 	return false;
+}
+void WebServer::sendHandler(pollfd& pollStruct, std::string& sendMessage)
+{
+	// 3 kere sayfayı yenileyince seg yiyoruz bakcam.
+	int checkSend = 0;
+	size_t lengthMessage;
+	
+	lengthMessage = sendMessage.length();
+	while (checkSend < lengthMessage)
+	{
+		checkSend = send(pollStruct.fd, sendMessage.c_str(), sendMessage.length(), 0);
+		if (checkSend == -1)
+		{
+			int& errCode = errno;
+			if (errCode == EAGAIN || errCode == EWOULDBLOCK)
+			{
+				//Soket non-blocking modda ve veri göndermek için yeterli buffer alanı yok demek. Yeniden veri gondercem.
+				pollStruct.events = POLLOUT;
+				break ; 
+			}
+			else
+			{
+				//errCode == ECONNRESET ||  errCode == EPIPE || errCode == EBADF
+				//İstemci bağlantıyı aniden kapatmış.
+				if (errCode != EBADF) // ebadf socket zaten geçersiz olduğı için kapatmaya gerek yok
+					close(pollStruct.fd);
+				for (std::vector<pollfd>::iterator it = this->pollVec.begin(); it != this->pollVec.end(); ++it) 
+				{
+					if (it->fd == pollStruct.fd) 
+					{
+						this->pollVec.erase(it);
+						break; 
+					}
+				}
+				break ;
+			}
+		}
+	}
 }
 std::string WebServer::findRequest(HttpRequest* httpRequest, pollfd& pollStruct)
 {
@@ -282,7 +317,7 @@ std::string WebServer::findRequest(HttpRequest* httpRequest, pollfd& pollStruct)
 			rootIndex = i;
 		if (httpPath == locVec[i].getPath())
 		{
-			if (methodIsExist(locVec[i].getMethods(),httpRequest->getMethod(),serverConfMap, pollStruct.fd))
+			if (methodIsExist(locVec[i].getMethods(),httpRequest->getMethod(),serverConfMap, pollStruct))
 			{
 				if (locVec[i].getRoot().empty())
 					mergedPath = HelperClass::mergeDirectory(serverConfMap->getRoot(), httpPath);

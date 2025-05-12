@@ -6,7 +6,7 @@
 /*   By: menasy <menasy@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/04 18:10:20 by menasy            #+#    #+#             */
-/*   Updated: 2025/05/11 21:21:23 by menasy           ###   ########.fr       */
+/*   Updated: 2025/05/12 10:37:10 by menasy           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,6 +21,9 @@
 #include <sstream>
 #include <unistd.h>
 #include <cstdlib>
+#include <sys/socket.h>
+#include <sys/poll.h>
+
 
 class ServerConf;
 class HelperClass
