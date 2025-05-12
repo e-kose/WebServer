@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   WebServer.hpp                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ekose <ekose@student.42.fr>                +#+  +:+       +#+        */
+/*   By: menasy <menasy@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/02 15:40:04 by menasy            #+#    #+#             */
-/*   Updated: 2025/05/12 12:12:12 by ekose            ###   ########.fr       */
+/*   Updated: 2025/05/13 01:43:12 by menasy           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,8 +31,9 @@
 #include <cstring>
 #include <sys/stat.h>
 #include <limits.h>
-
-class WebServer {
+class WebServer 
+{
+	// TUM HER ŞEY BİTTİKTEN SONRA COPY CONSTRUCTORLAR FALAN KONTROL ET DEĞERLERİ ATA !!!!!!!!
 	private:
 		WebServer();
 		std::vector<pollfd>						pollVec;
@@ -40,13 +41,17 @@ class WebServer {
 		std::map<int, std::vector<ServerConf> >	socketMap;
 		std::map<int, ServerConf*>				clientToServerMap;
 		std::map<int, struct sockaddr_in>		clientToAddrMap;
+		std::string 							resultPath;
+		HttpRequest* 							httpRequest;
 		
 		void									pollfdVecCreat();
-		HttpRequest*							pollInEvent(pollfd&);
+		void										pollInEvent(pollfd&);
 		std::string								socketInfo(sockaddr_in&, int);
 		void									closeCliSocket(int);
-		void 									pollOutEvent(pollfd& pollStruct, HttpRequest* httpRequest);
-		void									deleteMethod(HttpRequest*, pollfd&);
+		void 									pollOutEvent(pollfd& pollStruct);
+		void									deleteMethod(pollfd&);
+		bool									indexHandler(pollfd& pollStruct, std::string& mergedPath, const std::vector<std::string>& indexVec);
+
 
 	public:
 		WebServer(std::vector<ServerConf>& serverConfVec);
@@ -61,11 +66,11 @@ class WebServer {
 		HttpRequest*	parseRecv(const std::string&);
 		ServerConf&		searchServerConf(std::vector<ServerConf>& , std::string);
 
-		std::string findRequest(HttpRequest* httpRequest, pollfd& pollStruct);
-		void 	fillTryFiles(LocationConf& locConf, const std::string& httpPath, const ServerConf* serverConfMap,  pollfd& pollStruct);
-		bool 	methodIsExist(const std::vector<std::string>& locMethodsvec, const std::string& requestMethod, ServerConf* srvConf, pollfd&);
-		void	sendHandler(pollfd& pollStruct, std::string& sendMessage);
+		std::string 	findRequest(pollfd& pollStruct);
+		void 			fillTryFiles(LocationConf& locConf, const std::string& httpPath, const ServerConf* serverConfMap,  pollfd& pollStruct);
+		bool 			methodIsExist(const std::vector<std::string>& locMethodsvec, const std::string& requestMethod, ServerConf* srvConf, pollfd&);
+		void			sendHandler(pollfd& pollStruct, std::string& sendMessage);
 
 
-		void sendResponse(HttpRequest*, pollfd, const std::string&);
+		void sendResponse(pollfd&, const std::string& status);
 };

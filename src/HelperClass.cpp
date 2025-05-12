@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   HelperClass.cpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ekose <ekose@student.42.fr>                +#+  +:+       +#+        */
+/*   By: menasy <menasy@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/12 07:50:19 by ekose             #+#    #+#             */
-/*   Updated: 2025/05/12 12:34:56 by ekose            ###   ########.fr       */
+/*   Updated: 2025/05/13 01:17:13 by menasy           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -150,7 +150,6 @@ std::string HelperClass::createAndMove(std::string& str, std::string character)
 
 std::string HelperClass::readHtmlFile(const std::string& path) 
 {
-	std::cout << "PATH:***** " << path << std::endl;
     std::ifstream file(path.c_str());
     if (!file.is_open()) {
         return ""; // Hatayı işlicem kalsın bi 
@@ -200,4 +199,14 @@ std::string HelperClass::createErrorResponse(const std::string& status, const Se
 	return createHttpResponse(statusCode, statusMessage, "text/html",defaultErrMap[errCode]);
 }
 
-
+bool HelperClass::fileIsExist(const std::string& path)
+{
+	std::ifstream file(path.c_str());
+	if (file.is_open())
+	{
+		file.close();
+		return true;
+	}
+	else
+		return false;
+}
