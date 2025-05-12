@@ -106,7 +106,7 @@ std::vector<ServerConf> Tokenizer::createConfVec(std::vector<std::string>& sepVe
 	std::vector<std::string>::iterator it;
 	std::vector<ServerConf> serverVec(wordCounter(sepVec, "server"));
 	std::map<std::string, int> confKeyCounter;
-	int i;
+	size_t i;
 	
 	i = 0;
 	it = sepVec.begin()++;

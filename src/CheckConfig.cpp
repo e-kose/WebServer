@@ -6,12 +6,12 @@
 /*   By: menasy <menasy@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/30 12:42:10 by menasy            #+#    #+#             */
-/*   Updated: 2025/05/08 12:37:53 by menasy           ###   ########.fr       */
+/*   Updated: 2025/05/11 16:59:24 by menasy           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../include/CheckConfig.hpp"
-#include <unistd.h>
+#include "../include/ServerConf.hpp"
 
 CheckConfig::CheckConfig():Tokenizer(){}
 CheckConfig::CheckConfig(std::string argv) {
@@ -28,9 +28,6 @@ CheckConfig &CheckConfig::operator=(const CheckConfig &other) {
 	}
 	return *this;
 }
-
-
-
 
 void CheckConfig::checkFileExtensions() 
 {

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Parser.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: menasy <menasy@student.42.fr>              +#+  +:+       +#+        */
+/*   By: ekose <ekose@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/30 12:39:27 by menasy            #+#    #+#             */
-/*   Updated: 2025/05/03 01:41:36 by menasy           ###   ########.fr       */
+/*   Updated: 2025/05/12 08:00:00 by ekose            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,8 +15,15 @@
 Parser::Parser(){initKey();}
 
 Parser::~Parser() {}
-Parser::Parser(const Parser &other){}
+Parser::Parser(const Parser &other)
+{
+	*this = other;
+}
 Parser &Parser::operator=(const Parser &other) {
+	if (this == &other) {
+		return (*this);
+	}
+	this->serverConfVec = other.serverConfVec;
 	return *this;
 }
 

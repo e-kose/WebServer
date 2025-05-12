@@ -1,17 +1,20 @@
 #include "../include/ServerConf.hpp"
 
-ServerConf::ServerConf(): 
-	ip(""),
-	port(7979),
-	root(""),
-	server_name(),
-	index(),
-	body_size(0),
-	error_pages(),
-	locations(),
-	access_log(""),
-	error_log("")
-{}
+ServerConf::ServerConf()
+{
+	this->ip = "";
+	this->port = 7927;
+	this->root = "";
+	this->access_log = "";
+	this->error_log = "";
+	this->body_size = 0;
+	this->error_pages = std::map<int, std::string>();
+	this->locations = std::vector<LocationConf>();
+	this->server_name = std::vector<std::string>();
+	this->index = std::vector<std::string>();
+	this->locations = std::vector<LocationConf>();
+	this->defaultErroPage();
+}
 ServerConf::ServerConf(const ServerConf &other) {
 	*this = other;
 }
@@ -90,6 +93,12 @@ void ServerConf::setBodySize(size_t body_size) {
 	this->body_size = body_size;
 }
 
+void	ServerConf::setLocations(std::vector<LocationConf>& locations)
+{
+	this->locations = locations;
+}
+
+
 void ServerConf::addLocation(LocationConf& location) {
 	this->locations.push_back(location);
 }
@@ -121,5 +130,14 @@ void ServerConf::setAccesLog(std::string logFile){
 	std::string tmpValue = HelperClass::checkEmptyAndTrim(logFile, "Access log");
 	this->access_log = tmpValue;
 }
-
-
+void ServerConf::defaultErroPage()
+{
+	this->dflt_err_page[400] = "<html><body><h1>400 Bad Request</h1><p>Sunucu isteğinizi anlayamadı.</p></body></html>";
+	this->dflt_err_page[401] = "<html><body><h1>401 Unauthorized</h1><p>Kimlik doğrulama gerekiyor.</p></body></html>";
+	this->dflt_err_page[403] = "<html><body><h1>403 Forbidden</h1><p>Erişim izniniz yok.</p></body></html>";
+	this->dflt_err_page[404] = "<html><body><h1>404 Not Found</h1><p>Sayfa bulunamadı.</p></body></html>";
+	this->dflt_err_page[405] = "<html><body><h1>405 Method Not Allowed</h1><p>HTTP metodu desteklenmiyor.</p></body></html>";
+	this->dflt_err_page[500] = "<html><body><h1>500 Internal Server err</h1><p>Sunucu hatası oluştu.</p></body></html>";
+	this->dflt_err_page[501] = "<html><body><h1>501 Not Implemented</h1><p>İşlev desteklenmiyor.</p></body></html>";
+	this->dflt_err_page[503] = "<html><body><h1>503 Service Unavailable</h1><p>Sunucu hizmet veremiyor.</p></body></html>";
+}

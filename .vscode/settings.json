@@ -122,5 +122,6 @@
     "__config": "cpp"
   },
   "C_Cpp.codeAnalysis.clangTidy.enabled": true,
-  "C_Cpp.codeAnalysis.clangTidy.checks": "unused-*,-unused-exception-parameter"
+  "C_Cpp.codeAnalysis.clangTidy.checks": "unused-*,-unused-exception-parameter",
+  "C_Cpp.errorSquiggles": "disabled"
 }

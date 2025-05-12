@@ -6,7 +6,7 @@
 /*   By: ekose <ekose@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/02 15:50:42 by menasy            #+#    #+#             */
-/*   Updated: 2025/05/10 18:41:23 by ekose            ###   ########.fr       */
+/*   Updated: 2025/05/12 08:49:03 by ekose            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -116,6 +116,7 @@ ServerConf& WebServer::searchServerConf(std::vector<ServerConf>& confVec, std::s
 HttpRequest* WebServer::parseRecv(const std::string& request)
 {
 	std:: cout << "================== REQUEST ================== \n"  << request << std::endl;
+	
 	HttpRequest* httpRequest = new HttpRequest();
 	httpRequest->parseRequest(request);
 	return httpRequest;
@@ -124,7 +125,7 @@ HttpRequest* WebServer::parseRecv(const std::string& request)
 
 void	WebServer::initSocket()
 {
-	for (int i = 0; i < this->serverConfVec.size(); i++)
+	for (size_t i = 0; i < this->serverConfVec.size(); i++)
 	{
 		sockaddr_in hint;
 		int sockfd;
@@ -174,26 +175,27 @@ HttpRequest*	WebServer::pollInEvent(pollfd& pollStruct)
 	for (socketIt = socketMap.begin(); socketIt != socketMap.end(); socketIt++)
 	{
 		// Yeni Clientten veri Geldi İse
-		if (socketIt->first == pollStruct.fd)
-		{
-			sockaddr_in addr;
-			socklen_t addrlen = sizeof(addr);
-			int	clientSock = accept(pollStruct.fd, (sockaddr*)&addr, &addrlen);
-			if (clientSock < 0)
+			if (socketIt->first == pollStruct.fd)
 			{
-				for (int j = 0; j < socketIt->second.size(); j++)
+				sockaddr_in addr;
+				socklen_t addrlen = sizeof(addr);
+				int	clientSock = accept(pollStruct.fd, (sockaddr*)&addr, &addrlen);
+				if (clientSock < 0)
 				{
-					if (socketIt->second[j].getPort() == ntohs(addr.sin_port))
-						HelperClass::writeToFile(socketIt->second[j].getErrorLog(), "Accept error: " + std::string(strerror(errno)));
+					for (size_t j = 0; j < socketIt->second.size(); j++)
+					{
+						if (socketIt->second[j].getPort() == ntohs(addr.sin_port))
+							HelperClass::writeToFile(socketIt->second[j].getErrorLog(), "Accept error: " + std::string(strerror(errno)));
+					}
+					return NULL;
 				}
-				return NULL;
+				this->setNonBlocking(clientSock);
+				pollfd clientFd = {clientSock, (POLLIN | POLLOUT | POLLERR), 0};
+				pollVec.push_back(clientFd);
+				this->clientToAddrMap[clientSock] = addr;
+				check = 1;
+				break;
 			}
-			this->setNonBlocking(clientSock);
-			pollfd clientFd = {clientSock, (POLLIN | POLLOUT | POLLERR), 0};
-			pollVec.push_back(clientFd);
-			check = 1;
-			break;
-		}
 	}
 	// Mevcut clientten veri geldi ise
 	if (check == 0)
@@ -215,12 +217,41 @@ HttpRequest*	WebServer::pollInEvent(pollfd& pollStruct)
 	return httpRequest;
 }
 
-void WebServer::tryFiles(const LocationConf& locConf, const std::string& httpPath, const std::string& rootPath)
+void WebServer::fillTryFiles(LocationConf& locConf, const std::string& httpPath, const ServerConf* serverConfMap,  pollfd& pollStruct)
 {
-	if (!locConf.getRoot().empty())
+	std::vector<std::string> tryFilesVec = locConf.getTryFiles();
+	std::string newRoot, contentFile, errPage;
+	newRoot = locConf.getRoot();
+	if (newRoot.empty())
+		newRoot = serverConfMap->getRoot();
+	for (size_t i = 0; i < tryFilesVec.size(); i++)
 	{
-		//hehrangi bir dizinde bulunmazasa bunu yapacağım. 
+		if (tryFilesVec[i] == "$uri")
+		{
+			tryFilesVec[i] = HelperClass::mergeDirectory(newRoot,httpPath);
+			contentFile = HelperClass::readHtmlFile(tryFilesVec[i]);
+		}
+		else if (tryFilesVec[i] == "$uri/")
+		{
+			tryFilesVec[i] = HelperClass::mergeDirectory(newRoot,httpPath) + "/";	
+			contentFile = HelperClass::readHtmlFile(tryFilesVec[i]);
+		}
+		if (!contentFile.empty())
+		{
+			HelperClass::createHttpResponse(contentFile);
+			return ;
+		}
 	}
+	if (contentFile.empty())
+	{
+		errPage = tryFilesVec[tryFilesVec.size() -1];
+		errPage = HelperClass::createErrorResponse(errPage, serverConfMap->getErrorPages(), newRoot);
+		if (!errPage.empty())
+			send(pollStruct.fd, errPage.c_str(), errPage.length(), 0);
+		else	
+			throw std::runtime_error("Error page not found");
+	}
+		
 }
 
 std::string WebServer::findRequest(HttpRequest* httpRequest, pollfd& pollStruct)
@@ -228,10 +259,13 @@ std::string WebServer::findRequest(HttpRequest* httpRequest, pollfd& pollStruct)
 	std::cout << "GET METHOD HANDLER" << std::endl;
 	ServerConf* serverConfMap = this->clientToServerMap[pollStruct.fd];
 	std::vector<LocationConf> locVec = serverConfMap->getLocations();
-	std::string httpPath , mergedPath;	
+	std::string httpPath , mergedPath;
+	size_t rootIndex = 0;		
 	httpPath = httpRequest->getPath();
 	for (size_t i = 0; i < locVec.size(); i++)
 	{
+		if (locVec[i].getPath() == "/")
+			rootIndex = i;
 		if (httpPath == locVec[i].getPath())
 		{
 			if (locVec[i].getRoot().empty())
@@ -242,6 +276,12 @@ std::string WebServer::findRequest(HttpRequest* httpRequest, pollfd& pollStruct)
 				mergedPath += "/" + httpRequest->getRequestFile();
 			break ;
 		}
+	}
+	if (mergedPath.empty())
+	{
+		fillTryFiles(locVec[rootIndex], httpPath, serverConfMap, pollStruct);
+		serverConfMap->setLocations(locVec);
+		return "";
 	}
 	std::cout << "MERGED PATH: " << mergedPath << std::endl;
 	return mergedPath;
@@ -254,21 +294,21 @@ void WebServer::pollOutEvent(pollfd& pollStruct, HttpRequest* httpRequest)
 		std::cout << "HttpRequest is NULL" << std::endl;
 		return;
 	}
-	findRequest(httpRequest, pollStruct);
 	if (httpRequest->getMethod() == "GET")
 	{
-		std::cout << "GET METHOD" << std::endl;
-		
+		std::cout << httpRequest->getPath() << std::endl;
 	}
 	else if (httpRequest->getMethod() == "POST")
 	{
-		std::cout << "POST METHOD" << std::endl;
-		std::cout << "POST BODY: " << httpRequest->getBody() << std::endl;
-		std::cout << "Post bod size" << httpRequest->getBody().size() << std::endl;
+		
 	}
 	else if (httpRequest->getMethod() == "DELETE")
 	{
-		std::cout << "DELETE METHOD" << std::endl;
+		std::cout << "Path :" << httpRequest->getPath() << std::endl;
+		std::string path = findRequest(httpRequest, pollStruct);
+		std::cout << "Path: " << path << std::endl;
+		deleteMethod(httpRequest, pollStruct);
+		
 	}
 	else
 	{
@@ -284,11 +324,13 @@ void	WebServer::runServer()
 		int result = poll(pollVec.data(), pollVec.size(), -1);
 		if (result < 0)
 			throw std::runtime_error("poll() error. Terminating server.");
-		for (int i = 0; i < pollVec.size(); i++)
+		for (size_t i = 0; i < pollVec.size(); i++)
 		{
 			if (pollVec[i].revents & POLLIN)
 			{
 				// std::cout << "POLLFD: " << pollVec[i].fd << std::endl;
+				if (httpRequest != NULL)
+					delete httpRequest;
 				httpRequest = this->pollInEvent(pollVec[i]); // delete yapmayı unutma 
 				if (httpRequest)
 				{
@@ -303,8 +345,8 @@ void	WebServer::runServer()
 				
 				pollVec[i].events = POLLIN;
 			}
-			
+
 		}
+
 	}
-	
 }

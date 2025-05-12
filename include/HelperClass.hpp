@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   HelperClass.hpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: menasy <menasy@student.42.fr>              +#+  +:+       +#+        */
+/*   By: ekose <ekose@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/04 18:10:20 by menasy            #+#    #+#             */
-/*   Updated: 2025/05/11 00:56:44 by menasy           ###   ########.fr       */
+/*   Updated: 2025/05/12 10:20:14 by ekose            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,7 +19,10 @@
 #include <iterator>
 #include <fstream>
 #include <sstream>
+#include <unistd.h>
+#include <cstdlib>
 
+class ServerConf;
 class HelperClass
 {
 	private:
@@ -39,7 +42,8 @@ class HelperClass
 		static void	writeToFile(std::string, std::string);
 		static std::string createAndMove(std::string& str, std::string character);
 		static std::string readHtmlFile(const std::string& path);
-		static std::string createHttpResponse(const std::string& htmlContent);
+		static std::string createHttpResponse(const std::string& htmlContent, const std::string&);
 		static std::string mergeDirectory(const std::string& rootPath, const std::string& httpPath);
+		static std::string createErrorResponse(const std::string& status, const ServerConf& conf, const std::string& rootPAth);
 
 };

@@ -1,18 +1,30 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   LocationConf.cpp                                   :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: ekose <ekose@student.42.fr>                +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2025/05/11 14:24:16 by ekose             #+#    #+#             */
+/*   Updated: 2025/05/12 08:05:20 by ekose            ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "../include/LocationConf.hpp"
 
-LocationConf::LocationConf() : 
-	path(""),
-	autoIndex(false),
-	upload_store(""),
-	root(""),
-	cgi_extension(""),
-	cgi_path(""),
-	methods(),
-	cgi_pass(""),
-	return_(),
-	try_files(),
-	index()
+LocationConf::LocationConf()
 {
+	this->path = "";
+	this->autoIndex = false;
+	this->upload_store = "";
+	this->root = "";
+	this->cgi_extension = "";
+	this->cgi_path = "";
+	this->methods = std::vector<std::string>();
+	this->cgi_pass = "";
+	this->return_ = std::map<int, std::string>();
+	this->try_files = std::vector<std::string>();
+	this->index = std::vector<std::string>();
 }
 LocationConf::LocationConf(const LocationConf& copy) {
 	*this = copy;
@@ -125,7 +137,7 @@ void LocationConf::addTryFiles(std::string file){
 	if (file == ";" && this->try_files.size() != 0)
 		return;
 	std::string tmpValue = HelperClass::checkEmptyAndTrim(file, "Try files");
-	if(tmpValue[0] == '=')
+	if (tmpValue[0] == '=')
 		tmpValue = tmpValue.substr(1);
 	this->try_files.push_back(tmpValue);
 }
