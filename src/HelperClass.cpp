@@ -6,7 +6,7 @@
 /*   By: ekose <ekose@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/12 07:50:19 by ekose             #+#    #+#             */
-/*   Updated: 2025/05/12 10:28:03 by ekose            ###   ########.fr       */
+/*   Updated: 2025/05/12 12:34:56 by ekose            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -150,6 +150,7 @@ std::string HelperClass::createAndMove(std::string& str, std::string character)
 
 std::string HelperClass::readHtmlFile(const std::string& path) 
 {
+	std::cout << "PATH:***** " << path << std::endl;
     std::ifstream file(path.c_str());
     if (!file.is_open()) {
         return ""; // Hatayı işlicem kalsın bi 
@@ -159,20 +160,21 @@ std::string HelperClass::readHtmlFile(const std::string& path)
     return buffer.str();
 }
 
-std::string HelperClass::createHttpResponse(const std::string& htmlContent, const std::string& status) 
+std::string HelperClass::createHttpResponse(
+	const std::string& statusCode, const std::string& statusMessage,
+	const std::string& contentType, const std::string& body) 
 {
 	std::ostringstream ss;
-
-	ss << htmlContent.size();
-    std::string response = 
-        "HTTP/1.1 " + status+ "\r\n"
-        "Content-Type: text/html; charset=UTF-8\r\n"
-        "Content-Length: " + ss.str() + "\r\n"
-        "Connection: close\r\n"
-        "\r\n" // Başlık ve gövdeyi ayıran boş satır
-        + htmlContent;
-    return response;
+	ss << body.size();	
+	std::string response = "HTTP/1.1 " + statusCode + " " + statusMessage + "\r\n";
+	response += "Content-Type: " + contentType + "\r\n";
+	response += "Content-Length: " + ss.str() + "\r\n";
+	response += "Connection: close\r\n"; 
+	response += "\r\n";
+	response += body;	
+	return response;
 }
+
 
 std::string HelperClass::mergeDirectory(const std::string& rootPath, const std::string& httpPath)
 {
@@ -182,20 +184,20 @@ std::string HelperClass::mergeDirectory(const std::string& rootPath, const std::
 std::string HelperClass::createErrorResponse(const std::string& status, const ServerConf& conf, const std::string& rootPAth)
 {
 	std::string content;
-	std::map<int, std::string> errMap = conf.getError.
-	// int errCode = std::atoi(status.c_str());
-	// if (errMap.find(errCode) != errMap.end())
-	// {
-	// 	content = readHtmlFile(mergeDirectory(rootPAth, errMap.at(errCode)));
-	// 	if (content.empty())
-	// 	{
-	// 		createHttpResponse()
-	// 	}
-	// 	else
-	// 		return createHttpResponse(content, status);
-	// }
+	size_t pos = status.find_first_of(" ");
+	std::string statusCode = status.substr(0, pos);
+	std::string statusMessage = status.substr(pos + 1);
+	std::map<int, std::string> errMap = conf.getErrorPages();
+	std::map<int, std::string> defaultErrMap = conf.getDfltErrPage();
+	int errCode = std::atoi(status.c_str());
 	
-	
-	return "";
+	if (errMap.find(errCode) != errMap.end())
+	{
+		content = readHtmlFile(mergeDirectory(rootPAth, errMap[errCode]));
+		if (!content.empty())
+			return createHttpResponse(statusCode, statusMessage, "text/html", content);
+	}
+	return createHttpResponse(statusCode, statusMessage, "text/html",defaultErrMap[errCode]);
 }
+
 

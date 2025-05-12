@@ -6,7 +6,7 @@
 /*   By: ekose <ekose@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/02 15:50:42 by menasy            #+#    #+#             */
-/*   Updated: 2025/05/12 08:49:03 by ekose            ###   ########.fr       */
+/*   Updated: 2025/05/12 12:48:42 by ekose            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -220,7 +220,7 @@ HttpRequest*	WebServer::pollInEvent(pollfd& pollStruct)
 void WebServer::fillTryFiles(LocationConf& locConf, const std::string& httpPath, const ServerConf* serverConfMap,  pollfd& pollStruct)
 {
 	std::vector<std::string> tryFilesVec = locConf.getTryFiles();
-	std::string newRoot, contentFile, errPage;
+	std::string newRoot, contentFile, errPage, sendMessage;
 	newRoot = locConf.getRoot();
 	if (newRoot.empty())
 		newRoot = serverConfMap->getRoot();
@@ -238,22 +238,73 @@ void WebServer::fillTryFiles(LocationConf& locConf, const std::string& httpPath,
 		}
 		if (!contentFile.empty())
 		{
-			HelperClass::createHttpResponse(contentFile);
+			sendMessage = HelperClass::createHttpResponse("200","OK", "text/html", contentFile);
+			sendHandler(pollStruct,sendMessage);
 			return ;
 		}
 	}
 	if (contentFile.empty())
 	{
 		errPage = tryFilesVec[tryFilesVec.size() -1];
-		errPage = HelperClass::createErrorResponse(errPage, serverConfMap->getErrorPages(), newRoot);
-		if (!errPage.empty())
-			send(pollStruct.fd, errPage.c_str(), errPage.length(), 0);
-		else	
-			throw std::runtime_error("Error page not found");
+		sendMessage = HelperClass::createErrorResponse(errPage + "not found", *serverConfMap, newRoot);
+		this->sendHandler(pollStruct,sendMessage);
 	}
 		
 }
 
+bool WebServer::methodIsExist(const std::vector<std::string>& locMethodsvec, const std::string& requestMethod, ServerConf* srvConf, pollfd& pollStruct)
+{
+	for (size_t i = 0; i < locMethodsvec.size(); i++)
+	{
+		if (locMethodsvec[i] == requestMethod)
+			return true;
+		else
+		{
+			std::string sendMessage;
+			sendMessage = HelperClass::createErrorResponse("405 Method Not Allowed", *srvConf, srvConf->getRoot());	
+			sendHandler(pollStruct,sendMessage);
+		}
+	}
+	return false;
+}
+void WebServer::sendHandler(pollfd& pollStruct, std::string& sendMessage)
+{
+	// 3 kere sayfayı yenileyince seg yiyoruz bakcam.
+	int checkSend = 0;
+	int lengthMessage;
+	
+	lengthMessage = sendMessage.length();
+	while (checkSend < lengthMessage)
+	{
+		checkSend = send(pollStruct.fd, sendMessage.c_str(), sendMessage.length(), 0);
+		if (checkSend == -1)
+		{
+			int& errCode = errno;
+			if (errCode == EAGAIN || errCode == EWOULDBLOCK)
+			{
+				//Soket non-blocking modda ve veri göndermek için yeterli buffer alanı yok demek. Yeniden veri gondercem.
+				pollStruct.events = POLLOUT;
+				break ; 
+			}
+			else
+			{
+				//errCode == ECONNRESET ||  errCode == EPIPE || errCode == EBADF
+				//İstemci bağlantıyı aniden kapatmış.
+				if (errCode != EBADF) // ebadf socket zaten geçersiz olduğı için kapatmaya gerek yok
+					close(pollStruct.fd);
+				for (std::vector<pollfd>::iterator it = this->pollVec.begin(); it != this->pollVec.end(); ++it) 
+				{
+					if (it->fd == pollStruct.fd) 
+					{
+						this->pollVec.erase(it);
+						break; 
+					}
+				}
+				break ;
+			}
+		}
+	}
+}
 std::string WebServer::findRequest(HttpRequest* httpRequest, pollfd& pollStruct)
 {
 	std::cout << "GET METHOD HANDLER" << std::endl;
@@ -268,13 +319,19 @@ std::string WebServer::findRequest(HttpRequest* httpRequest, pollfd& pollStruct)
 			rootIndex = i;
 		if (httpPath == locVec[i].getPath())
 		{
-			if (locVec[i].getRoot().empty())
-				mergedPath = HelperClass::mergeDirectory(serverConfMap->getRoot(), httpPath);
+			if (methodIsExist(locVec[i].getMethods(),httpRequest->getMethod(),serverConfMap, pollStruct))
+			{
+				if (locVec[i].getRoot().empty())
+					mergedPath = HelperClass::mergeDirectory(serverConfMap->getRoot(), httpPath);
+				else
+					mergedPath = HelperClass::mergeDirectory(locVec[i].getRoot(), httpPath);
+				if (!httpRequest->getRequestFile().empty())
+					mergedPath += "/" + httpRequest->getRequestFile();
+				break ;
+			}
 			else
-				mergedPath = HelperClass::mergeDirectory(locVec[i].getRoot(), httpPath);
-			if (!httpRequest->getRequestFile().empty())
-				mergedPath += "/" + httpRequest->getRequestFile();
-			break ;
+				return "";
+			
 		}
 	}
 	if (mergedPath.empty())
@@ -289,26 +346,24 @@ std::string WebServer::findRequest(HttpRequest* httpRequest, pollfd& pollStruct)
 
 void WebServer::pollOutEvent(pollfd& pollStruct, HttpRequest* httpRequest)
 {
+	std::string method = httpRequest->getMethod();
 	if (httpRequest == NULL)
 	{
 		std::cout << "HttpRequest is NULL" << std::endl;
 		return;
 	}
-	if (httpRequest->getMethod() == "GET")
-	{
-		std::cout << httpRequest->getPath() << std::endl;
-	}
-	else if (httpRequest->getMethod() == "POST")
+	if (method== "GET")
 	{
 		
 	}
-	else if (httpRequest->getMethod() == "DELETE")
+	else if (method== "POST")
 	{
-		std::cout << "Path :" << httpRequest->getPath() << std::endl;
-		std::string path = findRequest(httpRequest, pollStruct);
-		std::cout << "Path: " << path << std::endl;
+		
+	}
+	else if (method== "DELETE")
+	{
 		deleteMethod(httpRequest, pollStruct);
-		
+		delete httpRequest;
 	}
 	else
 	{

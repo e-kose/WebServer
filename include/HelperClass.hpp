@@ -6,7 +6,7 @@
 /*   By: ekose <ekose@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/04 18:10:20 by menasy            #+#    #+#             */
-/*   Updated: 2025/05/12 10:20:14 by ekose            ###   ########.fr       */
+/*   Updated: 2025/05/12 11:51:59 by ekose            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,6 +21,10 @@
 #include <sstream>
 #include <unistd.h>
 #include <cstdlib>
+#include <sys/socket.h>
+#include <sys/poll.h>
+#include "ServerConf.hpp"
+
 
 class ServerConf;
 class HelperClass
@@ -42,8 +46,9 @@ class HelperClass
 		static void	writeToFile(std::string, std::string);
 		static std::string createAndMove(std::string& str, std::string character);
 		static std::string readHtmlFile(const std::string& path);
-		static std::string createHttpResponse(const std::string& htmlContent, const std::string&);
+		static std::string createHttpResponse(
+			const std::string& statusCode, const std::string& statusMessage,
+			const std::string& contentType, const std::string& body); 
 		static std::string mergeDirectory(const std::string& rootPath, const std::string& httpPath);
 		static std::string createErrorResponse(const std::string& status, const ServerConf& conf, const std::string& rootPAth);
-
 };

@@ -33,6 +33,7 @@ ServerConf &ServerConf::operator=(const ServerConf &other) {
 	this->server_name = other.server_name;
 	this->index = other.index;
 	this->body_size = other.body_size;
+	this->dflt_err_page = other.dflt_err_page;
 	return *this;
 }
 ServerConf::~ServerConf() {
@@ -68,6 +69,11 @@ std::string ServerConf::getErrorLog()const{
 std::string ServerConf::getAccessLog()const{
 	return this->access_log;
 }
+
+std::map<int, std::string> ServerConf::getDfltErrPage() const {
+	return this->dflt_err_page;
+}
+
 void ServerConf::setIp(std::string ip) 
 {
 	std::string tmpValue = HelperClass::trimLine(ip);
@@ -81,11 +87,11 @@ void ServerConf::setPort(int port)
 		throw std::runtime_error("Invalid port number");
 	this->port = port;
 }
+
 void ServerConf::setRoot(std::string root) {
 	std::string tmpValue = HelperClass::checkEmptyAndTrim(root, "Root");
 	this->root = tmpValue;
 }
-
 
 void ServerConf::setBodySize(size_t body_size) {
 	if (body_size <= 0)
@@ -98,10 +104,10 @@ void	ServerConf::setLocations(std::vector<LocationConf>& locations)
 	this->locations = locations;
 }
 
-
 void ServerConf::addLocation(LocationConf& location) {
 	this->locations.push_back(location);
 }
+
 void ServerConf::addErrorPage(int code, std::string page) {
 	if (code < 100 || code > 599)
 		throw std::runtime_error("Invalid error code");
@@ -110,26 +116,31 @@ void ServerConf::addErrorPage(int code, std::string page) {
 	std::string tmpValue = HelperClass::checkEmptyAndTrim(page, "Error page");
 	this->error_pages[code] = tmpValue;
 }
+
 void ServerConf::addServerName(std::string name){
 	if (name == ";" && this->server_name.size() != 0)
 		return;
 	std::string tmpValue = HelperClass::checkEmptyAndTrim(name, "Server name");
 	this->server_name.push_back(tmpValue);
 }
+
 void ServerConf::addIndex(std::string index){
 	if (index == ";" && this->index.size() != 0)
 		return;
 	std::string tmpValue = HelperClass::checkEmptyAndTrim(index, "Index");
 	this->index.push_back(tmpValue);
 }
+
 void ServerConf::setErrorLog(std::string logFile){
 	std::string tmpValue = HelperClass::checkEmptyAndTrim(logFile, "Error log");
 	this->error_log = tmpValue;
 }
+
 void ServerConf::setAccesLog(std::string logFile){
 	std::string tmpValue = HelperClass::checkEmptyAndTrim(logFile, "Access log");
 	this->access_log = tmpValue;
 }
+
 void ServerConf::defaultErroPage()
 {
 	this->dflt_err_page[400] = "<html><body><h1>400 Bad Request</h1><p>Sunucu isteğinizi anlayamadı.</p></body></html>";

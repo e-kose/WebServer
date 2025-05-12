@@ -42,7 +42,7 @@ class ServerConf {
 		std::vector<std::string>	getServerName() const;
 		std::vector<LocationConf>	getLocations() const;
 		std::map<int, std::string>	getErrorPages() const;
-
+		std::map<int, std::string>	getDfltErrPage() const;
 		// SET Functions
 		void						setIp(std::string ip);
 		void						setPort(int port);

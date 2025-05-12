@@ -6,3 +6,34 @@
 [Mon May 12 08:51:54 2025] Socket info: 127.0.0.1:56502 -> 127.0.0.1:8080 DELETEte.txt /upload 404 Not Found
 [Mon May 12 08:52:54 2025] Socket info: 127.0.0.1:35976 -> 127.0.0.1:8080 DELETE /uploadte.txt 404 Not Found
 [Mon May 12 08:53:47 2025] Socket info: 127.0.0.1:51410 -> 127.0.0.1:8080 DELETE /upload/te.txt 404 Not Found
+[Mon May 12 12:19:52 2025] Socket info: 127.0.0.1:46772 -> 127.0.0.1:8080 DELETE /upload/te.txt 404
+
+[Mon May 12 12:20:31 2025] Socket info: 127.0.0.1:45716 -> 127.0.0.1:8080 DELETE /upload/te.txt 404
+
+[Mon May 12 12:20:51 2025] Socket info: 127.0.0.1:35130 -> 127.0.0.1:8080 DELETE /upload/te.txt 404
+
+[Mon May 12 12:21:14 2025] Socket info: 127.0.0.1:58560 -> 127.0.0.1:8080 DELETE /upload/te.txt 404
+
+[Mon May 12 12:24:23 2025] Socket info: 127.0.0.1:46220 -> 127.0.0.1:8080 DELETE /upload/te.txt 404
+
+[Mon May 12 12:26:33 2025] Socket info: 127.0.0.1:47562 -> 127.0.0.1:8080 DELETE /upload/te.txt 404
+[Mon May 12 12:26:51 2025] Socket info: 127.0.0.1:39664 -> 127.0.0.1:8080 DELETE /upload/te.txt 404
+[Mon May 12 12:27:19 2025] Socket info: 127.0.0.1:36590 -> 127.0.0.1:8080 DELETE /upload/te.txt 404
+[Mon May 12 12:27:41 2025] Socket info: 127.0.0.1:60368 -> 127.0.0.1:8080 DELETE /upload/te.txt 404
+[Mon May 12 12:28:21 2025] Socket info: 127.0.0.1:43004 -> 127.0.0.1:8080 DELETE /upload/te.txt 404
+[Mon May 12 12:28:36 2025] Socket info: 127.0.0.1:36468 -> 127.0.0.1:8080 DELETE /upload/te.txt 404
+[Mon May 12 12:29:18 2025] Socket info: 127.0.0.1:33974 -> 127.0.0.1:8080 DELETE /upload/te.txt 404
+[Mon May 12 12:30:23 2025] Socket info: 127.0.0.1:47950 -> 127.0.0.1:8080 DELETE /upload/te.txt 404
+[Mon May 12 12:31:11 2025] Socket info: 127.0.0.1:33656 -> 127.0.0.1:8080 DELETE /upload/te.txt 404
+[Mon May 12 12:31:57 2025] Socket info: 127.0.0.1:60728 -> 127.0.0.1:8080 DELETE /upload/te.txt 404
+[Mon May 12 12:32:24 2025] Socket info: 127.0.0.1:60734 -> 127.0.0.1:8080 DELETE /upload/te.txt 404
+[Mon May 12 12:32:41 2025] Socket info: 127.0.0.1:47280 -> 127.0.0.1:8080 DELETE /upload/te.txt 404
+[Mon May 12 12:33:41 2025] Socket info: 127.0.0.1:60416 -> 127.0.0.1:8080 DELETE /upload/te.txt 404
+[Mon May 12 12:34:13 2025] Socket info: 127.0.0.1:45300 -> 127.0.0.1:8080 DELETE /upload/te.txt 404
+[Mon May 12 12:35:26 2025] Socket info: 127.0.0.1:47826 -> 127.0.0.1:8080 DELETE /upload/te.txt 404
+[Mon May 12 12:36:09 2025] Socket info: 127.0.0.1:42994 -> 127.0.0.1:8080 DELETE /upload/te.txt 404
+[Mon May 12 12:36:40 2025] Socket info: 127.0.0.1:41868 -> 127.0.0.1:8080 DELETE /upload/te.txt 404
+[Mon May 12 12:37:37 2025] Socket info: 127.0.0.1:34242 -> 127.0.0.1:8080 DELETE /upload/te.txt 200
+[Mon May 12 12:38:49 2025] Socket info: 127.0.0.1:57420 -> 127.0.0.1:8080 DELETE /upload/te.txt 200
+[Mon May 12 12:43:52 2025] Socket info: 127.0.0.1:56390 -> 127.0.0.1:8080 DELETE /upload/te.txt 404
+[Mon May 12 12:44:13 2025] Socket info: 127.0.0.1:43496 -> 127.0.0.1:8080 DELETE /upload/te.txt 200
