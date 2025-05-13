@@ -6,7 +6,7 @@
 /*   By: menasy <menasy@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/02 15:50:42 by menasy            #+#    #+#             */
-/*   Updated: 2025/05/13 18:11:03 by menasy           ###   ########.fr       */
+/*   Updated: 2025/05/14 00:42:29 by menasy           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -264,14 +264,14 @@ void WebServer::clientRead(pollfd& pollStruct)
     }
 }
 
-void WebServer::tryFiles(LocationConf& locConf, const std::string& httpPath, const ServerConf* serverConfMap,  pollfd& pollStruct)
+void WebServer::tryFiles(LocationConf& locConf, const std::string& httpPath, const ServerConf* serverConf,  pollfd& pollStruct)
 {
 	std::vector<std::string> tryFilesVec = locConf.getTryFiles();
 	std::string newRoot, contentFile, errPage, sendMessage, resultDirectory;
 	std::string::size_type pos1;
 	newRoot = locConf.getRoot();
 	if (newRoot.empty())
-		newRoot = serverConfMap->getRoot();
+		newRoot = serverConf->getRoot();
 	for (size_t i = 0; i < tryFilesVec.size(); i++)
 	{
 		pos1 = tryFilesVec[i].find("$uri");
@@ -282,10 +282,10 @@ void WebServer::tryFiles(LocationConf& locConf, const std::string& httpPath, con
 		else
 			tryFilesVec[i] = httpPath + tryFilesVec[i].substr(pos1 + 4, tryFilesVec[i].length());
 		resultDirectory = HelperClass::mergeDirectory(newRoot, tryFilesVec[i]);
-		contentFile = HelperClass::readHtmlFile(resultDirectory);
+		contentFile = this->readHtmlFile(resultDirectory, *serverConf);
 		if (!contentFile.empty())
 		{	
-			sendMessage = HelperClass::createHttpResponse("200","OK", "text/html", contentFile);
+			sendMessage = createHttpResponse("200","OK", "text/html", contentFile);
 			sendHandler(pollStruct,sendMessage);
 			return ;
 		}
@@ -293,10 +293,10 @@ void WebServer::tryFiles(LocationConf& locConf, const std::string& httpPath, con
 	if (contentFile.empty())
 	{
 		errPage = tryFilesVec[tryFilesVec.size() -1];
-		sendMessage = HelperClass::createErrorResponse(errPage + "Not Found", *serverConfMap, newRoot);
+		sendMessage = this->createErrorResponse(errPage + "Not Found", *serverConf, newRoot);
 		this->sendHandler(pollStruct,sendMessage);
 	}
-	
+	std::cout << "TRY FILES: Finisheddddddd " << std::endl;
 }
 
 bool WebServer::methodIsExist(const std::vector<std::string>& locMethodsvec, const std::string& requestMethod, ServerConf* srvConf, pollfd& pollStruct)
@@ -310,7 +310,7 @@ bool WebServer::methodIsExist(const std::vector<std::string>& locMethodsvec, con
 	if (!check)
 	{
 		std::string sendMessage;
-		sendMessage = HelperClass::createErrorResponse("405 Method Not Allowed", *srvConf, srvConf->getRoot());	
+		sendMessage = this->createErrorResponse("405 Method Not Allowed", *srvConf, srvConf->getRoot());	
 		sendHandler(pollStruct,sendMessage);
 		return false;
 	}
@@ -374,8 +374,8 @@ bool WebServer::indexHandler(pollfd& pollStruct, std::string& mergedPath, const 
 std::string WebServer::findRequest(pollfd& pollStruct)
 {
 	std::cout << "FIND REQUEST" << std::endl;
-	ServerConf* serverConfMap = this->clientToServerMap[pollStruct.fd];
-	std::vector<LocationConf> locVec = serverConfMap->getLocations();
+	ServerConf* serverConf = this->clientToServerMap[pollStruct.fd];
+	std::vector<LocationConf> locVec = serverConf->getLocations();
 	std::cout << "SERVER ?????????????????????????\n";
 	std::string httpPath , mergedPath;
 	size_t rootIndex = 0;		
@@ -387,10 +387,10 @@ std::string WebServer::findRequest(pollfd& pollStruct)
 			rootIndex = i;
 		if (httpPath == locVec[i].getPath())
 		{
-			if (methodIsExist(locVec[i].getMethods(),this->clientRequests[pollStruct.fd]->getMethod(),serverConfMap, pollStruct))
+			if (methodIsExist(locVec[i].getMethods(),this->clientRequests[pollStruct.fd]->getMethod(),serverConf, pollStruct))
 			{
 				if (locVec[i].getRoot().empty())
-					mergedPath = HelperClass::mergeDirectory(serverConfMap->getRoot(), httpPath);
+					mergedPath = HelperClass::mergeDirectory(serverConf->getRoot(), httpPath);
 				else
 					mergedPath = HelperClass::mergeDirectory(locVec[i].getRoot(), httpPath);
 				if (!this->clientRequests[pollStruct.fd]->getRequestFile().empty())
@@ -401,7 +401,7 @@ std::string WebServer::findRequest(pollfd& pollStruct)
 					if (locVec[i].getIndex().size() != 0)
 						indexVec = locVec[i].getIndex();
 					else
-						indexVec = serverConfMap->getIndex();
+						indexVec = serverConf->getIndex();
 					if (!indexHandler(pollStruct,mergedPath, indexVec))
 						return "";
 				}
@@ -413,9 +413,8 @@ std::string WebServer::findRequest(pollfd& pollStruct)
 		}
 	}
 	if (mergedPath.empty())
-	{
-		//buraya gitmeden de uzantıyı halletmem lazım.
-		tryFiles(locVec[rootIndex], httpPath, serverConfMap, pollStruct);
+	{		//buraya gitmeden de uzantıyı halletmem lazım.
+		tryFiles(locVec[rootIndex], httpPath, serverConf, pollStruct);
 		return "";
 	}
 	std::cout << "MERGED PATH: " << mergedPath << std::endl;

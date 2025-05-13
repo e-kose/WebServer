@@ -10,7 +10,8 @@ SRCS = main.cpp \
 	   src/WebServer.cpp \
 	   src/HelperClass.cpp \
 	   src/HttpRequest.cpp \
-	   src/MethodTransaction.cpp
+	   src/MethodTransaction.cpp \
+	   src/FileHandler.cpp 
 
 OBJS = $(SRCS:.cpp=.o)
 

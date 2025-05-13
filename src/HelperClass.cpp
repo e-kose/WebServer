@@ -6,11 +6,12 @@
 /*   By: menasy <menasy@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/12 07:50:19 by ekose             #+#    #+#             */
-/*   Updated: 2025/05/13 18:54:50 by menasy           ###   ########.fr       */
+/*   Updated: 2025/05/14 00:51:44 by menasy           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../include/HelperClass.hpp"
+
 
 HelperClass::HelperClass() {
 }
@@ -156,83 +157,40 @@ std::string HelperClass::createAndMove(std::string& str, std::string character)
 	return dest;
 }
 
-std::string HelperClass::checkFileWithExtension(const std::string& path)
+std::string HelperClass::checkFileWithExtension(const std::string& path, const std::string& cgiExt)
 {
-	
-	std::string fileExt[6] = {".html", ".txt", ".json", ".py", ".cpp", ".c"};
+	std::cout << "CHECK FILE WITH EXTENSION:: " << path <<std::endl;
 	std::ifstream file;
-	for (size_t i = 0; i < sizeof(fileExt) / sizeof(std::string); i++)
+	std::vector<std::string> extensionsVec;
+	(void) cgiExt;
+	extensionsVec.push_back(".html");
+	extensionsVec.push_back(".txt");
+	extensionsVec.push_back(".php"); // geçici olarak koydum extensinlarla doldurulması laızm
+	for (size_t i = 0; i < extensionsVec.size(); i++)
 	{
-		file.open((path + fileExt[i]).c_str());
-		if (file.is_open() && i < 2)
-			return path + fileExt[i];
-		// else if (file.is_open() && i > 2)
-		// {
-		// 	//Forbiden yapılmalı
-		// 	createErrorResponse()
-		// }
+		std::string tmpPath = path + extensionsVec[i];
+		file.open(tmpPath.c_str());
+		if (file.is_open())
+			return tmpPath;
 	}
 	return path;
 }
-std::string HelperClass::readHtmlFile(const std::string& path) 
+bool 	HelperClass::fileIsExecutable(const std::string& path, const std::string& extension, const std::string& cgiExtStr)
 {
-    std::ifstream file(path.c_str());
-	std::string extensionVal;
-	if (!file.is_open()) {
-		extensionVal = checkFileWithExtension(path);
-        if (extensionVal == path)
-			return "";
-		else
-		{
-			file.open(extensionVal.c_str());
-			if (!file.is_open())
-				return "";
-		}
-    }
-    std::stringstream buffer;
-    buffer << file.rdbuf();
-	file.close();
-	return buffer.str();
+	if (path.find("cgi-bin/") == std::string::npos)
+		return false;
+	std::vector<std::string> cgiExtVec = splitString(cgiExtStr, ' ');
+	for (size_t i = 0; i < cgiExtVec[i].size(); i++)
+	{
+		if (cgiExtVec[i] == extension)
+			return true;
+	}
+	return false;
 }
-
-std::string HelperClass::createHttpResponse(
-	const std::string& statusCode, const std::string& statusMessage,
-	const std::string& contentType, const std::string& body) 
-{
-	std::ostringstream ss;
-	ss << body.size();	
-	std::string response = "HTTP/1.1 " + statusCode + " " + statusMessage + "\r\n";
-	response += "Content-Type: " + contentType + "\r\n";
-	response += "Content-Length: " + ss.str() + "\r\n";
-	response += "Connection: close\r\n"; 
-	response += "\r\n";
-	response += body;	
-	return response;
-}
-
 
 std::string HelperClass::mergeDirectory(const std::string& rootPath, const std::string& httpPath)
 {
 	return	(rootPath + httpPath);
-}
-
-std::string HelperClass::createErrorResponse(const std::string& status, const ServerConf& conf, const std::string& rootPAth)
-{
-	std::string content;
-	size_t pos = status.find_first_of(" ");
-	std::string statusCode = status.substr(0, pos);
-	std::string statusMessage = status.substr(pos + 1);
-	std::map<int, std::string> errMap = conf.getErrorPages();
-	std::map<int, std::string> defaultErrMap = conf.getDfltErrPage();
-	int errCode = std::atoi(status.c_str());
-	
-	if (errMap.find(errCode) != errMap.end())
-	{
-		content = readHtmlFile(mergeDirectory(rootPAth, errMap[errCode]));
-		if (!content.empty())
-			return createHttpResponse(statusCode, statusMessage, "text/html", content);
-	}
-	return createHttpResponse(statusCode, statusMessage, "text/html",defaultErrMap[errCode]);
 }
 
 bool HelperClass::fileIsExist(const std::string& path)
@@ -247,8 +205,4 @@ bool HelperClass::fileIsExist(const std::string& path)
 		return false;
 }
 
-// std::string HelperClass::getFileExtension(const std::string& filename)
-// {
-// 	if (file)
-// }
 

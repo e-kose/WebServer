@@ -6,7 +6,7 @@
 /*   By: menasy <menasy@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/02 15:40:04 by menasy            #+#    #+#             */
-/*   Updated: 2025/05/13 17:06:37 by menasy           ###   ########.fr       */
+/*   Updated: 2025/05/14 00:03:15 by menasy           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -64,6 +64,17 @@ class WebServer
 		bool 									methodIsExist(const std::vector<std::string>& locMethodsvec, const std::string& requestMethod, ServerConf* srvConf, pollfd&);
 		void									sendHandler(pollfd& pollStruct, std::string& sendMessage);
 		void 									sendResponse(pollfd&, const std::string& status);
+		std::string 							readHtmlFile(const std::string& path, const ServerConf& conf); 
+		std::string 							createErrorResponse(const std::string& status, const ServerConf& conf, const std::string& rootPAth);
+		std::string 							createHttpResponse(
+																const std::string& statusCode, const std::string& statusMessage,
+																const std::string& contentType, const std::string& body);
+		std::string 							sendCgi(const std::string&filePath, const std::string& fileExt);
+		std::string findLocation(const ServerConf& conf, std::string locStr);
+
+
+
+
 
 	public:
 		WebServer(std::vector<ServerConf>& serverConfVec);

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   MethodTransaction.cpp                              :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ekose <ekose@student.42.fr>                +#+  +:+       +#+        */
+/*   By: menasy <menasy@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/12 07:52:01 by ekose             #+#    #+#             */
-/*   Updated: 2025/05/13 11:09:34 by ekose            ###   ########.fr       */
+/*   Updated: 2025/05/13 23:43:36 by menasy           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,14 +25,14 @@ void  WebServer::sendResponse(pollfd& pollStruct, const std::string& status)
 						+ " " + status.substr(0,pos);
 	HelperClass::writeToFile("access.log",log);
 	if (code >= 400)
-		response = HelperClass::createErrorResponse(status.substr(0, pos), *clientToServerMap[fd], clientToServerMap[fd]->getRoot());
+		response = this->createErrorResponse(status.substr(0, pos), *clientToServerMap[fd], clientToServerMap[fd]->getRoot());
 	else if(code >= 200 && code <= 205)
 	{
 		std::string httpMethod = this->clientRequests[pollStruct.fd]->getMethod();
 		if (httpMethod == "GET")
-			response = HelperClass::createHttpResponse(status.substr(0, pos), "OK", "text/html", HelperClass::readHtmlFile(this->resultPath));
+			response = this->createHttpResponse(status.substr(0, pos), "OK", "text/html", this->readHtmlFile(this->resultPath, *this->clientToServerMap[fd]));
 		else if (httpMethod == "DELETE")
-			response = HelperClass::createHttpResponse(status.substr(0, pos), "OK", "text/html", HelperClass::readHtmlFile(clientToServerMap[fd]->getRoot() + "/index.html"));
+			response = this->createHttpResponse(status.substr(0, pos), "OK", "text/html", this->readHtmlFile(clientToServerMap[fd]->getRoot() + "/index.html", *this->clientToServerMap[fd]));
 	}
 		//index vectoruna bakılacak
 	sendHandler(pollStruct, response);

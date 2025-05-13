@@ -6,7 +6,7 @@
 /*   By: menasy <menasy@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/11 14:24:16 by ekose             #+#    #+#             */
-/*   Updated: 2025/05/13 18:05:54 by menasy           ###   ########.fr       */
+/*   Updated: 2025/05/13 22:56:37 by menasy           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -115,6 +115,7 @@ void LocationConf::setCgiExtension(std::string cgi_extension) {
 	this->cgi_extension = tmpValue;
 }
 void LocationConf::setCgiPath(std::string cgi_path) {
+	//kontrol yapılacak.
 	std::string tmpValue = HelperClass::checkEmptyAndTrim(cgi_path, "Cgi path");
 	this->cgi_path = tmpValue;
 }
