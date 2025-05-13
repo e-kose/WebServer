@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   WebServer.hpp                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: menasy <menasy@student.42.fr>              +#+  +:+       +#+        */
+/*   By: ekose <ekose@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/02 15:40:04 by menasy            #+#    #+#             */
-/*   Updated: 2025/05/13 01:43:12 by menasy           ###   ########.fr       */
+/*   Updated: 2025/05/13 10:10:01 by ekose            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -41,17 +41,18 @@ class WebServer
 		std::map<int, std::vector<ServerConf> >	socketMap;
 		std::map<int, ServerConf*>				clientToServerMap;
 		std::map<int, struct sockaddr_in>		clientToAddrMap;
+		std::map<int, HttpRequest*>     		clientRequests;
 		std::string 							resultPath;
-		HttpRequest* 							httpRequest;
+
 		
 		void									pollfdVecCreat();
-		void										pollInEvent(pollfd&);
 		std::string								socketInfo(sockaddr_in&, int);
 		void									closeCliSocket(int);
 		void 									pollOutEvent(pollfd& pollStruct);
 		void									deleteMethod(pollfd&);
 		bool									indexHandler(pollfd& pollStruct, std::string& mergedPath, const std::vector<std::string>& indexVec);
-
+		void									acceptNewClient(pollfd& pollStruct);
+		void									clientRead(pollfd&);
 
 	public:
 		WebServer(std::vector<ServerConf>& serverConfVec);
