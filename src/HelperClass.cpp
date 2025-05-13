@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   HelperClass.cpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ekose <ekose@student.42.fr>                +#+  +:+       +#+        */
+/*   By: menasy <menasy@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/12 07:50:19 by ekose             #+#    #+#             */
-/*   Updated: 2025/05/13 11:30:40 by ekose            ###   ########.fr       */
+/*   Updated: 2025/05/13 18:54:50 by menasy           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -47,6 +47,15 @@ bool HelperClass::isJustCharacter(const std::string& str, char c)
 			else
 				return false;
 		}
+	}
+	return true;
+}
+bool HelperClass::strIsDigit(const std::string& str)
+{
+	for (size_t i = 0; i < str.length(); i++)
+	{
+		if (!isdigit(str[i]))
+			return false;
 	}
 	return true;
 }
@@ -147,12 +156,38 @@ std::string HelperClass::createAndMove(std::string& str, std::string character)
 	return dest;
 }
 
-
+std::string HelperClass::checkFileWithExtension(const std::string& path)
+{
+	
+	std::string fileExt[6] = {".html", ".txt", ".json", ".py", ".cpp", ".c"};
+	std::ifstream file;
+	for (size_t i = 0; i < sizeof(fileExt) / sizeof(std::string); i++)
+	{
+		file.open((path + fileExt[i]).c_str());
+		if (file.is_open() && i < 2)
+			return path + fileExt[i];
+		// else if (file.is_open() && i > 2)
+		// {
+		// 	//Forbiden yapılmalı
+		// 	createErrorResponse()
+		// }
+	}
+	return path;
+}
 std::string HelperClass::readHtmlFile(const std::string& path) 
 {
     std::ifstream file(path.c_str());
+	std::string extensionVal;
 	if (!file.is_open()) {
-        return ""; // Hatayı işlicem kalsın bi 
+		extensionVal = checkFileWithExtension(path);
+        if (extensionVal == path)
+			return "";
+		else
+		{
+			file.open(extensionVal.c_str());
+			if (!file.is_open())
+				return "";
+		}
     }
     std::stringstream buffer;
     buffer << file.rdbuf();
@@ -178,7 +213,7 @@ std::string HelperClass::createHttpResponse(
 
 std::string HelperClass::mergeDirectory(const std::string& rootPath, const std::string& httpPath)
 {
-	return(rootPath + httpPath);
+	return	(rootPath + httpPath);
 }
 
 std::string HelperClass::createErrorResponse(const std::string& status, const ServerConf& conf, const std::string& rootPAth)
@@ -211,3 +246,9 @@ bool HelperClass::fileIsExist(const std::string& path)
 	else
 		return false;
 }
+
+// std::string HelperClass::getFileExtension(const std::string& filename)
+// {
+// 	if (file)
+// }
+

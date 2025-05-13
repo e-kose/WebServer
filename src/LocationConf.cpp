@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   LocationConf.cpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ekose <ekose@student.42.fr>                +#+  +:+       +#+        */
+/*   By: menasy <menasy@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/11 14:24:16 by ekose             #+#    #+#             */
-/*   Updated: 2025/05/12 08:05:20 by ekose            ###   ########.fr       */
+/*   Updated: 2025/05/13 18:05:54 by menasy           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -137,8 +137,13 @@ void LocationConf::addTryFiles(std::string file){
 	if (file == ";" && this->try_files.size() != 0)
 		return;
 	std::string tmpValue = HelperClass::checkEmptyAndTrim(file, "Try files");
-	if (tmpValue[0] == '=')
-		tmpValue = tmpValue.substr(1);
+	if (tmpValue.find_last_of("=") != std::string::npos)
+		tmpValue = HelperClass::trimLine(tmpValue.substr(tmpValue.find_last_of("=") + 1, tmpValue.length()));
+	std::string::size_type pos = tmpValue.find("$uri");
+	if ((pos == std::string::npos || pos != 0) && !HelperClass::strIsDigit(tmpValue))
+		throw std::runtime_error("Invalid format int files");
+	if(!HelperClass::strIsDigit(tmpValue) && (tmpValue.length() > 4 && tmpValue.substr(4, tmpValue.length()).find("$uri") != std::string::npos))
+		throw std::runtime_error("Invalid format int files");
 	this->try_files.push_back(tmpValue);
 }
 void LocationConf::addIndex(std::string file){ 
