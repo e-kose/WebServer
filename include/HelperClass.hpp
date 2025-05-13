@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   HelperClass.hpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ekose <ekose@student.42.fr>                +#+  +:+       +#+        */
+/*   By: menasy <menasy@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/04 18:10:20 by menasy            #+#    #+#             */
-/*   Updated: 2025/05/12 11:51:59 by ekose            ###   ########.fr       */
+/*   Updated: 2025/05/13 01:27:06 by menasy           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -51,4 +51,6 @@ class HelperClass
 			const std::string& contentType, const std::string& body); 
 		static std::string mergeDirectory(const std::string& rootPath, const std::string& httpPath);
 		static std::string createErrorResponse(const std::string& status, const ServerConf& conf, const std::string& rootPAth);
+		static bool fileIsExist(const std::string& path);
+
 };
