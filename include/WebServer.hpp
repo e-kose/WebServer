@@ -6,7 +6,7 @@
 /*   By: menasy <menasy@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/02 15:40:04 by menasy            #+#    #+#             */
-/*   Updated: 2025/05/14 00:03:15 by menasy           ###   ########.fr       */
+/*   Updated: 2025/05/15 15:05:16 by menasy           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -61,7 +61,7 @@ class WebServer
 		ServerConf&								searchServerConf(std::vector<ServerConf>& , std::string);			
 		std::string 							findRequest(pollfd& pollStruct);
 		void 									tryFiles(LocationConf& locConf, const std::string& httpPath, const ServerConf* serverConfMap,  pollfd& pollStruct);
-		bool 									methodIsExist(const std::vector<std::string>& locMethodsvec, const std::string& requestMethod, ServerConf* srvConf, pollfd&);
+		bool 									methodIsExist(const std::vector<std::string>& locMethodsvec, const std::string& requestMethod, pollfd&);
 		void									sendHandler(pollfd& pollStruct, std::string& sendMessage);
 		void 									sendResponse(pollfd&, const std::string& status);
 		std::string 							readHtmlFile(const std::string& path, const ServerConf& conf); 

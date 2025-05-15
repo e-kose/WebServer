@@ -6,7 +6,7 @@
 /*   By: menasy <menasy@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/13 21:40:13 by menasy            #+#    #+#             */
-/*   Updated: 2025/05/14 00:43:01 by menasy           ###   ########.fr       */
+/*   Updated: 2025/05/15 14:40:09 by menasy           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,7 +42,6 @@ std::string WebServer::readHtmlFile(const std::string& path, const ServerConf& c
 			return "";
 		else
 		{
-
 			std::string ext = extensionVal.substr(extensionVal.find_last_of("."), extensionVal.length());
 			if (HelperClass::fileIsExecutable(path, ext, locationCgiExt))
 			{

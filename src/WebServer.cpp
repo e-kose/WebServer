@@ -6,7 +6,7 @@
 /*   By: menasy <menasy@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/02 15:50:42 by menasy            #+#    #+#             */
-/*   Updated: 2025/05/14 00:42:29 by menasy           ###   ########.fr       */
+/*   Updated: 2025/05/15 15:05:50 by menasy           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -285,21 +285,20 @@ void WebServer::tryFiles(LocationConf& locConf, const std::string& httpPath, con
 		contentFile = this->readHtmlFile(resultDirectory, *serverConf);
 		if (!contentFile.empty())
 		{	
-			sendMessage = createHttpResponse("200","OK", "text/html", contentFile);
-			sendHandler(pollStruct,sendMessage);
+			this->resultPath = resultDirectory;
+			this->sendResponse(pollStruct, "200 OK");
 			return ;
 		}
 	}
 	if (contentFile.empty())
 	{
 		errPage = tryFilesVec[tryFilesVec.size() -1];
-		sendMessage = this->createErrorResponse(errPage + "Not Found", *serverConf, newRoot);
-		this->sendHandler(pollStruct,sendMessage);
+		this->sendResponse(pollStruct, errPage + " Not Found");
 	}
 	std::cout << "TRY FILES: Finisheddddddd " << std::endl;
 }
 
-bool WebServer::methodIsExist(const std::vector<std::string>& locMethodsvec, const std::string& requestMethod, ServerConf* srvConf, pollfd& pollStruct)
+bool WebServer::methodIsExist(const std::vector<std::string>& locMethodsvec, const std::string& requestMethod,pollfd& pollStruct)
 {
 	bool check = false;
 	for (size_t i = 0; i < locMethodsvec.size(); i++)
@@ -310,8 +309,7 @@ bool WebServer::methodIsExist(const std::vector<std::string>& locMethodsvec, con
 	if (!check)
 	{
 		std::string sendMessage;
-		sendMessage = this->createErrorResponse("405 Method Not Allowed", *srvConf, srvConf->getRoot());	
-		sendHandler(pollStruct,sendMessage);
+		this->sendResponse(pollStruct, "405 Method Not Allowed");
 		return false;
 	}
 	return true;
@@ -387,7 +385,7 @@ std::string WebServer::findRequest(pollfd& pollStruct)
 			rootIndex = i;
 		if (httpPath == locVec[i].getPath())
 		{
-			if (methodIsExist(locVec[i].getMethods(),this->clientRequests[pollStruct.fd]->getMethod(),serverConf, pollStruct))
+			if (methodIsExist(locVec[i].getMethods(),this->clientRequests[pollStruct.fd]->getMethod(), pollStruct))
 			{
 				if (locVec[i].getRoot().empty())
 					mergedPath = HelperClass::mergeDirectory(serverConf->getRoot(), httpPath);
@@ -430,6 +428,11 @@ void WebServer::pollOutEvent(pollfd& pollStruct)
 	}
 	// std::string method = this->clientRequests[pollStruct.fd]->getMethod();
 	this->resultPath = findRequest(pollStruct);
+	if (this->resultPath.empty())
+	{
+		std::cout << "RESULT PATH IS EMPTY" << std::endl;
+		return ;
+	}
 	if (this->clientRequests[pollStruct.fd]->getMethod() == "GET")
 	{
 		std::cout << "GET METHOD HANDLER" << std::endl;
