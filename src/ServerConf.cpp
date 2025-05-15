@@ -103,7 +103,7 @@ void	ServerConf::setLocations(std::vector<LocationConf>& locations)
 	this->locations = locations;
 }
 
-void ServerConf::addLocation(LocationConf& location) {
+void ServerConf::addLocation(LocationConf location) {
 	this->locations.push_back(location);
 }
 

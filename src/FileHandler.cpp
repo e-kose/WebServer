@@ -6,7 +6,7 @@
 /*   By: ekose <ekose@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/13 21:40:13 by menasy            #+#    #+#             */
-/*   Updated: 2025/05/15 11:34:43 by ekose            ###   ########.fr       */
+/*   Updated: 2025/05/15 13:32:03 by ekose            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,7 +18,7 @@ std::string WebServer::findLocation(const ServerConf& conf, std::string locStr)
 	for (size_t i = 0; i < locVec.size(); i++)
 	{
 		if (locVec[i].getPath() == locStr)
-			return locVec[i].getCgiExtension();
+			return locVec[i].getCgiExt()[".py"];
 	}
 	return "";
 }
@@ -42,7 +42,6 @@ std::string WebServer::readHtmlFile(const std::string& path, const ServerConf& c
 			return "";
 		else
 		{
-
 			std::string ext = extensionVal.substr(extensionVal.find_last_of("."), extensionVal.length());
 			if (HelperClass::fileIsExecutable(path, ext, locationCgiExt))
 			{

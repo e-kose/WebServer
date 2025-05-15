@@ -6,7 +6,7 @@
 /*   By: ekose <ekose@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/02 15:50:42 by menasy            #+#    #+#             */
-/*   Updated: 2025/05/15 11:48:17 by ekose            ###   ########.fr       */
+/*   Updated: 2025/05/15 14:28:55 by ekose            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -285,19 +285,20 @@ void WebServer::tryFiles(LocationConf& locConf, const std::string& httpPath, con
 		contentFile = this->readHtmlFile(resultDirectory, *serverConf);
 		if (!contentFile.empty())
 		{	
-			sendResponse(pollStruct, "200 OK");
+			this->resultPath = resultDirectory;
+			this->sendResponse(pollStruct, "200 OK");
 			return ;
 		}
 	}
 	if (contentFile.empty())
 	{
 		errPage = tryFilesVec[tryFilesVec.size() -1];
-		this->sendResponse(pollStruct, "404 Not Found");
+		this->sendResponse(pollStruct, errPage + " Not Found");
 	}
 	std::cout << "TRY FILES: Finisheddddddd " << std::endl;
 }
 
-bool WebServer::methodIsExist(const std::vector<std::string>& locMethodsvec, const std::string& requestMethod, ServerConf* srvConf, pollfd& pollStruct)
+bool WebServer::methodIsExist(const std::vector<std::string>& locMethodsvec, const std::string& requestMethod,pollfd& pollStruct)
 {
 	bool check = false;
 	for (size_t i = 0; i < locMethodsvec.size(); i++)
@@ -307,7 +308,8 @@ bool WebServer::methodIsExist(const std::vector<std::string>& locMethodsvec, con
 	}
 	if (!check)
 	{
-		sendResponse(pollStruct, "405 Method Not Allowed");
+		std::string sendMessage;
+		this->sendResponse(pollStruct, "405 Method Not Allowed");
 		return false;
 	}
 	return true;
@@ -383,7 +385,7 @@ std::string WebServer::findRequest(pollfd& pollStruct)
 			rootIndex = i;
 		if (httpPath == locVec[i].getPath())
 		{
-			if (methodIsExist(locVec[i].getMethods(),this->clientRequests[pollStruct.fd]->getMethod(),serverConf, pollStruct))
+			if (methodIsExist(locVec[i].getMethods(),this->clientRequests[pollStruct.fd]->getMethod(), pollStruct))
 			{
 				if (locVec[i].getRoot().empty())
 					mergedPath = HelperClass::mergeDirectory(serverConf->getRoot(), httpPath);
@@ -429,7 +431,7 @@ void WebServer::pollOutEvent(pollfd& pollStruct)
 	if (this->resultPath.empty())
 	{
 		std::cout << "RESULT PATH IS EMPTY" << std::endl;
-		return;
+		return ;
 	}
 	if (this->clientRequests[pollStruct.fd]->getMethod() == "GET")
 	{
@@ -461,11 +463,18 @@ void	WebServer::runServer()
 			throw std::runtime_error("poll() error. Terminating server.");
 		for (size_t i = 0; i < pollVec.size(); i++)
 		{
+			 if (pollVec[i].revents & POLLERR) 
+			{
+        		HelperClass::writeToFile(this->clientToServerMap[pollVec[i].fd]->getErrorLog(), "POLL ERROR");
+        		closeCliSocket(pollVec[i].fd);
+        		continue;
+    		}
 			if (this->socketMap.count(pollVec[i].fd) && (pollVec[i].revents & POLLIN))
 			{
 				this->acceptNewClient(pollVec[i]);
 				continue;
 			}
+
 			if (pollVec[i].revents & POLLIN)
 			{
 				this->clientRead(pollVec[i]);

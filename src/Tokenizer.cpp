@@ -77,8 +77,7 @@ LocationConf Tokenizer::createLocConf(std::vector<std::string>::iterator& it, st
 		if ((it + 1) != end && *(it + 1) == "{") locConf.setPath(*it);
 		else if (*it == "}") break;
 		else if (*it == "root" && it++ != end && ++confKeyCounter["root"]) locConf.setRoot(*it);
-		else if (*it == "cgi_pass" && it++ != end && ++confKeyCounter["cgi_pass"]) locConf.setCgiPass(*it);
-		else if (*it == "cgi_ext" && it++ != end && ++confKeyCounter["cgi_ext"]) locConf.setCgiExtension(*it);
+		else if (*it == "cgi_ext" && it++ != end) locConf.addCgiExt(*it, *(++it));
 		else if (*it == "upload_dir" && it++ != end && ++confKeyCounter["upload_dir"]) locConf.setUploadStore(*it);
 		else if (*it == "autoindex" && it++ != end && ++confKeyCounter["autoindex"]) locConf.setAutoIndex(stringToBool(*it));
 		else if (*it =="return" && it++ != end && ++confKeyCounter["return"])
