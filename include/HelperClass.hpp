@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   HelperClass.hpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: menasy <menasy@student.42.fr>              +#+  +:+       +#+        */
+/*   By: ekose <ekose@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/04 18:10:20 by menasy            #+#    #+#             */
-/*   Updated: 2025/05/13 01:27:06 by menasy           ###   ########.fr       */
+/*   Updated: 2025/05/15 11:23:56 by ekose            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,23 +34,24 @@ class HelperClass
 		HelperClass(const HelperClass &other);
 		HelperClass &operator=(const HelperClass &other);
 		~HelperClass();
+		// static const std::string FILE_EXTENSIONS[6];
 	public:
-		static std::string trimLine(const std::string& str);
-		static std::string trimWithCharacter(const std::string& str, std::string characters);
-		static bool	semiColonCheck(const std::string& str);
-		static bool isJustCharacter(const std::string& str, char c);
-		static size_t characterCounter(const std::string& str, char c);
-		static std::vector<std::string> splitString(const std::string& str, char c);
-		static std::string checkEmptyAndTrim(std::string& value, std::string errorMsg);
-		static void printVector(const std::vector<std::string>& vec);
-		static void	writeToFile(std::string, std::string);
-		static std::string createAndMove(std::string& str, std::string character);
-		static std::string readHtmlFile(const std::string& path);
-		static std::string createHttpResponse(
-			const std::string& statusCode, const std::string& statusMessage,
-			const std::string& contentType, const std::string& body); 
-		static std::string mergeDirectory(const std::string& rootPath, const std::string& httpPath);
-		static std::string createErrorResponse(const std::string& status, const ServerConf& conf, const std::string& rootPAth);
-		static bool fileIsExist(const std::string& path);
+		static std::string					trimLine(const std::string& str);
+		static std::string					trimWithCharacter(const std::string& str, std::string characters);
+		static bool							semiColonCheck(const std::string& str);
+		static bool							isJustCharacter(const std::string& str, char c);
+		static size_t 						characterCounter(const std::string& str, char c);
+		static std::vector<std::string>		splitString(const std::string& str, char c);
+		static std::string					checkEmptyAndTrim(std::string& value, std::string errorMsg);
+		static void 						printVector(const std::vector<std::string>& vec);
+		static void							writeToFile(std::string, std::string);
+		static std::string					createAndMove(std::string& str, std::string character);
+		// static std::string				readHtmlFile(const std::string& path);
+		static std::string					mergeDirectory(const std::string& rootPath, const std::string& httpPath);
+		// static std::string				createErrorResponse(const std::string& status, const ServerConf& conf, const std::string& rootPAth);
+		static bool							fileIsExist(const std::string& path);
+		static bool							strIsDigit(const std::string&);
+		static std::string 					checkFileWithExtension(const std::string& path, const std::string& cgiExt);
+		static bool 						fileIsExecutable(const std::string& path, const std::string& extension, const std::string& cgiExtStr);
 
 };

@@ -6,7 +6,7 @@
 /*   By: ekose <ekose@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/02 15:40:04 by menasy            #+#    #+#             */
-/*   Updated: 2025/05/13 10:10:01 by ekose            ###   ########.fr       */
+/*   Updated: 2025/05/15 11:29:24 by ekose            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -53,6 +53,28 @@ class WebServer
 		bool									indexHandler(pollfd& pollStruct, std::string& mergedPath, const std::vector<std::string>& indexVec);
 		void									acceptNewClient(pollfd& pollStruct);
 		void									clientRead(pollfd&);
+		void									setNonBlocking(int);
+		void									initSocket();
+		bool									isExistIpAndPort(ServerConf&);
+		void									runServer();
+		HttpRequest*							parseRecv(const std::string&);
+		ServerConf&								searchServerConf(std::vector<ServerConf>& , std::string);			
+		std::string 							findRequest(pollfd& pollStruct);
+		void 									tryFiles(LocationConf& locConf, const std::string& httpPath, const ServerConf* serverConfMap,  pollfd& pollStruct);
+		bool 									methodIsExist(const std::vector<std::string>& locMethodsvec, const std::string& requestMethod, ServerConf* srvConf, pollfd&);
+		void									sendHandler(pollfd& pollStruct, std::string& sendMessage);
+		void 									sendResponse(pollfd&, const std::string& status);
+		std::string 							readHtmlFile(const std::string& path, const ServerConf& conf); 
+		std::string 							createErrorResponse(const std::string& status, const ServerConf& conf, const std::string& rootPAth);
+		std::string 							createHttpResponse(
+																const std::string& statusCode, const std::string& statusMessage,
+																const std::string& contentType, const std::string& body);
+		std::string 							sendCgi(const std::string&filePath, const std::string& fileExt);
+		std::string findLocation(const ServerConf& conf, std::string locStr);
+
+
+
+
 
 	public:
 		WebServer(std::vector<ServerConf>& serverConfVec);
@@ -60,18 +82,5 @@ class WebServer
 		WebServer &operator=(const WebServer &other);
 		~WebServer();
 		
-		void			setNonBlocking(int);
-		void			initSocket();
-		bool			isExistIpAndPort(ServerConf&);
-		void			runServer();
-		HttpRequest*	parseRecv(const std::string&);
-		ServerConf&		searchServerConf(std::vector<ServerConf>& , std::string);
-
-		std::string 	findRequest(pollfd& pollStruct);
-		void 			fillTryFiles(LocationConf& locConf, const std::string& httpPath, const ServerConf* serverConfMap,  pollfd& pollStruct);
-		bool 			methodIsExist(const std::vector<std::string>& locMethodsvec, const std::string& requestMethod, ServerConf* srvConf, pollfd&);
-		void			sendHandler(pollfd& pollStruct, std::string& sendMessage);
-
-
-		void sendResponse(pollfd&, const std::string& status);
+	
 };
