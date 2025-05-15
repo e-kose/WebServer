@@ -6,7 +6,7 @@
 /*   By: menasy <menasy@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/12 07:50:19 by ekose             #+#    #+#             */
-/*   Updated: 2025/05/15 15:59:05 by menasy           ###   ########.fr       */
+/*   Updated: 2025/05/15 21:13:42 by menasy           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,6 +26,7 @@ HelperClass &HelperClass::operator=(const HelperClass &other) {
 }
 HelperClass::~HelperClass() {
 }
+
 
 size_t HelperClass::characterCounter(const std::string& str, char c)
 {
@@ -157,31 +158,38 @@ std::string HelperClass::createAndMove(std::string& str, std::string character)
 	return dest;
 }
 
-std::string HelperClass::checkFileWithExtension(const std::string& path, const std::string& cgiExt)
+std::string HelperClass::checkFileWithExtension(const std::string& path, const std::map<std::string, std::string>& cgiExtMap)
 {
-	std::cout << "CHECK FILE WITH EXTENSION:: " << path <<std::endl;
-	std::ifstream file;
-	std::vector<std::string> extensionsVec;
-	(void) cgiExt;
-	extensionsVec.push_back(".html");
-	extensionsVec.push_back(".txt");
-	extensionsVec.push_back(".php"); // geçici olarak koydum extensinlarla doldurulması laızm
-	for (size_t i = 0; i < extensionsVec.size(); i++)
+	if (path.find_last_of(".") != std::string::npos)
+		return path;
+	std::ifstream file(path.c_str());
+	if (file.is_open())
 	{
-		std::string tmpPath = path + extensionsVec[i];
+		file.close();
+		return path;
+	}
+	std::vector<std::string> extVec;
+	extVec.push_back(".html");
+	extVec.push_back(".txt");
+	if (cgiExtMap.size() > 0)
+		for (std::map<std::string, std::string>::const_iterator it = cgiExtMap.begin(); it != cgiExtMap.end(); it++)
+			extVec.push_back(it->first);
+
+	for (size_t i = 0; i < extVec.size(); i++)
+	{
+		std::string tmpPath = path + extVec[i];
 		file.open(tmpPath.c_str());
 		if (file.is_open())
 			return tmpPath;
 	}
 	return path;
 }
-int 	HelperClass::fileIsExecutable(const std::string& path, const std::string& extension, const std::string& cgiExtStr)
+int 	HelperClass::fileIsExecutable(const std::string& path, const std::string& extension, const std::map<std::string, std::string>& cgiExtMap)
 {
 	
-	std::vector<std::string> cgiExtVec = splitString(cgiExtStr, ' ');
-	for (size_t i = 0; i < cgiExtVec[i].size(); i++)
+	for (std::map<std::string, std::string>::const_iterator it = cgiExtMap.begin(); it != cgiExtMap.end(); it++)
 	{
-		if (cgiExtVec[i] == extension)
+		if (extension == it->first)
 		{
 			if (path.find("cgi-bin/") == std::string::npos)
 				return -1;
@@ -207,5 +215,4 @@ bool HelperClass::fileIsExist(const std::string& path)
 	else
 		return false;
 }
-
 

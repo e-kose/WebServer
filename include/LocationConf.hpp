@@ -11,13 +11,11 @@ class LocationConf{
 		std::string					path;
 		std::string					upload_store;
 		std::string					root;
-		std::string 				cgi_extension;
-		std::string 				cgi_path;
-		std::string					cgi_pass;
 		std::vector<std::string>	methods;
 		std::vector<std::string>	try_files;
 		std::vector<std::string>	index;
 		std::map<int, std::string>	return_;
+		std::map<std::string, std::string>	cgi_ext;
 	public:
 		//Constructor
 		LocationConf();
@@ -26,17 +24,15 @@ class LocationConf{
 		~LocationConf();
 
 		// GET Functions
-		bool						getAutoIndex() const;
-		std::string					getPath() const;
-		std::vector<std::string>	getMethods() const;
-		std::string 				getUploadStore() const;
-		std::string					getRoot() const;
-		std::string					getCgiExtension() const;
-		std::string					getCgiPath() const;
-		std::string					getCgiPass() const;
-		std::vector<std::string>	getTryFiles()const;
-		std::vector<std::string>	getIndex()const;
-		std::map<int, std::string>	getReturn() const;
+		bool								getAutoIndex() const;
+		std::string							getPath() const;
+		std::vector<std::string>			getMethods() const;
+		std::string 						getUploadStore() const;
+		std::string							getRoot() const;
+		std::vector<std::string>			getTryFiles()const;
+		std::vector<std::string>			getIndex()const;
+		std::map<int, std::string>			getReturn() const;
+		std::map<std::string, std::string>	getCgiExt() const;
 		
 		// SET Functions
 		void						setPath(std::string);
@@ -44,9 +40,6 @@ class LocationConf{
 		void						setAutoIndex(bool);
 		void						setUploadStore(std::string);
 		void						setRoot(std::string);
-		void						setCgiExtension(std::string);	
-		void						setCgiPath(std::string);
-		void						setCgiPass(std::string);
 		void						setTryFiles(std::vector<std::string>);
 		void						setIndex(std::vector<std::string>);
 		void						setReturn(std::map<int, std::string>);
@@ -54,4 +47,5 @@ class LocationConf{
 		void						addMethod(std::string);
 		void						addIndex(std::string);
 		void						addReturn(int, std::string);
+		void						addCgiExt(std::string, std::string);
 };

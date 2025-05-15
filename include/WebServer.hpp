@@ -6,7 +6,7 @@
 /*   By: menasy <menasy@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/02 15:40:04 by menasy            #+#    #+#             */
-/*   Updated: 2025/05/15 16:39:02 by menasy           ###   ########.fr       */
+/*   Updated: 2025/05/15 19:41:48 by menasy           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -70,7 +70,7 @@ class WebServer
 																const std::string& statusCode, const std::string& statusMessage,
 																const std::string& contentType, const std::string& body);
 		std::string 							sendCgi(const std::string&filePath, const std::string& fileExt);
-		std::string findLocation(const ServerConf& conf, std::string locStr);
+		std::map<std::string, std::string>	findLocation(const ServerConf& conf, std::string locStr);
 
 
 

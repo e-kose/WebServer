@@ -6,71 +6,63 @@
 /*   By: menasy <menasy@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/13 21:40:13 by menasy            #+#    #+#             */
-/*   Updated: 2025/05/15 17:27:41 by menasy           ###   ########.fr       */
+/*   Updated: 2025/05/15 21:37:56 by menasy           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../include/WebServer.hpp"
 
-std::string WebServer::findLocation(const ServerConf& conf, std::string locStr)
+std::map<std::string, std::string> WebServer::findLocation(const ServerConf& conf, std::string locStr)
 {
 	std::vector<LocationConf> locVec = conf.getLocations();
+	std::map<std::string, std::string> cgiExtMap;
 	for (size_t i = 0; i < locVec.size(); i++)
 	{
 		if (locVec[i].getPath() == locStr)
-			return locVec[i].getCgiExtension();
+			cgiExtMap = locVec[i].getCgiExt();
 	}
-	return "";
+	return cgiExtMap;
 }
 
 std::string WebServer::readHtmlFile(pollfd& pollStruct, const std::string& path, const ServerConf& conf) 
 {
-	std::cout << "READ HTML FILE: " << path << std::endl;
+	std::cout << "-------------- READ HTML FILE : " << path <<" --------------"<<std::endl;
 	if (path.empty())
 		return "";
-    std::ifstream file(path.c_str());
-	std::string pathWithExt, locationCgiExt;
-	if (!file.is_open()) 
+	std::string newPath;
+	std::map <std::string, std::string> cgiMap;
+	cgiMap = findLocation(conf,"/cgi-bin");
+	newPath = HelperClass::checkFileWithExtension(path, cgiMap);
+    std::ifstream file(newPath.c_str());
+	if (file.is_open()) 
 	{
-		locationCgiExt = findLocation(conf,"/cgi-bin");
-		if (locationCgiExt.empty())
-			return "";
-		pathWithExt = HelperClass::checkFileWithExtension(path, locationCgiExt);
-		std::cout << "EXTENSION VAL: " << pathWithExt << std::endl;
-        if (pathWithExt == path)
-			return "";
-		else
+		std::size_t pos = newPath.find_last_of(".");
+		if (pos != std::string::npos)
 		{
-			std::string ext = pathWithExt.substr(pathWithExt.find_last_of("."), pathWithExt.length());
-			std::cout << "EXTENSION CGİ2: " << ext << std::endl;
-			int isExecInt = HelperClass::fileIsExecutable(path, ext, locationCgiExt);
-			
-			if (isExecInt == 0)
+			std::string ext = newPath.substr(pos, newPath.length());
+			int isExecInt = HelperClass::fileIsExecutable(newPath, ext, cgiMap);
+			if (isExecInt == -1)
 			{
-				file.open(pathWithExt.c_str());
-				if (!file.is_open())
-					return "";
-			}
-			else if (isExecInt == -1)
-			{
-				std::cout << "------------------ Cgi Extensions yok ------------------\n";
+				std::cout << ">>>> Cgi Extensions YOK -<<<<\n";
+				file.close();
 				this->sendResponse(pollStruct, "403 Forbidden");
-				return "";
+				return "Forbidden";
 			}
 			else if (isExecInt == 1)
 			{
+				std::cout << ">>>> CGI YA GONFERİLDİ <<<<\n" << ext << std::endl;
 				//ext i cgi içinde hangi pathe gore nerde derleneceğini bulmak için aldım ona gpre
 				//mapden hangi değeri çekeceğimi bulacağım.
-				std::cout << "---------------- CGI YA GONFERİLDİ --------------\n";
 				// this->sendCgi(path, ext);
 			}	
 		}
     }
-	std::cout << "FILE IS OPENED" << std::endl;
+	else
+		return "";
+	std::cout << ">>> FILE IS OPENED <<<" << std::endl;
     std::stringstream buffer;
     buffer << file.rdbuf();
 	file.close();
-
 	return buffer.str();
 }
 
@@ -98,12 +90,11 @@ std::string WebServer::createErrorResponse(pollfd& pollStruct, const std::string
 	std::map<int, std::string> errMap = conf.getErrorPages();
 	std::map<int, std::string> defaultErrMap = conf.getDfltErrPage();
 	int errCode = std::atoi(status.c_str());
-	std::cout << "ERROR CODE>>>>>>>>>>>>>>>>>: " << errCode << std::endl;
+	std::cout << ">>>> ERROR CODE: " << errCode << " <<<<" << std::endl;
 	if (errMap.find(errCode) != errMap.end())
 	{
-		std::cout << "ERROR PAGE????: " << errMap[errCode] << std::endl;
 		content = readHtmlFile(pollStruct,HelperClass::mergeDirectory(rootPAth, errMap[errCode]),conf);
-		if (!content.empty())
+		if (!content.empty() && content != "Forbidden")
 			return createHttpResponse(statusCode, statusMessage, "text/html", content);
 	}
 	return createHttpResponse(statusCode, statusMessage, "text/html",defaultErrMap[errCode]);
