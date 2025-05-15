@@ -6,7 +6,7 @@
 /*   By: menasy <menasy@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/02 15:50:42 by menasy            #+#    #+#             */
-/*   Updated: 2025/05/15 15:05:50 by menasy           ###   ########.fr       */
+/*   Updated: 2025/05/15 17:14:08 by menasy           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -266,6 +266,7 @@ void WebServer::clientRead(pollfd& pollStruct)
 
 void WebServer::tryFiles(LocationConf& locConf, const std::string& httpPath, const ServerConf* serverConf,  pollfd& pollStruct)
 {
+	std::cout << "TRYFİLESSSSSSSSSSSSSSSSSSS" << std::endl;
 	std::vector<std::string> tryFilesVec = locConf.getTryFiles();
 	std::string newRoot, contentFile, errPage, sendMessage, resultDirectory;
 	std::string::size_type pos1;
@@ -282,7 +283,7 @@ void WebServer::tryFiles(LocationConf& locConf, const std::string& httpPath, con
 		else
 			tryFilesVec[i] = httpPath + tryFilesVec[i].substr(pos1 + 4, tryFilesVec[i].length());
 		resultDirectory = HelperClass::mergeDirectory(newRoot, tryFilesVec[i]);
-		contentFile = this->readHtmlFile(resultDirectory, *serverConf);
+		contentFile = this->readHtmlFile(pollStruct,resultDirectory, *serverConf);
 		if (!contentFile.empty())
 		{	
 			this->resultPath = resultDirectory;
@@ -292,6 +293,7 @@ void WebServer::tryFiles(LocationConf& locConf, const std::string& httpPath, con
 	}
 	if (contentFile.empty())
 	{
+		// buraya giriyor 2. ye
 		errPage = tryFilesVec[tryFilesVec.size() -1];
 		this->sendResponse(pollStruct, errPage + " Not Found");
 	}
@@ -316,7 +318,6 @@ bool WebServer::methodIsExist(const std::vector<std::string>& locMethodsvec, con
 }
 void WebServer::sendHandler(pollfd& pollStruct, std::string& sendMessage)
 {
-	// 3 kere sayfayı yenileyince seg yiyoruz bakcam.
 	int checkSend = 0;
 	int lengthMessage;
 	
@@ -411,7 +412,7 @@ std::string WebServer::findRequest(pollfd& pollStruct)
 		}
 	}
 	if (mergedPath.empty())
-	{		//buraya gitmeden de uzantıyı halletmem lazım.
+	{
 		tryFiles(locVec[rootIndex], httpPath, serverConf, pollStruct);
 		return "";
 	}

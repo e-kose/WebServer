@@ -6,7 +6,7 @@
 /*   By: menasy <menasy@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/12 07:50:19 by ekose             #+#    #+#             */
-/*   Updated: 2025/05/14 00:51:44 by menasy           ###   ########.fr       */
+/*   Updated: 2025/05/15 15:59:05 by menasy           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -175,17 +175,20 @@ std::string HelperClass::checkFileWithExtension(const std::string& path, const s
 	}
 	return path;
 }
-bool 	HelperClass::fileIsExecutable(const std::string& path, const std::string& extension, const std::string& cgiExtStr)
+int 	HelperClass::fileIsExecutable(const std::string& path, const std::string& extension, const std::string& cgiExtStr)
 {
-	if (path.find("cgi-bin/") == std::string::npos)
-		return false;
+	
 	std::vector<std::string> cgiExtVec = splitString(cgiExtStr, ' ');
 	for (size_t i = 0; i < cgiExtVec[i].size(); i++)
 	{
 		if (cgiExtVec[i] == extension)
-			return true;
+		{
+			if (path.find("cgi-bin/") == std::string::npos)
+				return -1;
+			return 1;
+		}
 	}
-	return false;
+	return 0;
 }
 
 std::string HelperClass::mergeDirectory(const std::string& rootPath, const std::string& httpPath)

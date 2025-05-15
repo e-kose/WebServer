@@ -6,7 +6,7 @@
 /*   By: menasy <menasy@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/04 18:10:20 by menasy            #+#    #+#             */
-/*   Updated: 2025/05/13 23:01:31 by menasy           ###   ########.fr       */
+/*   Updated: 2025/05/15 15:50:23 by menasy           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -52,6 +52,6 @@ class HelperClass
 		static bool							fileIsExist(const std::string& path);
 		static bool							strIsDigit(const std::string&);
 		static std::string 					checkFileWithExtension(const std::string& path, const std::string& cgiExt);
-		static bool 						fileIsExecutable(const std::string& path, const std::string& extension, const std::string& cgiExtStr);
+		static int 							fileIsExecutable(const std::string& path, const std::string& extension, const std::string& cgiExtStr);
 
 };
