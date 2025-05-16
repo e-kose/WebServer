@@ -44,7 +44,7 @@ class HttpRequest
 		void parseRequest(const std::string& request);
 		std::map<std::string, std::string> parseHeader(std::string& parseStr);
 		std::map<std::string, std::string> parseBody();
-
+		void								parseQuery(std::string query);
 		
 		std::string getMethod() const;
 		std::string getPath() const;
@@ -70,6 +70,6 @@ class HttpRequest
 		void setBodyVec(const std::map<std::string, std::string> bodyVec);
 		void setQueryParams(const std::map<std::string, std::string> queryParams);
 		void setQueryString(const std::string queryString);
-		
+		void addQuery(std::string key, std::string value);
 };
 	

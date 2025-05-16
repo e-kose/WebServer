@@ -6,7 +6,7 @@
 /*   By: ekose <ekose@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/08 16:36:39 by menasy            #+#    #+#             */
-/*   Updated: 2025/05/10 18:36:10 by ekose            ###   ########.fr       */
+/*   Updated: 2025/05/16 19:07:45 by ekose            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -100,10 +100,11 @@ void HttpRequest::setContentType(const std::string contentType) {
 void HttpRequest::setPath(const std::string path) 
 {
 	std::string tmpPath = path;
-	if (path.find_first_of("?") != std::string::npos)
+	size_t pos = tmpPath.find_first_of('?');
+	if (pos != std::string::npos)
 	{
-		tmpPath = HelperClass::trimLine(path.substr(0, path.find_first_of("?")));
-		this->setQueryString(HelperClass::trimLine(path.substr(path.find_first_of("?") + 1, path.length())));
+		this->parseQuery(tmpPath.substr(pos + 1));
+		tmpPath = tmpPath.substr(0, pos);
 	}
 	if (HelperClass::characterCounter(tmpPath, '/') == 1)
 		this->path = HelperClass::trimLine(tmpPath);
@@ -130,6 +131,10 @@ void HttpRequest::setContentLength(size_t length) {
 }
 
 
+void	HttpRequest::addQuery(std::string key, std::string value)
+{
+	this->queryParams[key] = value;
+}
 void HttpRequest::setBody(const std::string body) {
 	this->body = body;
 }
@@ -165,6 +170,14 @@ std::map<std::string, std::string>  HttpRequest::parseHeader(std::string& parseS
 	}
 	this->setHostName(destMap["Host"]);
 	this->setContentType(destMap["Content-Type"]);
+	if(this->getContentType() == "application/x-www-form-urlencoded")
+	{
+		while (std::getline(strStream, line))
+		{
+			if (line.find_first_of('=') != std::string::npos)
+				this->parseQuery(line);
+		}
+	}
 	// std::cout << "------------ HEADERmap -------------" << std::endl;
 	return destMap;
 }
@@ -215,3 +228,19 @@ void HttpRequest::parseRequest(const std::string& request)
 
 }
 
+void	HttpRequest::parseQuery(std::string query)
+{
+	std::istringstream stream(query);
+    std::string pair;
+
+    while (std::getline(stream, pair, '&'))
+	{
+        size_t pos = pair.find('=');
+        if (pos != std::string::npos)
+		{
+            std::string key = pair.substr(0, pos);
+            std::string value = pair.substr(pos + 1);
+            this->addQuery(key, value);
+        }
+    }
+}
