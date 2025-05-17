@@ -6,7 +6,7 @@
 /*   By: menasy <menasy@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/04 18:10:20 by menasy            #+#    #+#             */
-/*   Updated: 2025/05/15 20:50:21 by menasy           ###   ########.fr       */
+/*   Updated: 2025/05/18 01:18:14 by menasy           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,6 +34,7 @@ class HelperClass
 		HelperClass &operator=(const HelperClass &other);
 		~HelperClass();
 	public:
+		static std::string 					intToString(int value);
 		static std::string					trimLine(const std::string& str);
 		static std::string					trimWithCharacter(const std::string& str, std::string characters);
 		static bool							semiColonCheck(const std::string& str);
@@ -48,6 +49,6 @@ class HelperClass
 		static bool							fileIsExist(const std::string& path);
 		static bool							strIsDigit(const std::string&);
 		static	std::string 				checkFileWithExtension(const std::string& path, const std::map<std::string, std::string>& cgiExtMap);
-		static int 								fileIsExecutable(const std::string& path, const std::string& extension, const std::map<std::string, std::string>& cgiExtMap);
-
+		static int 							fileIsExecutable(const std::string& path, const std::string& extension, const std::map<std::string, std::string>& cgiExtMap);
+		static std::string 					fdToString(int& fd);
 };

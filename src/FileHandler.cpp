@@ -6,7 +6,7 @@
 /*   By: menasy <menasy@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/13 21:40:13 by menasy            #+#    #+#             */
-/*   Updated: 2025/05/15 21:37:56 by menasy           ###   ########.fr       */
+/*   Updated: 2025/05/18 01:33:39 by menasy           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,47 +24,6 @@ std::map<std::string, std::string> WebServer::findLocation(const ServerConf& con
 	return cgiExtMap;
 }
 
-std::string WebServer::readHtmlFile(pollfd& pollStruct, const std::string& path, const ServerConf& conf) 
-{
-	std::cout << "-------------- READ HTML FILE : " << path <<" --------------"<<std::endl;
-	if (path.empty())
-		return "";
-	std::string newPath;
-	std::map <std::string, std::string> cgiMap;
-	cgiMap = findLocation(conf,"/cgi-bin");
-	newPath = HelperClass::checkFileWithExtension(path, cgiMap);
-    std::ifstream file(newPath.c_str());
-	if (file.is_open()) 
-	{
-		std::size_t pos = newPath.find_last_of(".");
-		if (pos != std::string::npos)
-		{
-			std::string ext = newPath.substr(pos, newPath.length());
-			int isExecInt = HelperClass::fileIsExecutable(newPath, ext, cgiMap);
-			if (isExecInt == -1)
-			{
-				std::cout << ">>>> Cgi Extensions YOK -<<<<\n";
-				file.close();
-				this->sendResponse(pollStruct, "403 Forbidden");
-				return "Forbidden";
-			}
-			else if (isExecInt == 1)
-			{
-				std::cout << ">>>> CGI YA GONFERİLDİ <<<<\n" << ext << std::endl;
-				//ext i cgi içinde hangi pathe gore nerde derleneceğini bulmak için aldım ona gpre
-				//mapden hangi değeri çekeceğimi bulacağım.
-				// this->sendCgi(path, ext);
-			}	
-		}
-    }
-	else
-		return "";
-	std::cout << ">>> FILE IS OPENED <<<" << std::endl;
-    std::stringstream buffer;
-    buffer << file.rdbuf();
-	file.close();
-	return buffer.str();
-}
 
 std::string WebServer::createHttpResponse(
 	const std::string& statusCode, const std::string& statusMessage,
@@ -99,8 +58,111 @@ std::string WebServer::createErrorResponse(pollfd& pollStruct, const std::string
 	}
 	return createHttpResponse(statusCode, statusMessage, "text/html",defaultErrMap[errCode]);
 }
+std::string WebServer::readHtmlFile(pollfd& pollStruct, const std::string& path, const ServerConf& conf) 
+{
+	std::cout << "-------------- READ HTML FILE : " << path <<" --------------"<<std::endl;
+	if (path.empty())
+		return "";
+	std::string newPath;
+	std::map <std::string, std::string> cgiMap;
+	cgiMap = findLocation(conf,"/cgi-bin");
+	newPath = HelperClass::checkFileWithExtension(path, cgiMap);
+    std::ifstream file(newPath.c_str());
+	if (file.is_open()) 
+	{
+		std::size_t pos = newPath.find_last_of(".");
+		if (pos != std::string::npos)
+		{
+			std::string ext = newPath.substr(pos, newPath.length());
+			int isExecInt = HelperClass::fileIsExecutable(newPath, ext, cgiMap);
+			if (isExecInt == -1)
+			{
+				std::cout << ">>>> Cgi Extensions YOK -<<<<\n";
+				file.close();
+				this->sendResponse(pollStruct, "403 Forbidden");
+				return "Forbidden";
+			}
+			else if (isExecInt == 1)
+			{
+				std::string scriptContetnt;
+				std::cout << ">>>> CGI YA GONFERİLDİ <<<<\n" << ext << std::endl;
+				//ext i cgi içinde hangi pathe gore nerde derleneceğini bulmak için aldım ona gpre
+				//mapden hangi değeri çekeceğimi bulacağım.
+				scriptContetnt = this->sendCgi(newPath, ext, pollStruct,conf, cgiMap);
+				file.close();
+				return scriptContetnt;
+			}	
+		}
+    }
+	else
+		return "";
+	std::cout << ">>> FILE IS OPENED <<<" << std::endl;
+    std::stringstream buffer;
+    buffer << file.rdbuf();
+	file.close();
+	return buffer.str();
+}
+std::vector<char *> WebServer::fillEnv(const ServerConf& conf, const pollfd& pollStruct, const std::string& path)
+{
+	std::vector<char *> env;
+	std::vector<std::string> envVec;
+	const int& fd = pollStruct.fd;
+	envVec.push_back("REQUEST_METHOD=" + this->clientRequests[fd]->getMethod());
+	envVec.push_back("SCRIPT_NAME=" + path);
+	envVec.push_back("QUERY_STRING=" + this->clientRequests[fd]->getQueryString());
+	envVec.push_back("CONTENT_TYPE=" + this->clientRequests[fd]->getContentType());
+	envVec.push_back("CONTENT_LENGTH=" + HelperClass::intToString(this->clientRequests[fd]->getContentLength()));
+	envVec.push_back("SERVER_PROTOCOL=" + this->clientRequests[fd]->getVersion());
+	envVec.push_back("GATEWAY_INTERFACE=CGI/1.1");
+	envVec.push_back("SERVER_SOFTWARE=WebServer/1.0");
+	envVec.push_back("SERVER_NAME=" + this->clientRequests[fd]->getHostName());
+	envVec.push_back("SERVER_PORT=" + HelperClass::intToString(conf.getPort()));
+	envVec.push_back("REMOTE_ADDR=" + this->socketInfo(this->clientToAddrMap[fd], fd));
+	envVec.push_back("REDIRECT_STATUS=200");
 
-// std::string WebServer::sendCgi(const std::string&filePath, const std::string& fileExt)
-// {
+	for (size_t i = 0; i < envVec.size(); i++)
+	{
+		env.push_back(const_cast<char *>(envVec[i].c_str()));
+	}
+	env.push_back(NULL);
+	return env;
+}
+std::string WebServer::sendCgi(const std::string&filePath, std::string& fileExt, const pollfd& pollStruct, const ServerConf& conf, const std::map<std::string,std::string>&cgiExtMap)
+{
+	std::string cgiExecPath = cgiExtMap.at(fileExt);
+	std::string scriptContent;
+	std::cout << ">>>> CGI EXEC PATH: " << cgiExecPath << "<<<<\n";
+	std::cout << ">>>> CGI FILE PATH: " << filePath << "<<<<\n";
+	std::cout  << "Fd: " << pollStruct.fd << std::endl;
+	std::vector<char *> env = this->fillEnv(conf, pollStruct, filePath);
+	int fd[2];
+	if (pipe(fd) == -1)
+	{
+		std::cout << "Pipe error" << std::endl;
+		return "";
+	}
+	pid_t pid = fork();
+	if (pid == -1)
+	{
+		std::cout << "Fork error" << std::endl;
+		return "";
+	}
+	else if (pid == 0)
+	{
+		close(fd[0]);
+		dup2(fd[1], STDOUT_FILENO);
+		close(fd[1]);
+		char* argv[] = {
+			const_cast<char*>(cgiExecPath.c_str()),  
+			const_cast<char*>(filePath.c_str()),     
+			NULL
+		};
+		execve(cgiExecPath.c_str(),argv,env.data());
+	}
 	
-// }
+	waitpid(pid, NULL, 0);
+	close(fd[1]);
+	scriptContent = HelperClass::fdToString(fd[0]);
+	std::cout << ">>>> CGI SCRIPT CONTENT: " << scriptContent << "<<<<\n";
+	return scriptContent;
+}

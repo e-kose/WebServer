@@ -28,8 +28,9 @@ class HttpRequest
 		std::string hostName;
 		std::string requestFile;
 		std::string contentType;
+		int port;									// Port numarası
 		std::map<std::string, std::string>headers; 	// Tüm HTTP headerları
-		std::map<std::string, std::string>bodyVec;
+		std::map<std::string, std::string>bodyMap;
 
 		std::string body;								// içerik kısmı json falan 
 		std::string queryString;						// /search?q=test ise q=test bu olacak mı bilmiyroum daha
@@ -53,13 +54,16 @@ class HttpRequest
 		size_t getContentLength() const;
 		std::string getRequestFile() const;
 		std::string getContentType() const;
+		std::string getQueryString() const;
+		int getPort() const;
 		std::map<std::string, std::string>getHeaders() const;
 		std::string getBody() const;
-		std::map<std::string, std::string> getBodyVec() const;
+		std::map<std::string, std::string> getBodyMap() const;
 		std::map<std::string, std::string> getQueryParams() const;
 
 		void setMethod(const std::string method);
 		void setPath(const std::string path);
+		void setPort(int port);
 		void setVersion(const std::string version);
 		void setHostName(const std::string hostName);
 		void setContentType(const std::string contentType);
@@ -67,7 +71,7 @@ class HttpRequest
 		void setContentLength(size_t length);
 		void setHeaders(const  std::map<std::string, std::string> headers);
 		void setBody(const std::string body);
-		void setBodyVec(const std::map<std::string, std::string> bodyVec);
+		void setBodyMap(const std::map<std::string, std::string> bodyMap);
 		void setQueryParams(const std::map<std::string, std::string> queryParams);
 		void setQueryString(const std::string queryString);
 		void addQuery(std::string key, std::string value);

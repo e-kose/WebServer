@@ -6,7 +6,7 @@
 /*   By: menasy <menasy@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/02 15:40:04 by menasy            #+#    #+#             */
-/*   Updated: 2025/05/15 19:41:48 by menasy           ###   ########.fr       */
+/*   Updated: 2025/05/18 01:15:52 by menasy           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,6 +31,8 @@
 #include <cstring>
 #include <sys/stat.h>
 #include <limits.h>
+#include <sys/wait.h>
+
 class WebServer 
 {
 	// TUM HER ŞEY BİTTİKTEN SONRA COPY CONSTRUCTORLAR FALAN KONTROL ET DEĞERLERİ ATA !!!!!!!!
@@ -69,8 +71,10 @@ class WebServer
 		std::string 							createHttpResponse(
 																const std::string& statusCode, const std::string& statusMessage,
 																const std::string& contentType, const std::string& body);
-		std::string 							sendCgi(const std::string&filePath, const std::string& fileExt);
 		std::map<std::string, std::string>	findLocation(const ServerConf& conf, std::string locStr);
+		std::string sendCgi(const std::string&filePath, std::string& fileExt, const pollfd& pollStruct, const ServerConf& conf, const std::map<std::string,std::string>&cgiExtMap);
+		std::vector<char *>	fillEnv(const ServerConf& conf, const pollfd& pollStruct, const std::string& path);
+			
 
 
 

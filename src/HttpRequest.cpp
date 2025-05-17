@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   HttpRequest.cpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ekose <ekose@student.42.fr>                +#+  +:+       +#+        */
+/*   By: menasy <menasy@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/08 16:36:39 by menasy            #+#    #+#             */
-/*   Updated: 2025/05/16 19:07:45 by ekose            ###   ########.fr       */
+/*   Updated: 2025/05/18 01:22:44 by menasy           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,7 +23,7 @@ HttpRequest::HttpRequest() {
 	this->body = "";
 	this->queryString = "";
 	this->queryParams.clear();
-	this->bodyVec.clear();
+	this->bodyMap.clear();
 	this->hostName = "";
 	
 }
@@ -40,7 +40,7 @@ HttpRequest &HttpRequest::operator=(const HttpRequest &other) {
 		this->body = other.body;
 		this->queryString = other.queryString;
 		this->queryParams = other.queryParams;
-		this->bodyVec = other.bodyVec;
+		this->bodyMap = other.bodyMap;
 		this->hostName = other.hostName;
 	}
 	return *this;
@@ -75,8 +75,11 @@ std::string HttpRequest::getRequestFile() const {
 std::string HttpRequest::getContentType() const {
 	return contentType;
 }
-std::map<std::string, std::string> HttpRequest::getBodyVec() const {
-	return bodyVec;
+std::string HttpRequest::getQueryString() const {
+	return queryString;
+}
+std::map<std::string, std::string> HttpRequest::getBodyMap() const {
+	return this->bodyMap;
 }
 std::map<std::string, std::string> HttpRequest::getQueryParams() const {
 	return queryParams;
@@ -103,7 +106,9 @@ void HttpRequest::setPath(const std::string path)
 	size_t pos = tmpPath.find_first_of('?');
 	if (pos != std::string::npos)
 	{
-		this->parseQuery(tmpPath.substr(pos + 1));
+		std::string queryStr = tmpPath.substr(pos + 1);
+		this->setQueryString(queryStr); // env için koydum
+		this->parseQuery(queryStr);
 		tmpPath = tmpPath.substr(0, pos);
 	}
 	if (HelperClass::characterCounter(tmpPath, '/') == 1)
@@ -139,8 +144,8 @@ void HttpRequest::setBody(const std::string body) {
 	this->body = body;
 }
 
-void HttpRequest::setBodyVec(const std::map<std::string, std::string>  bodyVec) {
-	this->bodyVec = bodyVec;
+void HttpRequest::setBodyMap(const std::map<std::string, std::string>  bodyMap) {
+	this->bodyMap = bodyMap;
 }
 void HttpRequest::setQueryParams(const std::map<std::string, std::string> queryParams) {
 	this->queryParams = queryParams;
@@ -224,7 +229,7 @@ void HttpRequest::parseRequest(const std::string& request)
 		return ;
 	}
 	this->setBody(tmpReq.substr(tmpReq.find_first_of("{"), tmpReq.find_last_of("}") - tmpReq.find_first_of("{") + 1));
-	this->setBodyVec(this->parseBody());
+	this->setBodyMap(this->parseBody());
 
 }
 

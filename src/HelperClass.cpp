@@ -6,7 +6,7 @@
 /*   By: menasy <menasy@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/12 07:50:19 by ekose             #+#    #+#             */
-/*   Updated: 2025/05/17 18:29:14 by menasy           ###   ########.fr       */
+/*   Updated: 2025/05/18 01:31:55 by menasy           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -216,3 +216,23 @@ bool HelperClass::fileIsExist(const std::string& path)
 		return false;
 }
 
+std::string HelperClass::intToString(int value)
+{
+	std::ostringstream oss;
+	oss << value;
+	return oss.str();
+}
+std::string HelperClass::fdToString(int& fd)
+{
+	char buffer[1024];
+    std::string result;
+    ssize_t bytesRead;
+
+    while ((bytesRead = read(fd, buffer, sizeof(buffer))) > 0) {
+        result.append(buffer, bytesRead);
+    }
+	if (bytesRead == -1) {
+		return "";
+	}
+	return result;
+}
