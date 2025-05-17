@@ -6,7 +6,7 @@
 /*   By: menasy <menasy@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/12 07:50:19 by ekose             #+#    #+#             */
-/*   Updated: 2025/05/15 21:13:42 by menasy           ###   ########.fr       */
+/*   Updated: 2025/05/17 18:29:14 by menasy           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -84,10 +84,10 @@ bool	HelperClass::semiColonCheck(const std::string& str)
 std::string HelperClass::trimLine(const std::string& str) 
 {
 	
-	std::string::size_type start = str.find_first_not_of(" \t\n");
+	std::string::size_type start = str.find_first_not_of(" \t\n\r");
 	if (start == std::string::npos)
 		return "";
-	std::string::size_type end = str.find_last_not_of(" \t\n");
+	std::string::size_type end = str.find_last_not_of(" \t\n\r");
 	return str.substr(start, end - start + 1);
 }
 
