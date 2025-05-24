@@ -86,7 +86,6 @@ std::string WebServer::readHtmlFile(pollfd& pollStruct, const std::string& path,
 			{
 				std::string scriptContetnt;
 				std::cout << ">>>> CGI YA GONFERİLDİ <<<<\n" << ext << std::endl;
-				//ext i cgi içinde hangi pathe gore nerde derleneceğini bulmak için aldım ona gpre
 				//mapden hangi değeri çekeceğimi bulacağım.
 				scriptContetnt = this->sendCgi(newPath, ext, pollStruct,conf, cgiMap);
 				file.close();
@@ -163,6 +162,7 @@ std::string WebServer::sendCgi(const std::string&filePath, std::string& fileExt,
 	waitpid(pid, NULL, 0);
 	close(fd[1]);
 	scriptContent = HelperClass::fdToString(fd[0]);
+	close(fd[0]);
 	std::cout << ">>>> CGI SCRIPT CONTENT: " << scriptContent << "<<<<\n";
 	return scriptContent;
 }

@@ -889,3 +889,12 @@
 [Sun May 18 01:32:12 2025] Socket info: 127.0.0.1:41060 -> 127.0.0.1:8080 GET // 200
 [Sun May 18 01:32:18 2025] Socket info: 127.0.0.1:41062 -> 127.0.0.1:8080 GET /cgi-bin/abc 200
 [Sun May 18 01:33:48 2025] Socket info: 127.0.0.1:49576 -> 127.0.0.1:8080 GET /cgi-bin/abc 200
+[Sun May 18 01:35:20 2025] Socket info: 127.0.0.1:60970 -> 127.0.0.1:8080 GET /cgi-bin/abc 200
+[Sun May 18 01:35:54 2025] Socket info: 127.0.0.1:60984 -> 127.0.0.1:8080 GET /cgi-bin/abc 200
+[Sat May 24 22:12:55 2025] Socket info: 127.0.0.1:43764 -> 127.0.0.1:8080 GET /test/ 200
+[Sat May 24 22:12:56 2025] Socket info: 127.0.0.1:43772 -> 127.0.0.1:8080 GET /favicon.ico/ 404
+[Sat May 24 22:13:05 2025] Socket info: 127.0.0.1:35544 -> 127.0.0.1:8080 GET /h/ 404
+[Sat May 24 22:13:09 2025] Socket info: 127.0.0.1:35548 -> 127.0.0.1:8080 GET /he/ 404
+[Sat May 24 22:13:16 2025] Socket info: 127.0.0.1:36554 -> 127.0.0.1:8080 GET /hello.p/ 404
+[Sat May 24 22:13:26 2025] Socket info: 127.0.0.1:39130 -> 127.0.0.1:8080 GET /h/ 404
+[Sat May 24 22:15:33 2025] Socket info: 127.0.0.1:57716 -> 127.0.0.1:8080 GET /h/ 404
