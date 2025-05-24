@@ -6,7 +6,7 @@
 /*   By: ekose <ekose@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/12 07:52:01 by ekose             #+#    #+#             */
-/*   Updated: 2025/05/15 14:08:09 by ekose            ###   ########.fr       */
+/*   Updated: 2025/05/24 15:10:45 by ekose            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,21 +20,20 @@ void  WebServer::sendResponse(pollfd& pollStruct, const std::string& status)
 	int			code = std::atoi(status.substr(0,pos).c_str());
 	std::string	log = socketInfo(clientToAddrMap[fd], fd) + " " 
 						+ this->clientRequests[pollStruct.fd]->getMethod()+ " " 
-						+ this->clientRequests[pollStruct.fd]->getPath() + "/" 
+						+ this->clientRequests[pollStruct.fd]->getPath()
 						+ this->clientRequests[pollStruct.fd]->getRequestFile() 
 						+ " " + status.substr(0,pos);
 	HelperClass::writeToFile("access.log",log);
 	if (code >= 400)
-		response = this->createErrorResponse(status, *clientToServerMap[fd], clientToServerMap[fd]->getRoot());
+		response = this->createErrorResponse(pollStruct,status, *clientToServerMap[fd], clientToServerMap[fd]->getRoot());
 	else if(code >= 200 && code <= 205)
 	{
 		std::string httpMethod = this->clientRequests[pollStruct.fd]->getMethod();
 		if (httpMethod == "GET")
-			response = this->createHttpResponse(status.substr(0, pos), "OK", "text/html", this->readHtmlFile(this->resultPath, *this->clientToServerMap[fd]));
+			response = this->createHttpResponse(status.substr(0, pos), "OK", "text/html", this->readHtmlFile(pollStruct,this->resultPath, *this->clientToServerMap[fd]));
 		else if (httpMethod == "DELETE")
-			response = this->createHttpResponse(status.substr(0, pos), "OK", "text/html", this->readHtmlFile(clientToServerMap[fd]->getRoot() + "/index.html", *this->clientToServerMap[fd]));
+			response = this->createHttpResponse(status.substr(0, pos), "OK", "text/html", this->readHtmlFile(pollStruct,clientToServerMap[fd]->getRoot() + "/index.html", *this->clientToServerMap[fd]));
 	}
-		//index vectoruna bakılacak
 	sendHandler(pollStruct, response);
 }
 

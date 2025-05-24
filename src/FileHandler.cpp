@@ -3,63 +3,66 @@
 /*                                                        :::      ::::::::   */
 /*   FileHandler.cpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ekose <ekose@student.42.fr>                +#+  +:+       +#+        */
+/*   By: menasy <menasy@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/13 21:40:13 by menasy            #+#    #+#             */
-/*   Updated: 2025/05/15 13:32:03 by ekose            ###   ########.fr       */
+/*   Updated: 2025/05/15 21:37:56 by menasy           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../include/WebServer.hpp"
 
-std::string WebServer::findLocation(const ServerConf& conf, std::string locStr)
+std::map<std::string, std::string> WebServer::findLocation(const ServerConf& conf, std::string locStr)
 {
 	std::vector<LocationConf> locVec = conf.getLocations();
+	std::map<std::string, std::string> cgiExtMap;
 	for (size_t i = 0; i < locVec.size(); i++)
 	{
 		if (locVec[i].getPath() == locStr)
-			return locVec[i].getCgiExt()[".py"];
+			cgiExtMap = locVec[i].getCgiExt();
 	}
-	return "";
+	return cgiExtMap;
 }
 
-std::string WebServer::readHtmlFile(const std::string& path, const ServerConf& conf) 
+std::string WebServer::readHtmlFile(pollfd& pollStruct, const std::string& path, const ServerConf& conf) 
 {
-	std::cout << "READ HTML FILE: " << path << std::endl;
+	std::cout << "-------------- READ HTML FILE : " << path <<" --------------"<<std::endl;
 	if (path.empty())
 		return "";
-    std::ifstream file(path.c_str());
-	std::string extensionVal, locationCgiExt;
-	if (!file.is_open()) 
+	std::string newPath;
+	std::map <std::string, std::string> cgiMap;
+	cgiMap = findLocation(conf,"/cgi-bin");
+	newPath = HelperClass::checkFileWithExtension(path, cgiMap);
+    std::ifstream file(newPath.c_str());
+	if (file.is_open()) 
 	{
-		locationCgiExt = findLocation(conf,"/cgi-bin");
-		if (locationCgiExt.empty())
-			return "";
-		std::cout << "LOCATION CGI EXT: " << locationCgiExt << std::endl;
-		extensionVal = HelperClass::checkFileWithExtension(path, locationCgiExt);
-		std::cout << "EXTENSION VAL: " << extensionVal << std::endl;
-        if (extensionVal == path)
-			return "";
-		else
+		std::size_t pos = newPath.find_last_of(".");
+		if (pos != std::string::npos)
 		{
-			std::string ext = extensionVal.substr(extensionVal.find_last_of("."), extensionVal.length());
-			if (HelperClass::fileIsExecutable(path, ext, locationCgiExt))
+			std::string ext = newPath.substr(pos, newPath.length());
+			int isExecInt = HelperClass::fileIsExecutable(newPath, ext, cgiMap);
+			if (isExecInt == -1)
 			{
-				std::cout << "---------------- CGI YA GONFERİLDİ --------------\n";
-				// this->sendCgi(path, ext);
+				std::cout << ">>>> Cgi Extensions YOK -<<<<\n";
+				file.close();
+				this->sendResponse(pollStruct, "403 Forbidden");
+				return "Forbidden";
 			}
-			else
+			else if (isExecInt == 1)
 			{
-				file.open(extensionVal.c_str());
-				if (!file.is_open())
-					return "";
+				std::cout << ">>>> CGI YA GONFERİLDİ <<<<\n" << ext << std::endl;
+				//ext i cgi içinde hangi pathe gore nerde derleneceğini bulmak için aldım ona gpre
+				//mapden hangi değeri çekeceğimi bulacağım.
+				// this->sendCgi(path, ext);
 			}	
 		}
     }
+	else
+		return "";
+	std::cout << ">>> FILE IS OPENED <<<" << std::endl;
     std::stringstream buffer;
     buffer << file.rdbuf();
 	file.close();
-
 	return buffer.str();
 }
 
@@ -78,7 +81,7 @@ std::string WebServer::createHttpResponse(
 	return response;
 }
 
-std::string WebServer::createErrorResponse(const std::string& status, const ServerConf& conf, const std::string& rootPAth)
+std::string WebServer::createErrorResponse(pollfd& pollStruct, const std::string& status, const ServerConf& conf, const std::string& rootPAth)
 {
 	std::string content;
 	size_t pos = status.find_first_of(" ");
@@ -87,11 +90,11 @@ std::string WebServer::createErrorResponse(const std::string& status, const Serv
 	std::map<int, std::string> errMap = conf.getErrorPages();
 	std::map<int, std::string> defaultErrMap = conf.getDfltErrPage();
 	int errCode = std::atoi(status.c_str());
-	
+	std::cout << ">>>> ERROR CODE: " << errCode << " <<<<" << std::endl;
 	if (errMap.find(errCode) != errMap.end())
 	{
-		content = readHtmlFile(HelperClass::mergeDirectory(rootPAth, errMap[errCode]),conf);
-		if (!content.empty())
+		content = readHtmlFile(pollStruct,HelperClass::mergeDirectory(rootPAth, errMap[errCode]),conf);
+		if (!content.empty() && content != "Forbidden")
 			return createHttpResponse(statusCode, statusMessage, "text/html", content);
 	}
 	return createHttpResponse(statusCode, statusMessage, "text/html",defaultErrMap[errCode]);

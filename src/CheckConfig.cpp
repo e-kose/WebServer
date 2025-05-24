@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   CheckConfig.cpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ekose <ekose@student.42.fr>                +#+  +:+       +#+        */
+/*   By: menasy <menasy@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/30 12:42:10 by menasy            #+#    #+#             */
-/*   Updated: 2025/05/15 13:56:57 by ekose            ###   ########.fr       */
+/*   Updated: 2025/05/15 19:56:32 by menasy           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -155,6 +155,7 @@ void CheckConfig::checkConfig() {
 		bracketsCheck(this->fullText);
 		std::vector<std::string> tek = this->seperation();
 		this->serverConfVec =  this->createConfVec(tek);
+		
 		std::cout << "==================SUCCESFULY FİNİSHED=================== \n";
 		WebServer web(serverConfVec);
 	}

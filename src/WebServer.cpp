@@ -6,7 +6,7 @@
 /*   By: ekose <ekose@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/02 15:50:42 by menasy            #+#    #+#             */
-/*   Updated: 2025/05/16 19:10:23 by ekose            ###   ########.fr       */
+/*   Updated: 2025/05/24 15:08:27 by ekose            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,7 +29,8 @@ WebServer &WebServer::operator=(const WebServer &other)
 		this->clientToServerMap = other.clientToServerMap;
 		this->clientToAddrMap = other.clientToAddrMap;
 		this->resultPath = other.resultPath;
-		
+		this->clientRequests = other.clientRequests;
+		this->requestBuffers = other.requestBuffers;
 	}
 	return *this;
 }
@@ -203,42 +204,53 @@ void	WebServer::acceptNewClient(pollfd& pollStruct)
 
 void WebServer::clientRead(pollfd& pollStruct)
 {
-	//// FONKSİYON GÜNCELLENECEK HEADERDAN SONRA BODYYİ ALACAK
     char buffer[4096];
-    std::string requestData;
-    bool keepReading = true;
+    std::string& requestData = this->requestBuffers[pollStruct.fd];
 
-    while (keepReading)
+    while (true)
     {
-        int bytesReceived = recv(pollStruct.fd, buffer, sizeof(buffer) - 1, 0);
-        
+        int bytesReceived = recv(pollStruct.fd, buffer, sizeof(buffer), 0);
+
         if (bytesReceived < 0)
         {
-			// SUBJECTE UYGUN DEĞİL GBİ BAKICAM
             if (errno == EAGAIN || errno == EWOULDBLOCK)
                 break;
             else
             {
-                std::cerr << "Error reading from client: " << strerror(errno) << std::endl;
+                std::cerr << ">>>> Error reading from client: " << strerror(errno) << " <<<<" << std::endl;
                 closeCliSocket(pollStruct.fd);
                 return;
             }
         }
         else if (bytesReceived == 0)
         {
-            std::cout << "Client disconnected" << std::endl;
+            std::cout << ">>>> Client Ayrıldı <<<<" << std::endl;
             closeCliSocket(pollStruct.fd);
             return;
         }
-        else
-        {
-            buffer[bytesReceived] = '\0';
-            requestData += buffer;
 
-            if (requestData.find("\r\n\r\n") != std::string::npos)
+        requestData.append(buffer, bytesReceived);
+
+        size_t headerEnd = requestData.find("\r\n\r\n");
+        if (headerEnd != std::string::npos)
+        {
+            size_t contentLength = 0;
+            std::string header = requestData.substr(0, headerEnd);
+
+            size_t pos = header.find("Content-Length:");
+            if (pos != std::string::npos)
             {
-                keepReading = false;
+                pos += 15;
+                while (pos < header.size() && isspace(header[pos])) pos++;
+                size_t end = header.find("\r\n", pos);
+                std::string lengthStr = header.substr(pos, end - pos);
+                contentLength = std::atoi(lengthStr.c_str());
             }
+
+            size_t totalSize = headerEnd + 4 + contentLength;
+            if (requestData.size() < totalSize)
+                continue;
+            break;
         }
     }
 
@@ -247,14 +259,17 @@ void WebServer::clientRead(pollfd& pollStruct)
         try
         {
             if (this->clientRequests[pollStruct.fd])
-			{
+            {
                 delete this->clientRequests[pollStruct.fd];
-				this->clientRequests[pollStruct.fd] = NULL;
-			}
+                this->clientRequests[pollStruct.fd] = NULL;
+            }
+
             this->clientRequests[pollStruct.fd] = this->parseRecv(requestData);
             this->clientToServerMap[pollStruct.fd] = &this->searchServerConf(this->serverConfVec, this->clientRequests[pollStruct.fd]->getHostName());
-			pollStruct.events = POLLOUT;
-		}
+
+            pollStruct.events = POLLOUT;
+            this->requestBuffers.erase(pollStruct.fd);
+        }
         catch(const std::exception& e)
         {
             std::cerr << "Error parsing request: " << e.what() << std::endl;
@@ -264,8 +279,10 @@ void WebServer::clientRead(pollfd& pollStruct)
     }
 }
 
+
 void WebServer::tryFiles(LocationConf& locConf, const std::string& httpPath, const ServerConf* serverConf,  pollfd& pollStruct)
 {
+	std::cout << "--------------- TRYFİLES --------------" << std::endl;
 	std::vector<std::string> tryFilesVec = locConf.getTryFiles();
 	std::string newRoot, contentFile, errPage, sendMessage, resultDirectory;
 	std::string::size_type pos1;
@@ -282,7 +299,9 @@ void WebServer::tryFiles(LocationConf& locConf, const std::string& httpPath, con
 		else
 			tryFilesVec[i] = httpPath + tryFilesVec[i].substr(pos1 + 4, tryFilesVec[i].length());
 		resultDirectory = HelperClass::mergeDirectory(newRoot, tryFilesVec[i]);
-		contentFile = this->readHtmlFile(resultDirectory, *serverConf);
+		contentFile = this->readHtmlFile(pollStruct,resultDirectory, *serverConf);
+		if (contentFile == "Forbidden")
+			break;
 		if (!contentFile.empty())
 		{	
 			this->resultPath = resultDirectory;
@@ -295,7 +314,7 @@ void WebServer::tryFiles(LocationConf& locConf, const std::string& httpPath, con
 		errPage = tryFilesVec[tryFilesVec.size() -1];
 		this->sendResponse(pollStruct, errPage + " Not Found");
 	}
-	std::cout << "TRY FILES: Finisheddddddd " << std::endl;
+	std::cout << "------------------ TRY FİLES FİNİSHED -----------------" << std::endl;
 }
 
 bool WebServer::methodIsExist(const std::vector<std::string>& locMethodsvec, const std::string& requestMethod,pollfd& pollStruct)
@@ -316,7 +335,6 @@ bool WebServer::methodIsExist(const std::vector<std::string>& locMethodsvec, con
 }
 void WebServer::sendHandler(pollfd& pollStruct, std::string& sendMessage)
 {
-	// 3 kere sayfayı yenileyince seg yiyoruz bakcam.
 	int checkSend = 0;
 	int lengthMessage;
 	
@@ -371,14 +389,13 @@ bool WebServer::indexHandler(pollfd& pollStruct, std::string& mergedPath, const 
 
 std::string WebServer::findRequest(pollfd& pollStruct)
 {
-	std::cout << "FIND REQUEST" << std::endl;
+	std::cout << "------------ FIND REQUEST ----------" << std::endl;
 	ServerConf* serverConf = this->clientToServerMap[pollStruct.fd];
 	std::vector<LocationConf> locVec = serverConf->getLocations();
-	std::cout << "SERVER ?????????????????????????\n";
 	std::string httpPath , mergedPath;
 	size_t rootIndex = 0;		
 	httpPath = this->clientRequests[pollStruct.fd]->getPath();
-	std::cout << "HTTP PATH: " << httpPath << std::endl;
+	std::cout << ">>>> HTTP PATH: " << httpPath << " <<<<"<< std::endl;
 	for (size_t i = 0; i < locVec.size(); i++)
 	{
 		if (locVec[i].getPath() == "/")
@@ -407,15 +424,14 @@ std::string WebServer::findRequest(pollfd& pollStruct)
 			}
 			else
 				return "";
-			
 		}
 	}
 	if (mergedPath.empty())
-	{		//buraya gitmeden de uzantıyı halletmem lazım.
+	{
 		tryFiles(locVec[rootIndex], httpPath, serverConf, pollStruct);
 		return "";
 	}
-	std::cout << "MERGED PATH: " << mergedPath << std::endl;
+	std::cout << "-------- MERGED PATH: " << mergedPath << " --------------"<<std::endl;
 	return mergedPath;
 }
 
@@ -423,19 +439,19 @@ void WebServer::pollOutEvent(pollfd& pollStruct)
 {
 	if (this->clientRequests[pollStruct.fd] == NULL)
 	{
-		std::cout << "this->clientRequests[pollStruct.fd] is NULL" << std::endl;
+		std::cout << ">>>> ClientRequest["<< pollStruct.fd << "] = NULL <<<"<< std::endl;
 		return;
 	}
 	// std::string method = this->clientRequests[pollStruct.fd]->getMethod();
 	this->resultPath = findRequest(pollStruct);
 	if (this->resultPath.empty())
 	{
-		std::cout << "RESULT PATH IS EMPTY" << std::endl;
+		std::cout << ">>>> Result path is empty<<<" << std::endl;
 		return ;
 	}
 	if (this->clientRequests[pollStruct.fd]->getMethod() == "GET")
 	{
-		std::cout << "GET METHOD HANDLER" << std::endl;
+		std::cout << "------------ GET METHOD ---------" << std::endl;
 		this->sendResponse(pollStruct, "200 OK");
 	}
 	else if (this->clientRequests[pollStruct.fd]->getMethod() == "POST")
@@ -444,13 +460,13 @@ void WebServer::pollOutEvent(pollfd& pollStruct)
 	}
 	else if (this->clientRequests[pollStruct.fd]->getMethod() == "DELETE")
 	{
-		std::cout << "DELETE METHOD HANDLER" << std::endl;
+		std::cout << "---------- DELETE METHOD HANDLER -----------" << std::endl;
 		deleteMethod(pollStruct);
 		delete this->clientRequests[pollStruct.fd];
 	}
 	else
 	{
-		std::cout << "UNKNOWN METHOD" << std::endl;
+		std::cout << "----------- UNKNOWN METHOD ---------" << std::endl;
 	}
 }
 void	WebServer::runServer()
@@ -484,7 +500,7 @@ void	WebServer::runServer()
 			
 			if (pollVec[i].revents & POLLOUT)
 			{
-				std::cout << "POLL OUT EVENT" << std::endl;
+				std::cout << "---------------- POLL OUT EVENT ------------" << std::endl;
 				this->pollOutEvent(pollVec[i]);	
 				pollVec[i].events = POLLIN;
 			}

@@ -6,7 +6,7 @@
 /*   By: ekose <ekose@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/12 07:50:19 by ekose             #+#    #+#             */
-/*   Updated: 2025/05/16 19:05:18 by ekose            ###   ########.fr       */
+/*   Updated: 2025/05/23 13:59:43 by ekose            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,6 +26,7 @@ HelperClass &HelperClass::operator=(const HelperClass &other) {
 }
 HelperClass::~HelperClass() {
 }
+
 
 size_t HelperClass::characterCounter(const std::string& str, char c)
 {
@@ -132,10 +133,11 @@ void HelperClass::printVector(const std::vector<std::string>& vec)
 
 void	HelperClass::writeToFile(std::string fileName, std::string message)
 {
+	std::cout << "*******>" << message << std::endl;
 	std::ofstream ofs;
 	ofs.open(fileName.c_str(), std::ofstream::out | std::ios_base::app);
 	time_t now = time(NULL);
-    std::string timeStr = ctime(&now); // Zamanı string'e çevir
+    std::string timeStr = ctime(&now);
     timeStr.erase(timeStr.length() - 1);  
 	if (ofs.is_open())
 	{
@@ -157,35 +159,45 @@ std::string HelperClass::createAndMove(std::string& str, std::string character)
 	return dest;
 }
 
-std::string HelperClass::checkFileWithExtension(const std::string& path, const std::string& cgiExt)
+std::string HelperClass::checkFileWithExtension(const std::string& path, const std::map<std::string, std::string>& cgiExtMap)
 {
-	std::cout << "CHECK FILE WITH EXTENSION:: " << path <<std::endl;
-	std::ifstream file;
-	std::vector<std::string> extensionsVec;
-	(void) cgiExt;
-	extensionsVec.push_back(".html");
-	extensionsVec.push_back(".txt");
-	extensionsVec.push_back(".php"); // geçici olarak koydum extensinlarla doldurulması laızm
-	for (size_t i = 0; i < extensionsVec.size(); i++)
+	if (path.find_last_of(".") != std::string::npos)
+		return path;
+	std::ifstream file(path.c_str());
+	if (file.is_open())
 	{
-		std::string tmpPath = path + extensionsVec[i];
+		file.close();
+		return path;
+	}
+	std::vector<std::string> extVec;
+	extVec.push_back(".html");
+	extVec.push_back(".txt");
+	if (cgiExtMap.size() > 0)
+		for (std::map<std::string, std::string>::const_iterator it = cgiExtMap.begin(); it != cgiExtMap.end(); it++)
+			extVec.push_back(it->first);
+
+	for (size_t i = 0; i < extVec.size(); i++)
+	{
+		std::string tmpPath = path + extVec[i];
 		file.open(tmpPath.c_str());
 		if (file.is_open())
 			return tmpPath;
 	}
 	return path;
 }
-bool 	HelperClass::fileIsExecutable(const std::string& path, const std::string& extension, const std::string& cgiExtStr)
+int 	HelperClass::fileIsExecutable(const std::string& path, const std::string& extension, const std::map<std::string, std::string>& cgiExtMap)
 {
-	if (path.find("cgi-bin/") == std::string::npos)
-		return false;
-	std::vector<std::string> cgiExtVec = splitString(cgiExtStr, ' ');
-	for (size_t i = 0; i < cgiExtVec[i].size(); i++)
+	
+	for (std::map<std::string, std::string>::const_iterator it = cgiExtMap.begin(); it != cgiExtMap.end(); it++)
 	{
-		if (cgiExtVec[i] == extension)
-			return true;
+		if (extension == it->first)
+		{
+			if (path.find("cgi-bin/") == std::string::npos)
+				return -1;
+			return 1;
+		}
 	}
-	return false;
+	return 0;
 }
 
 std::string HelperClass::mergeDirectory(const std::string& rootPath, const std::string& httpPath)
