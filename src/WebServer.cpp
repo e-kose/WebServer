@@ -6,7 +6,7 @@
 /*   By: menasy <menasy@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/02 15:50:42 by menasy            #+#    #+#             */
-/*   Updated: 2025/05/17 18:29:27 by menasy           ###   ########.fr       */
+/*   Updated: 2025/05/26 17:27:41 by menasy           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -293,7 +293,7 @@ void WebServer::tryFiles(LocationConf& locConf, const std::string& httpPath, con
 			return ;
 		}
 	}
-	if (contentFile.empty())
+	if (contentFile.empty() || !HelperClass::fileIsExist(resultDirectory))
 	{
 		errPage = tryFilesVec[tryFilesVec.size() -1];
 		this->sendResponse(pollStruct, errPage + " Not Found");
@@ -393,7 +393,11 @@ std::string WebServer::findRequest(pollfd& pollStruct)
 				else
 					mergedPath = HelperClass::mergeDirectory(locVec[i].getRoot(), httpPath);
 				if (!this->clientRequests[pollStruct.fd]->getRequestFile().empty())
-					mergedPath += "/" + this->clientRequests[pollStruct.fd]->getRequestFile();
+				{
+					if (httpPath != "/")
+						mergedPath += "/";
+					mergedPath += this->clientRequests[pollStruct.fd]->getRequestFile();
+				}
 				else
 				{
 					std::vector<std::string> indexVec;

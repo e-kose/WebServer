@@ -6,7 +6,7 @@
 /*   By: menasy <menasy@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/08 16:36:39 by menasy            #+#    #+#             */
-/*   Updated: 2025/05/18 01:22:44 by menasy           ###   ########.fr       */
+/*   Updated: 2025/05/26 17:43:21 by menasy           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -102,6 +102,7 @@ void HttpRequest::setContentType(const std::string contentType) {
 
 void HttpRequest::setPath(const std::string path) 
 {
+	std::cout << "GELEN PATH:" << path << std::endl;
 	std::string tmpPath = path;
 	size_t pos = tmpPath.find_first_of('?');
 	if (pos != std::string::npos)
@@ -112,12 +113,23 @@ void HttpRequest::setPath(const std::string path)
 		tmpPath = tmpPath.substr(0, pos);
 	}
 	if (HelperClass::characterCounter(tmpPath, '/') == 1)
-		this->path = HelperClass::trimLine(tmpPath);
+	{
+		if (tmpPath.length() == 1)
+			this->path = HelperClass::trimLine(tmpPath);
+		else
+		{
+			std::string::size_type pos = tmpPath.find_first_not_of('/');
+			this->path = HelperClass::trimLine(tmpPath.substr(0,pos));
+			this->setRequestFile(tmpPath.substr(pos, tmpPath.length() - pos));
+		}
+	}
 	else
 	{
 		this->path = HelperClass::trimLine(tmpPath.substr(tmpPath.find_first_of('/'), tmpPath.find_last_of('/')));
 		this->setRequestFile(HelperClass::trimLine(tmpPath.substr(tmpPath.find_last_of('/') + 1, tmpPath.length())));
 	}
+	std::cout << "PATH______________________>" << this->path << std::endl;
+	std::cout << "REQUEST FILE______________________>" << this->requestFile << std::endl;
 }
 
 void HttpRequest::setVersion(const std::string version) {
@@ -215,13 +227,10 @@ void HttpRequest::parseRequest(const std::string& request)
 	std::string tmpReq = request;
 	
 	this->setMethod(HelperClass::createAndMove(tmpReq," "));
-	if (HelperClass::characterCounter(request.substr(0,request.find_first_of('\n')),' ') == 2)
-	{
-		this->setPath(HelperClass::createAndMove(tmpReq," "));
-		this->setVersion(HelperClass::createAndMove(tmpReq,"\n"));
-	}
-	else 
-		this->setVersion(HelperClass::createAndMove(tmpReq,"\n"));
+	
+	this->setPath(HelperClass::createAndMove(tmpReq," "));
+	this->setVersion(HelperClass::createAndMove(tmpReq,"\n"));
+
 	this->setHeaders(this->parseHeader(tmpReq));
 	if (tmpReq.find_first_of("{") == std::string::npos && !tmpReq.empty())
 	{

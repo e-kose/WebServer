@@ -6,7 +6,7 @@
 /*   By: menasy <menasy@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/13 21:40:13 by menasy            #+#    #+#             */
-/*   Updated: 2025/05/18 01:33:39 by menasy           ###   ########.fr       */
+/*   Updated: 2025/05/24 23:17:50 by menasy           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -157,10 +157,11 @@ std::string WebServer::sendCgi(const std::string&filePath, std::string& fileExt,
 			NULL
 		};
 		execve(cgiExecPath.c_str(),argv,env.data());
+		throw std::runtime_error("Execve failed");
 	}
 	
-	waitpid(pid, NULL, 0);
 	close(fd[1]);
+	waitpid(pid, NULL, 0);
 	scriptContent = HelperClass::fdToString(fd[0]);
 	close(fd[0]);
 	std::cout << ">>>> CGI SCRIPT CONTENT: " << scriptContent << "<<<<\n";
