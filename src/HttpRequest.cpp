@@ -6,7 +6,7 @@
 /*   By: menasy <menasy@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/08 16:36:39 by menasy            #+#    #+#             */
-/*   Updated: 2025/05/26 17:43:21 by menasy           ###   ########.fr       */
+/*   Updated: 2025/05/27 00:10:21 by menasy           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -112,17 +112,18 @@ void HttpRequest::setPath(const std::string path)
 		this->parseQuery(queryStr);
 		tmpPath = tmpPath.substr(0, pos);
 	}
+	// şurdan sonra duzeltcez eto gibi eğer / varsa bu 
 	if (HelperClass::characterCounter(tmpPath, '/') == 1)
 	{
-		if (tmpPath.length() == 1)
-			this->path = HelperClass::trimLine(tmpPath);
-		else
-		{
-			std::string::size_type pos = tmpPath.find_first_not_of('/');
-			this->path = HelperClass::trimLine(tmpPath.substr(0,pos));
-			this->setRequestFile(tmpPath.substr(pos, tmpPath.length() - pos));
-		}
+		std::string::size_type pos;
+
+		pos = tmpPath.find_last_of("/");
+		this->path = HelperClass::trimLine(tmpPath.substr(0, pos + 1));
+		if (tmpPath.length() > 1 && tmpPath != "/")
+			this->setRequestFile(tmpPath.substr(pos + 1, tmpPath.length()));
+			
 	}
+	//host/a.html -> sıkıntı duzeltmem lazım
 	else
 	{
 		this->path = HelperClass::trimLine(tmpPath.substr(tmpPath.find_first_of('/'), tmpPath.find_last_of('/')));

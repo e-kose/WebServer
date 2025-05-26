@@ -6,7 +6,7 @@
 /*   By: menasy <menasy@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/02 15:50:42 by menasy            #+#    #+#             */
-/*   Updated: 2025/05/26 17:27:41 by menasy           ###   ########.fr       */
+/*   Updated: 2025/05/26 23:58:55 by menasy           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -287,9 +287,10 @@ void WebServer::tryFiles(LocationConf& locConf, const std::string& httpPath, con
 		if (contentFile == "Forbidden")
 			break;
 		if (!contentFile.empty())
-		{	
+		{
+			std::cout << "----------000000000000000000000-----------\n";	
 			this->resultPath = resultDirectory;
-			this->sendResponse(pollStruct, "200 OK");
+			// this->sendResponse(pollStruct, "200 OK");
 			return ;
 		}
 	}
@@ -379,9 +380,12 @@ std::string WebServer::findRequest(pollfd& pollStruct)
 	std::string httpPath , mergedPath;
 	size_t rootIndex = 0;		
 	httpPath = this->clientRequests[pollStruct.fd]->getPath();
+	if (!this->clientRequests[pollStruct.fd]->getRequestFile().empty())
+		httpPath += ("/" + this->clientRequests[pollStruct.fd]->getRequestFile());
 	std::cout << ">>>> HTTP PATH: " << httpPath << " <<<<"<< std::endl;
 	for (size_t i = 0; i < locVec.size(); i++)
 	{
+		std::cout<< "getPath-----: " << locVec[i].getPath() << std::endl;
 		if (locVec[i].getPath() == "/")
 			rootIndex = i;
 		if (httpPath == locVec[i].getPath())
@@ -392,20 +396,21 @@ std::string WebServer::findRequest(pollfd& pollStruct)
 					mergedPath = HelperClass::mergeDirectory(serverConf->getRoot(), httpPath);
 				else
 					mergedPath = HelperClass::mergeDirectory(locVec[i].getRoot(), httpPath);
+				if (httpPath != "/")
+					mergedPath += "/";
 				if (!this->clientRequests[pollStruct.fd]->getRequestFile().empty())
 				{
-					if (httpPath != "/")
-						mergedPath += "/";
 					mergedPath += this->clientRequests[pollStruct.fd]->getRequestFile();
 				}
 				else
 				{
+					std::cout << "*************************** "<< mergedPath << std::endl;
 					std::vector<std::string> indexVec;
 					if (locVec[i].getIndex().size() != 0)
 						indexVec = locVec[i].getIndex();
 					else
 						indexVec = serverConf->getIndex();
-					if (!indexHandler(pollStruct,mergedPath, indexVec))
+					if (!indexHandler(pollStruct, mergedPath, indexVec))
 						return "";
 				}
 				break;
@@ -417,6 +422,12 @@ std::string WebServer::findRequest(pollfd& pollStruct)
 	if (mergedPath.empty())
 	{
 		tryFiles(locVec[rootIndex], httpPath, serverConf, pollStruct);
+		return this->resultPath;
+	}
+	else if(!HelperClass::fileIsExist(mergedPath))
+	{
+		std::cout << "Merged Path Is Not Exists: " << mergedPath << std::endl;
+		this->sendResponse(pollStruct,"404 Not Found");
 		return "";
 	}
 	std::cout << "-------- MERGED PATH: " << mergedPath << " --------------"<<std::endl;
@@ -450,7 +461,6 @@ void WebServer::pollOutEvent(pollfd& pollStruct)
 	{
 		std::cout << "---------- DELETE METHOD HANDLER -----------" << std::endl;
 		deleteMethod(pollStruct);
-		delete this->clientRequests[pollStruct.fd];
 	}
 	else
 	{

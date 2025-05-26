@@ -6,7 +6,7 @@
 /*   By: menasy <menasy@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/13 21:40:13 by menasy            #+#    #+#             */
-/*   Updated: 2025/05/24 23:17:50 by menasy           ###   ########.fr       */
+/*   Updated: 2025/05/26 20:34:54 by menasy           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -126,6 +126,36 @@ std::vector<char *> WebServer::fillEnv(const ServerConf& conf, const pollfd& pol
 	env.push_back(NULL);
 	return env;
 }
+// std::string WebServer::postHandler(const std::string&filePath, std::string& cgiPath)
+// {
+// 	int cinFd[2];
+// 	int outFd[2];
+
+// 	if (pipe(cinFd) == -1 || pipe(outFd) == -1)
+// 	{
+// 		return "";
+// 	}
+// 	pid_t pid = fork();
+// 	if (pid == -1)
+// 	{
+// 		std::cout << "Fork error" << std::endl;
+// 		return "";
+// 	}
+// 	else if (pid == 0)
+// 	{
+// 		close(fd[0]);
+// 		dup2(fd[1], STDOUT_FILENO);
+// 		close(fd[1]);
+// 		char* argv[] = {
+// 			const_cast<char*>(cgiExecPath.c_str()),  
+// 			const_cast<char*>(filePath.c_str()),     
+// 			NULL
+// 		};
+// 		execve(cgiExecPath.c_str(),argv,env.data());
+// 		throw std::runtime_error("Execve failed");
+// 	}
+// }
+
 std::string WebServer::sendCgi(const std::string&filePath, std::string& fileExt, const pollfd& pollStruct, const ServerConf& conf, const std::map<std::string,std::string>&cgiExtMap)
 {
 	std::string cgiExecPath = cgiExtMap.at(fileExt);
@@ -134,9 +164,12 @@ std::string WebServer::sendCgi(const std::string&filePath, std::string& fileExt,
 	std::cout << ">>>> CGI FILE PATH: " << filePath << "<<<<\n";
 	std::cout  << "Fd: " << pollStruct.fd << std::endl;
 	std::vector<char *> env = this->fillEnv(conf, pollStruct, filePath);
+	// if (this->clientRequests[pollStruct.fd]->getMethod() == "POST")
+	// 	postHandler(filePath, cgiExecPath);
 	int fd[2];
 	if (pipe(fd) == -1)
 	{
+		//log yazak
 		std::cout << "Pipe error" << std::endl;
 		return "";
 	}

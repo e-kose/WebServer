@@ -6,7 +6,7 @@
 /*   By: menasy <menasy@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/12 07:52:01 by ekose             #+#    #+#             */
-/*   Updated: 2025/05/15 17:34:48 by menasy           ###   ########.fr       */
+/*   Updated: 2025/05/26 23:40:11 by menasy           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,6 +24,7 @@ void  WebServer::sendResponse(pollfd& pollStruct, const std::string& status)
 						+ this->clientRequests[pollStruct.fd]->getRequestFile() 
 						+ " " + status.substr(0,pos);
 	HelperClass::writeToFile("access.log",log);
+	std::cout<< "DEGER:" << this->resultPath << std::endl;
 	if (code >= 400)
 		response = this->createErrorResponse(pollStruct,status, *clientToServerMap[fd], clientToServerMap[fd]->getRoot());
 	else if(code >= 200 && code <= 205)
@@ -52,7 +53,6 @@ bool isPathUnderRoot(const std::string& path, const std::string& root) {
 void WebServer::deleteMethod(pollfd& pollStruct)
 {
 	std::string finalPath;
-
 	if (!resolvePath(this->resultPath, finalPath)) {
 		sendResponse(pollStruct, "404 Not Found");
 		return;
@@ -65,6 +65,7 @@ void WebServer::deleteMethod(pollfd& pollStruct)
 
 	// Root belirleme
 	std::string allowedRoot;
+	std::cout << "DELETE RESULT: " << this->resultPath << std::endl;
 	std::vector<LocationConf> locations = clientToServerMap[pollStruct.fd]->getLocations();
 	for (size_t i = 0; i < locations.size(); ++i) {
 		if (this->clientRequests[pollStruct.fd]->getPath() == locations[i].getPath())
@@ -76,6 +77,7 @@ void WebServer::deleteMethod(pollfd& pollStruct)
 		}
 	}
 	
+	std::cout << "ALLOWEDROOT: " << allowedRoot << std::endl;
 	if (allowedRoot.empty()) {
 		sendResponse(pollStruct, "403 Forbidden");
 		return;
