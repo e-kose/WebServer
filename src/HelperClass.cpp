@@ -6,7 +6,7 @@
 /*   By: ekose <ekose@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/12 07:50:19 by ekose             #+#    #+#             */
-/*   Updated: 2025/05/23 13:59:43 by ekose            ###   ########.fr       */
+/*   Updated: 2025/05/26 08:15:46 by ekose            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -207,6 +207,7 @@ std::string HelperClass::mergeDirectory(const std::string& rootPath, const std::
 
 bool HelperClass::fileIsExist(const std::string& path)
 {
+	std::cout << "Checking if file exists: " << path << std::endl;
 	std::ifstream file(path.c_str());
 	if (file.is_open())
 	{
@@ -217,3 +218,50 @@ bool HelperClass::fileIsExist(const std::string& path)
 		return false;
 }
 
+std::string HelperClass::intToString(int value)
+{
+	std::ostringstream oss;
+	oss << value;
+	return oss.str();
+}
+std::string HelperClass::fdToString(int& fd)
+{
+	char buffer[1024];
+    std::string result;
+    ssize_t bytesRead;
+
+    while ((bytesRead = read(fd, buffer, sizeof(buffer))) > 0) {
+        result.append(buffer, bytesRead);
+    }
+	if (bytesRead == -1) {
+		return "";
+	}
+	return result;
+}
+
+std::string HelperClass::indexIsExist(ServerConf& conf, std::string location)
+{
+	std::string  root = conf.getRoot();
+	std::vector<std::string> indexVec;
+	std::vector<LocationConf> locVec = conf.getLocations();
+	std::vector<LocationConf>::iterator it = locVec.begin();
+	for (; it != locVec.end(); it++)
+	{
+		if (it->getPath() == location)
+		{
+			if (it->getIndex().size() > 0)
+			{
+				indexVec = it->getIndex();
+				if (!it->getRoot().empty())
+					root = it->getRoot();
+			}
+			else
+				indexVec = conf.getIndex();
+			break;
+		}
+	}
+	for (size_t i = 0; i < indexVec.size(); i++)
+		if (HelperClass::fileIsExist(HelperClass::mergeDirectory(root + "/", indexVec[i])))
+			return HelperClass::mergeDirectory(root + "/", indexVec[i]);
+	return "errorPage";
+}

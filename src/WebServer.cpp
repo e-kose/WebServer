@@ -6,7 +6,7 @@
 /*   By: ekose <ekose@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/02 15:50:42 by menasy            #+#    #+#             */
-/*   Updated: 2025/05/24 15:08:27 by ekose            ###   ########.fr       */
+/*   Updated: 2025/05/26 07:34:42 by ekose            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -444,6 +444,7 @@ void WebServer::pollOutEvent(pollfd& pollStruct)
 	}
 	// std::string method = this->clientRequests[pollStruct.fd]->getMethod();
 	this->resultPath = findRequest(pollStruct);
+	std::cout << ">>>> RESULT PATH: " << this->resultPath << "<<<<" << std::endl;
 	if (this->resultPath.empty())
 	{
 		std::cout << ">>>> Result path is empty<<<" << std::endl;

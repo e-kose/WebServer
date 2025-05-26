@@ -6,7 +6,7 @@
 /*   By: ekose <ekose@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/12 07:52:01 by ekose             #+#    #+#             */
-/*   Updated: 2025/05/24 15:10:45 by ekose            ###   ########.fr       */
+/*   Updated: 2025/05/26 07:43:52 by ekose            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,10 +20,11 @@ void  WebServer::sendResponse(pollfd& pollStruct, const std::string& status)
 	int			code = std::atoi(status.substr(0,pos).c_str());
 	std::string	log = socketInfo(clientToAddrMap[fd], fd) + " " 
 						+ this->clientRequests[pollStruct.fd]->getMethod()+ " " 
-						+ this->clientRequests[pollStruct.fd]->getPath()
+						+ this->clientRequests[pollStruct.fd]->getPath() + "/"
 						+ this->clientRequests[pollStruct.fd]->getRequestFile() 
 						+ " " + status.substr(0,pos);
 	HelperClass::writeToFile("access.log",log);
+	std::cout << "status: " << this->clientRequests[pollStruct.fd]->getPath() << std::endl;
 	if (code >= 400)
 		response = this->createErrorResponse(pollStruct,status, *clientToServerMap[fd], clientToServerMap[fd]->getRoot());
 	else if(code >= 200 && code <= 205)
@@ -32,7 +33,10 @@ void  WebServer::sendResponse(pollfd& pollStruct, const std::string& status)
 		if (httpMethod == "GET")
 			response = this->createHttpResponse(status.substr(0, pos), "OK", "text/html", this->readHtmlFile(pollStruct,this->resultPath, *this->clientToServerMap[fd]));
 		else if (httpMethod == "DELETE")
-			response = this->createHttpResponse(status.substr(0, pos), "OK", "text/html", this->readHtmlFile(pollStruct,clientToServerMap[fd]->getRoot() + "/index.html", *this->clientToServerMap[fd]));
+			response = this->createHttpResponse(status.substr(0, pos), "OK", "text/html",
+												this->readHtmlFile(pollStruct,
+												HelperClass::indexIsExist(*clientToServerMap[fd],this->clientRequests[pollStruct.fd]->getPath()),
+												*this->clientToServerMap[fd]));
 	}
 	sendHandler(pollStruct, response);
 }
