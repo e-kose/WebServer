@@ -6,7 +6,7 @@
 /*   By: ekose <ekose@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/12 07:52:01 by ekose             #+#    #+#             */
-/*   Updated: 2025/05/26 07:43:52 by ekose            ###   ########.fr       */
+/*   Updated: 2025/05/26 18:49:54 by ekose            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,7 +24,7 @@ void  WebServer::sendResponse(pollfd& pollStruct, const std::string& status)
 						+ this->clientRequests[pollStruct.fd]->getRequestFile() 
 						+ " " + status.substr(0,pos);
 	HelperClass::writeToFile("access.log",log);
-	std::cout << "status: " << this->clientRequests[pollStruct.fd]->getPath() << std::endl;
+	std::cout << "status: " << this->resultPath << std::endl;
 	if (code >= 400)
 		response = this->createErrorResponse(pollStruct,status, *clientToServerMap[fd], clientToServerMap[fd]->getRoot());
 	else if(code >= 200 && code <= 205)

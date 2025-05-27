@@ -6,7 +6,7 @@
 /*   By: ekose <ekose@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/12 07:50:19 by ekose             #+#    #+#             */
-/*   Updated: 2025/05/26 08:15:46 by ekose            ###   ########.fr       */
+/*   Updated: 2025/05/27 20:42:48 by ekose            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -264,4 +264,34 @@ std::string HelperClass::indexIsExist(ServerConf& conf, std::string location)
 		if (HelperClass::fileIsExist(HelperClass::mergeDirectory(root + "/", indexVec[i])))
 			return HelperClass::mergeDirectory(root + "/", indexVec[i]);
 	return "errorPage";
+}
+
+std::string HelperClass::generateAutoIndexHtml(const std::string& path, const std::string& uriPath)
+{
+	DIR* dir = opendir(path.c_str());
+	if (!dir) return "<html><body><h1>403 Forbidden</h1></body></html>";
+	
+	std::stringstream ss;
+    ss << "<html><head><title>Index of " << uriPath << "</title></head><body>";
+    ss << "<h1>Index of " << uriPath << "</h1><ul>";
+    struct dirent* entry;
+	
+    while ((entry = readdir(dir)) != NULL) {
+        if (std::string(entry->d_name) == ".") continue;
+		
+		std::string fullPath = path + "/" + entry->d_name;
+		struct stat st;
+		if (stat(fullPath.c_str(), &st) == 0)
+		{
+			if (S_ISDIR(st.st_mode))
+                ss << "<li><a href=\"" << entry->d_name << "/\">" << entry->d_name << "/</a></li>";
+            else
+                ss << "<li><a href=\"" << entry->d_name << "\">" << entry->d_name << "</a></li>";
+        }
+		else
+			ss << "<li>" << entry->d_name << " (not accessible)</li>";
+    }
+    closedir(dir);
+    ss << "</ul></body></html>";
+    return ss.str();
 }

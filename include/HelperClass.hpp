@@ -6,7 +6,7 @@
 /*   By: ekose <ekose@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/04 18:10:20 by menasy            #+#    #+#             */
-/*   Updated: 2025/05/24 20:40:35 by ekose            ###   ########.fr       */
+/*   Updated: 2025/05/27 20:31:59 by ekose            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,6 +24,8 @@
 #include <sys/socket.h>
 #include <sys/poll.h>
 #include "ServerConf.hpp"
+#include <dirent.h>
+#include <sys/stat.h>
 
 class ServerConf;
 class HelperClass
@@ -52,4 +54,5 @@ class HelperClass
 		static int 							fileIsExecutable(const std::string& path, const std::string& extension, const std::map<std::string, std::string>& cgiExtMap);
 		static std::string 					fdToString(int& fd);
 		static std::string					indexIsExist(ServerConf& conf, std::string location);
+		static std::string					generateAutoIndexHtml(const std::string& path, const std::string& uriPath);
 };
