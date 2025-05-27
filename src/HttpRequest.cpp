@@ -6,11 +6,13 @@
 /*   By: menasy <menasy@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/08 16:36:39 by menasy            #+#    #+#             */
-/*   Updated: 2025/05/27 00:10:21 by menasy           ###   ########.fr       */
+/*   Updated: 2025/05/27 15:53:38 by menasy           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../include/HttpRequest.hpp"
+#include "../include/ServerConf.hpp"
+#include "../include/LocationConf.hpp"
 
 
 HttpRequest::HttpRequest() {
@@ -100,6 +102,8 @@ void HttpRequest::setContentType(const std::string contentType) {
 	this->contentType = contentType;
 }
 
+
+
 void HttpRequest::setPath(const std::string path) 
 {
 	std::cout << "GELEN PATH:" << path << std::endl;
@@ -112,25 +116,18 @@ void HttpRequest::setPath(const std::string path)
 		this->parseQuery(queryStr);
 		tmpPath = tmpPath.substr(0, pos);
 	}
-	// şurdan sonra duzeltcez eto gibi eğer / varsa bu 
-	if (HelperClass::characterCounter(tmpPath, '/') == 1)
-	{
-		std::string::size_type pos;
+	this->path = tmpPath;
+}
 
-		pos = tmpPath.find_last_of("/");
-		this->path = HelperClass::trimLine(tmpPath.substr(0, pos + 1));
-		if (tmpPath.length() > 1 && tmpPath != "/")
-			this->setRequestFile(tmpPath.substr(pos + 1, tmpPath.length()));
-			
-	}
-	//host/a.html -> sıkıntı duzeltmem lazım
-	else
-	{
-		this->path = HelperClass::trimLine(tmpPath.substr(tmpPath.find_first_of('/'), tmpPath.find_last_of('/')));
-		this->setRequestFile(HelperClass::trimLine(tmpPath.substr(tmpPath.find_last_of('/') + 1, tmpPath.length())));
-	}
-	std::cout << "PATH______________________>" << this->path << std::endl;
-	std::cout << "REQUEST FILE______________________>" << this->requestFile << std::endl;
+void HttpRequest::sepPath(const std::vector<LocationConf>& locVec)
+{
+	if (this->path == "/")
+		return;
+	std::string tmpPath = this->path;
+	this->path = HelperClass::getLocInVec(tmpPath, locVec);
+	this->setRequestFile(tmpPath.substr(this->path.length(), tmpPath.length()));
+	std::cout << "SET PATH___________:" << this->path <<std::endl;
+	std::cout << "REQ FİLE___________:" << this->requestFile << std::endl;
 }
 
 void HttpRequest::setVersion(const std::string version) {
@@ -225,13 +222,11 @@ std::map<std::string, std::string>  HttpRequest::parseBody()
 }
 void HttpRequest::parseRequest(const std::string& request) 
 {
+	std:: cout << "================== PARSEEEE REQUEST ================== \n"  << request << std::endl;
 	std::string tmpReq = request;
-	
 	this->setMethod(HelperClass::createAndMove(tmpReq," "));
-	
 	this->setPath(HelperClass::createAndMove(tmpReq," "));
 	this->setVersion(HelperClass::createAndMove(tmpReq,"\n"));
-
 	this->setHeaders(this->parseHeader(tmpReq));
 	if (tmpReq.find_first_of("{") == std::string::npos && !tmpReq.empty())
 	{

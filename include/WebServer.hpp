@@ -6,7 +6,7 @@
 /*   By: menasy <menasy@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/02 15:40:04 by menasy            #+#    #+#             */
-/*   Updated: 2025/05/18 01:15:52 by menasy           ###   ########.fr       */
+/*   Updated: 2025/05/27 19:29:53 by menasy           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -52,7 +52,7 @@ class WebServer
 		void									closeCliSocket(int);
 		void 									pollOutEvent(pollfd& pollStruct);
 		void									deleteMethod(pollfd&);
-		bool									indexHandler(pollfd& pollStruct, std::string& mergedPath, const std::vector<std::string>& indexVec);
+		bool									indexHandler(std::string& mergedPath, const std::vector<std::string>& indexVec);
 		void									acceptNewClient(pollfd& pollStruct);
 		void									clientRead(pollfd&);
 		void									setNonBlocking(int);
@@ -66,7 +66,7 @@ class WebServer
 		bool 									methodIsExist(const std::vector<std::string>& locMethodsvec, const std::string& requestMethod, pollfd&);
 		void									sendHandler(pollfd& pollStruct, std::string& sendMessage);
 		void 									sendResponse(pollfd&, const std::string& status);
-		std::string 							readHtmlFile(pollfd& ,const std::string& path, const ServerConf& conf); 
+		std::string 							readHtmlFile(pollfd& ,std::string& path, const ServerConf& conf); 
 		std::string 							createErrorResponse(pollfd& pollStruct,const std::string& status, const ServerConf& conf, const std::string& rootPAth);
 		std::string 							createHttpResponse(
 																const std::string& statusCode, const std::string& statusMessage,

@@ -6,7 +6,7 @@
 /*   By: menasy <menasy@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/12 07:52:01 by ekose             #+#    #+#             */
-/*   Updated: 2025/05/26 23:40:11 by menasy           ###   ########.fr       */
+/*   Updated: 2025/05/27 19:32:14 by menasy           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,7 +33,10 @@ void  WebServer::sendResponse(pollfd& pollStruct, const std::string& status)
 		if (httpMethod == "GET")
 			response = this->createHttpResponse(status.substr(0, pos), "OK", "text/html", this->readHtmlFile(pollStruct,this->resultPath, *this->clientToServerMap[fd]));
 		else if (httpMethod == "DELETE")
-			response = this->createHttpResponse(status.substr(0, pos), "OK", "text/html", this->readHtmlFile(pollStruct,clientToServerMap[fd]->getRoot() + "/index.html", *this->clientToServerMap[fd]));
+		{
+			std::string newPath = clientToServerMap[fd]->getRoot() + "/index.html";
+			response = this->createHttpResponse(status.substr(0, pos), "OK", "text/html", this->readHtmlFile(pollStruct, newPath, *this->clientToServerMap[fd]));
+		}
 	}
 	sendHandler(pollStruct, response);
 }

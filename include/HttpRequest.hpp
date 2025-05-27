@@ -17,8 +17,10 @@
 #include <map>
 #include <vector>
 #include <sstream>
-#include "HelperClass.hpp"
 
+class ServerConf;
+class LocationConf;
+class HelperClass;
 class HttpRequest 
 {
 	private:
@@ -75,5 +77,6 @@ class HttpRequest
 		void setQueryParams(const std::map<std::string, std::string> queryParams);
 		void setQueryString(const std::string queryString);
 		void addQuery(std::string key, std::string value);
+		void sepPath(const std::vector<LocationConf>&);
 };
 	

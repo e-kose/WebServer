@@ -6,7 +6,7 @@
 /*   By: menasy <menasy@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/04 18:10:20 by menasy            #+#    #+#             */
-/*   Updated: 2025/05/18 01:18:14 by menasy           ###   ########.fr       */
+/*   Updated: 2025/05/27 17:39:23 by menasy           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,6 +26,7 @@
 #include "ServerConf.hpp"
 
 class ServerConf;
+class LocationConf;
 class HelperClass
 {
 	private:
@@ -51,4 +52,10 @@ class HelperClass
 		static	std::string 				checkFileWithExtension(const std::string& path, const std::map<std::string, std::string>& cgiExtMap);
 		static int 							fileIsExecutable(const std::string& path, const std::string& extension, const std::map<std::string, std::string>& cgiExtMap);
 		static std::string 					fdToString(int& fd);
-};
+		static std::string 					getLocInVec(const std::string& path, const std::vector<LocationConf>& locVec);
+		static std::string mergePath(const ServerConf& servConf, const LocationConf& locConf,const std::string reqFile, std::string& httpPath);
+		static bool indexHandler(std::string& mergedPath, const std::vector<std::string>& indexVec );
+
+
+	};
+

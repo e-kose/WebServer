@@ -6,12 +6,13 @@
 /*   By: menasy <menasy@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/12 07:50:19 by ekose             #+#    #+#             */
-/*   Updated: 2025/05/26 16:25:33 by menasy           ###   ########.fr       */
+/*   Updated: 2025/05/27 21:25:00 by menasy           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../include/HelperClass.hpp"
-
+#include "../include/LocationConf.hpp"
+#include "../include/ServerConf.hpp"
 
 HelperClass::HelperClass() {
 }
@@ -199,6 +200,57 @@ int 	HelperClass::fileIsExecutable(const std::string& path, const std::string& e
 	return 0;
 }
 
+bool HelperClass::indexHandler(std::string& mergedPath, const std::vector<std::string>& indexVec )
+{
+	std::string tmpPath = mergedPath;
+	for (size_t j = 0; j < indexVec.size(); j++)
+	{
+		tmpPath += indexVec[j];
+		if (HelperClass::fileIsExist(tmpPath))
+		{
+			mergedPath = tmpPath;
+			return true;
+		}
+		tmpPath = mergedPath;
+	}
+	return false;
+}
+
+std::string HelperClass::mergePath(const ServerConf& servConf, const LocationConf& locConf,const std::string reqFile, std::string& httpPath)
+{
+	std::string resPath, root;
+	std::vector<std::string> indexVec;
+	resPath = httpPath;
+	root = locConf.getRoot();
+	if (root.empty())
+		root = servConf.getRoot();
+	indexVec = locConf.getIndex();
+	if (indexVec.size() == 0)
+		indexVec = servConf.getIndex();
+
+	if (resPath[resPath.length() -1] != '/')
+	{
+		if (indexHandler(root, indexVec))
+			return root;
+		else
+			resPath += "/";	
+	}
+	resPath = HelperClass::mergeDirectory(root, resPath);
+	if (!reqFile.empty())
+		resPath += reqFile;
+	else
+	{
+		if (!indexHandler(resPath, indexVec))
+		{
+			std::cout << "İNDEX HANDLER: " << resPath << std::endl;
+			resPath = "";
+		}
+	}
+	if (!HelperClass::fileIsExist(resPath))
+		resPath = "";
+	return resPath;
+}
+
 std::string HelperClass::mergeDirectory(const std::string& rootPath, const std::string& httpPath)
 {
 	return	(rootPath + httpPath);
@@ -235,4 +287,23 @@ std::string HelperClass::fdToString(int& fd)
 		return "";
 	}
 	return result;
+}
+std::string HelperClass::getLocInVec(const std::string& path, const std::vector<LocationConf>& locVec)
+{
+	std::string sub,resPath;
+	size_t j = 0;
+	while (path[j])
+	{
+		while (path[j] && path[j] != '/')
+			j++;
+		if (path[j] == '/')
+			j++;
+		sub = path.substr(0, j);
+		for (size_t i = 0; i < locVec.size(); i++)
+		{
+			if (locVec[i].getPath() == sub)
+				resPath = sub;
+		}
+	}
+	return resPath;
 }

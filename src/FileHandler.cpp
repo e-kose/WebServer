@@ -6,7 +6,7 @@
 /*   By: menasy <menasy@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/13 21:40:13 by menasy            #+#    #+#             */
-/*   Updated: 2025/05/26 20:34:54 by menasy           ###   ########.fr       */
+/*   Updated: 2025/05/27 19:30:59 by menasy           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -52,13 +52,14 @@ std::string WebServer::createErrorResponse(pollfd& pollStruct, const std::string
 	std::cout << ">>>> ERROR CODE: " << errCode << " <<<<" << std::endl;
 	if (errMap.find(errCode) != errMap.end())
 	{
-		content = readHtmlFile(pollStruct,HelperClass::mergeDirectory(rootPAth, errMap[errCode]),conf);
+		std::string res = HelperClass::mergeDirectory(rootPAth, errMap[errCode]);
+		content = readHtmlFile(pollStruct,res,conf);
 		if (!content.empty() && content != "Forbidden")
 			return createHttpResponse(statusCode, statusMessage, "text/html", content);
 	}
 	return createHttpResponse(statusCode, statusMessage, "text/html",defaultErrMap[errCode]);
 }
-std::string WebServer::readHtmlFile(pollfd& pollStruct, const std::string& path, const ServerConf& conf) 
+std::string WebServer::readHtmlFile(pollfd& pollStruct,std::string& path, const ServerConf& conf) 
 {
 	std::cout << "-------------- READ HTML FILE : " << path <<" --------------"<<std::endl;
 	if (path.empty())
@@ -99,6 +100,7 @@ std::string WebServer::readHtmlFile(pollfd& pollStruct, const std::string& path,
     std::stringstream buffer;
     buffer << file.rdbuf();
 	file.close();
+	path = newPath;
 	return buffer.str();
 }
 std::vector<char *> WebServer::fillEnv(const ServerConf& conf, const pollfd& pollStruct, const std::string& path)
