@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   HelperClass.cpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: menasy <menasy@student.42.fr>              +#+  +:+       +#+        */
+/*   By: ekose <ekose@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/12 07:50:19 by ekose             #+#    #+#             */
-/*   Updated: 2025/05/28 14:19:11 by menasy           ###   ########.fr       */
+/*   Updated: 2025/05/28 19:01:26 by ekose            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -204,6 +204,7 @@ int 	HelperClass::fileIsExecutable(const std::string& path, const std::string& e
 bool HelperClass::indexHandler(std::string& mergedPath, const std::vector<std::string>& indexVec )
 {
 	std::string tmpPath = mergedPath;
+	std::cout << "88888 " << mergedPath << std::endl;
 	for (size_t j = 0; j < indexVec.size(); j++)
 	{
 		tmpPath += indexVec[j];
@@ -332,8 +333,8 @@ std::string HelperClass::indexIsExist(ServerConf& conf, std::string location)
 		}
 	}
 	for (size_t i = 0; i < indexVec.size(); i++)
-		if (HelperClass::fileIsExist(HelperClass::mergeDirectory(root + "/", indexVec[i])))
-			return HelperClass::mergeDirectory(root + "/", indexVec[i]);
+		if (HelperClass::fileIsExist(HelperClass::mergeDirectory(root, indexVec[i])))
+			return HelperClass::mergeDirectory(root, indexVec[i]);
 	return "errorPage";
 }
 
@@ -357,7 +358,7 @@ std::string HelperClass::generateAutoIndexHtml(const std::string& path, const st
 	
 	struct dirent* entry;
 	while ((entry = readdir(dir)) != NULL) {
-		if (std::string(entry->d_name) == ".") continue;
+		if (std::string(entry->d_name) == "." || std::string(entry->d_name) == "..") continue;
 
 		std::string fullPath = path + "/" + entry->d_name;
 		struct stat st;

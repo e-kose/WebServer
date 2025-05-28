@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   WebServer.cpp                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: menasy <menasy@student.42.fr>              +#+  +:+       +#+        */
+/*   By: ekose <ekose@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/02 15:50:42 by menasy            #+#    #+#             */
-/*   Updated: 2025/05/28 14:17:58 by menasy           ###   ########.fr       */
+/*   Updated: 2025/05/28 18:47:04 by ekose            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -314,6 +314,7 @@ void WebServer::sendHandler(pollfd& pollStruct, std::string& sendMessage)
 			}
 		}
 	}
+	sendMessage.clear();
 }
 
 bool WebServer::methodIsExist(const std::vector<std::string>& locMethodsvec, const std::string& requestMethod,pollfd& pollStruct)
@@ -351,7 +352,9 @@ void WebServer::tryFiles(LocationConf& locConf, const std::string& httpPath, con
 		else
 			tryFilesVec[i] = httpPath + tryFilesVec[i].substr(pos1 + 4, tryFilesVec[i].length());
 		resultDirectory = HelperClass::mergeDirectory(newRoot, tryFilesVec[i]);
+		std::cout << "dada " << newRoot << "try: " << tryFilesVec[i ]<< std::endl;
 		contentFile = this->readHtmlFile(pollStruct,resultDirectory, *serverConf);
+		std::cout << "00000000 " << resultDirectory << std::endl;
 		if (contentFile == "Forbidden")
 			break;
 		if (!contentFile.empty() || HelperClass::fileIsExist(resultDirectory))
@@ -367,6 +370,7 @@ void WebServer::tryFiles(LocationConf& locConf, const std::string& httpPath, con
 			}
 			else if (locConf.getAutoIndex())
 			{
+				std::cout << "????????????0" <<locConf.getPath() << std::endl;
 				// dizindeki dosyalar listelenecek etonun metodla
 				// etoya sade gidcek gelen istek
 				std::cout << "AutoIndex is enabled for: " << resultDirectory << std::endl;
