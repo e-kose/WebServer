@@ -6,7 +6,7 @@
 /*   By: menasy <menasy@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/02 15:50:42 by menasy            #+#    #+#             */
-/*   Updated: 2025/05/27 23:36:21 by menasy           ###   ########.fr       */
+/*   Updated: 2025/05/28 14:17:58 by menasy           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,7 +29,8 @@ WebServer &WebServer::operator=(const WebServer &other)
 		this->clientToServerMap = other.clientToServerMap;
 		this->clientToAddrMap = other.clientToAddrMap;
 		this->resultPath = other.resultPath;
-		
+		this->clientRequests = other.clientRequests;
+		this->requestBuffers = other.requestBuffers;
 	}
 	return *this;
 }
@@ -203,23 +204,20 @@ void	WebServer::acceptNewClient(pollfd& pollStruct)
 
 void WebServer::clientRead(pollfd& pollStruct)
 {
-	//// FONKSİYON GÜNCELLENECEK HEADERDAN SONRA BODYYİ ALACAK
     char buffer[4096];
-    std::string requestData;
-    bool keepReading = true;
+    std::string& requestData = this->requestBuffers[pollStruct.fd];
 
-    while (keepReading)
+    while (true)
     {
-        int bytesReceived = recv(pollStruct.fd, buffer, sizeof(buffer) - 1, 0);
-        
+        int bytesReceived = recv(pollStruct.fd, buffer, sizeof(buffer), 0);
+
         if (bytesReceived < 0)
         {
-			// SUBJECTE UYGUN DEĞİL GBİ BAKICAM
             if (errno == EAGAIN || errno == EWOULDBLOCK)
                 break;
             else
             {
-                std::cerr << ">>>> Error reading from client: " << strerror(errno) << " <<<<" <<std::endl;
+                std::cerr << ">>>> Error reading from client: " << strerror(errno) << " <<<<" << std::endl;
                 closeCliSocket(pollStruct.fd);
                 return;
             }
@@ -230,15 +228,29 @@ void WebServer::clientRead(pollfd& pollStruct)
             closeCliSocket(pollStruct.fd);
             return;
         }
-        else
-        {
-            buffer[bytesReceived] = '\0';
-            requestData += buffer;
 
-            if (requestData.find("\r\n\r\n") != std::string::npos)
+        requestData.append(buffer, bytesReceived);
+
+        size_t headerEnd = requestData.find("\r\n\r\n");
+        if (headerEnd != std::string::npos)
+        {
+            size_t contentLength = 0;
+            std::string header = requestData.substr(0, headerEnd);
+
+            size_t pos = header.find("Content-Length:");
+            if (pos != std::string::npos)
             {
-                keepReading = false;
+                pos += 15;
+                while (pos < header.size() && isspace(header[pos])) pos++;
+                size_t end = header.find("\r\n", pos);
+                std::string lengthStr = header.substr(pos, end - pos);
+                contentLength = std::atoi(lengthStr.c_str());
             }
+
+            size_t totalSize = headerEnd + 4 + contentLength;
+            if (requestData.size() < totalSize)
+                continue;
+            break;
         }
     }
 
@@ -247,15 +259,17 @@ void WebServer::clientRead(pollfd& pollStruct)
         try
         {
             if (this->clientRequests[pollStruct.fd])
-			{
+            {
                 delete this->clientRequests[pollStruct.fd];
-				this->clientRequests[pollStruct.fd] = NULL;
-			}
+                this->clientRequests[pollStruct.fd] = NULL;
+            }
+
             this->clientRequests[pollStruct.fd] = this->parseRecv(requestData);
             this->clientToServerMap[pollStruct.fd] = &this->searchServerConf(this->serverConfVec, this->clientRequests[pollStruct.fd]->getHostName());
-			this->clientRequests[pollStruct.fd]->sepPath(this->clientToServerMap[pollStruct.fd]->getLocations());
-			pollStruct.events = POLLOUT;
-		}
+
+            pollStruct.events = POLLOUT;
+            this->requestBuffers.erase(pollStruct.fd);
+        }
         catch(const std::exception& e)
         {
             std::cerr << "Error parsing request: " << e.what() << std::endl;
@@ -355,6 +369,9 @@ void WebServer::tryFiles(LocationConf& locConf, const std::string& httpPath, con
 			{
 				// dizindeki dosyalar listelenecek etonun metodla
 				// etoya sade gidcek gelen istek
+				std::cout << "AutoIndex is enabled for: " << resultDirectory << std::endl;
+				this->response = HelperClass::generateAutoIndexHtml(resultDirectory, httpPath);
+				this->sendResponse(pollStruct, "200 OK");
 				return ;
 			}
 			else
@@ -382,6 +399,7 @@ std::string WebServer::findRequest(pollfd& pollStruct)
 	std::string httpPath , mergedPath, tmpPath;
 	size_t rootIndex = 0;		
 	httpPath = this->clientRequests[pollStruct.fd]->getPath();
+	tmpPath = httpPath;
 	if (!this->clientRequests[pollStruct.fd]->getRequestFile().empty())
 		tmpPath = (httpPath + this->clientRequests[pollStruct.fd]->getRequestFile());
 	std::cout << ">>>> HTTP PATH: " << httpPath << " <<<<"<< std::endl;
@@ -403,7 +421,8 @@ std::string WebServer::findRequest(pollfd& pollStruct)
 	}
 	if (mergedPath.empty() || HelperClass::fileIsExist(mergedPath))
 	{
-		std::cout << "go try: " << tmpPath << std::endl;
+		std::cout << "Go try: " << tmpPath << std::endl;
+		std::cout << "Merged path in try: " << mergedPath << std::endl;
 		tryFiles(locVec[rootIndex], tmpPath, serverConf, pollStruct);
 		return this->resultPath;
 	}
@@ -426,6 +445,7 @@ void WebServer::pollOutEvent(pollfd& pollStruct)
 	}
 	// std::string method = this->clientRequests[pollStruct.fd]->getMethod();
 	this->resultPath = findRequest(pollStruct);
+	std::cout << ">>>> RESULT PATH: " << this->resultPath << "<<<<" << std::endl;
 	if (this->resultPath.empty())
 	{
 		std::cout << ">>>> Result path is empty<<<" << std::endl;

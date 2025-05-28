@@ -6,7 +6,7 @@
 /*   By: menasy <menasy@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/12 07:50:19 by ekose             #+#    #+#             */
-/*   Updated: 2025/05/27 21:25:00 by menasy           ###   ########.fr       */
+/*   Updated: 2025/05/28 14:19:11 by menasy           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -134,10 +134,11 @@ void HelperClass::printVector(const std::vector<std::string>& vec)
 
 void	HelperClass::writeToFile(std::string fileName, std::string message)
 {
+	std::cout << "*******>" << message << std::endl;
 	std::ofstream ofs;
 	ofs.open(fileName.c_str(), std::ofstream::out | std::ios_base::app);
 	time_t now = time(NULL);
-    std::string timeStr = ctime(&now); // Zamanı string'e çevir
+    std::string timeStr = ctime(&now);
     timeStr.erase(timeStr.length() - 1);  
 	if (ofs.is_open())
 	{
@@ -258,6 +259,7 @@ std::string HelperClass::mergeDirectory(const std::string& rootPath, const std::
 
 bool HelperClass::fileIsExist(const std::string& path)
 {
+	std::cout << "Checking if file exists: " << path << std::endl;
 	std::ifstream file(path.c_str());
 	if (file.is_open())
 	{
@@ -306,4 +308,78 @@ std::string HelperClass::getLocInVec(const std::string& path, const std::vector<
 		}
 	}
 	return resPath;
+}
+
+std::string HelperClass::indexIsExist(ServerConf& conf, std::string location)
+{
+	std::string  root = conf.getRoot();
+	std::vector<std::string> indexVec;
+	std::vector<LocationConf> locVec = conf.getLocations();
+	std::vector<LocationConf>::iterator it = locVec.begin();
+	for (; it != locVec.end(); it++)
+	{
+		if (it->getPath() == location)
+		{
+			if (it->getIndex().size() > 0)
+			{
+				indexVec = it->getIndex();
+				if (!it->getRoot().empty())
+					root = it->getRoot();
+			}
+			else
+				indexVec = conf.getIndex();
+			break;
+		}
+	}
+	for (size_t i = 0; i < indexVec.size(); i++)
+		if (HelperClass::fileIsExist(HelperClass::mergeDirectory(root + "/", indexVec[i])))
+			return HelperClass::mergeDirectory(root + "/", indexVec[i]);
+	return "errorPage";
+}
+
+std::string HelperClass::generateAutoIndexHtml(const std::string& path, const std::string& uriPath)
+{
+	DIR* dir = opendir(path.c_str());
+	if (!dir) {
+		std::string body = "<html><body><h1>403 Forbidden</h1></body></html>";
+		std::stringstream header;
+		header << "HTTP/1.1 403 Forbidden\r\n"
+		       << "Content-Type: text/html\r\n"
+		       << "Content-Length: " << body.size() << "\r\n"
+		       << "Connection: close\r\n\r\n"
+		       << body;
+		return header.str();
+	}
+	
+	std::stringstream body;
+	body << "<html><head><title>Index of " << uriPath << "</title></head><body>";
+	body << "<h1>Index of " << uriPath << "</h1><ul>";
+	
+	struct dirent* entry;
+	while ((entry = readdir(dir)) != NULL) {
+		if (std::string(entry->d_name) == ".") continue;
+
+		std::string fullPath = path + "/" + entry->d_name;
+		struct stat st;
+		if (stat(fullPath.c_str(), &st) == 0) {
+			if (S_ISDIR(st.st_mode))
+				body << "<li><a href=\"" << entry->d_name << "/\">" << entry->d_name << "/</a></li>";
+			else
+				body << "<li><a href=\"" << entry->d_name << "\">" << entry->d_name << "</a></li>";
+		} else {
+			body << "<li>" << entry->d_name << " (not accessible)</li>";
+		}
+	}
+	closedir(dir);
+	body << "</ul></body></html>";
+
+	std::string html = body.str();
+	std::stringstream header;
+	header << "HTTP/1.1 200 OK\r\n"
+	       << "Content-Type: text/html\r\n"
+	       << "Content-Length: " << html.size() << "\r\n"
+	       << "Connection: close\r\n\r\n"
+	       << html;
+
+	return header.str();
 }

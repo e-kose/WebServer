@@ -6,7 +6,7 @@
 /*   By: menasy <menasy@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/02 15:40:04 by menasy            #+#    #+#             */
-/*   Updated: 2025/05/27 19:29:53 by menasy           ###   ########.fr       */
+/*   Updated: 2025/05/28 13:50:44 by menasy           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,7 +44,9 @@ class WebServer
 		std::map<int, ServerConf*>				clientToServerMap;
 		std::map<int, struct sockaddr_in>		clientToAddrMap;
 		std::map<int, HttpRequest*>     		clientRequests;
+		std::map<int, std::string>				requestBuffers;
 		std::string 							resultPath;
+		std::string 							response;
 
 		
 		void									pollfdVecCreat();
@@ -74,11 +76,6 @@ class WebServer
 		std::map<std::string, std::string>	findLocation(const ServerConf& conf, std::string locStr);
 		std::string sendCgi(const std::string&filePath, std::string& fileExt, const pollfd& pollStruct, const ServerConf& conf, const std::map<std::string,std::string>&cgiExtMap);
 		std::vector<char *>	fillEnv(const ServerConf& conf, const pollfd& pollStruct, const std::string& path);
-			
-
-
-
-
 
 	public:
 		WebServer(std::vector<ServerConf>& serverConfVec);

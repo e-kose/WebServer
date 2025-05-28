@@ -12,7 +12,7 @@ ServerConf::ServerConf()
 	// this->locations = std::vector<LocationConf>();
 	// this->server_name = std::vector<std::string>();
 	// this->index = std::vector<std::string>();
-	this->defaultErroPage();
+	this->defaultPage();
 }
 ServerConf::ServerConf(const ServerConf &other) {
 	*this = other;
@@ -32,7 +32,7 @@ ServerConf &ServerConf::operator=(const ServerConf &other) {
 	this->server_name = other.server_name;
 	this->index = other.index;
 	this->body_size = other.body_size;
-	this->dflt_err_page = other.dflt_err_page;
+	this->dflt_page = other.dflt_page;
 	return *this;
 }
 ServerConf::~ServerConf() {
@@ -69,8 +69,8 @@ std::string ServerConf::getAccessLog()const{
 	return this->access_log;
 }
 
-std::map<int, std::string> ServerConf::getDfltErrPage() const {
-	return this->dflt_err_page;
+std::map<int, std::string> ServerConf::getDfltPage() const {
+	return this->dflt_page;
 }
 
 void ServerConf::setIp(std::string ip) 
@@ -140,14 +140,15 @@ void ServerConf::setAccesLog(std::string logFile){
 	this->access_log = tmpValue;
 }
 
-void ServerConf::defaultErroPage()
+void ServerConf::defaultPage()
 {
-	this->dflt_err_page[400] = "<html><body><h1>400 Bad Request</h1><p>Sunucu isteğinizi anlayamadı.</p></body></html>";
-	this->dflt_err_page[401] = "<html><body><h1>401 Unauthorized</h1><p>Kimlik doğrulama gerekiyor.</p></body></html>";
-	this->dflt_err_page[403] = "<html><body><h1>403 Forbidden</h1><p>Erişim izniniz yok.</p></body></html>";
-	this->dflt_err_page[404] = "<html><body><h1>404 Not Found</h1><p>Sayfa bulunamadı.</p></body></html>";
-	this->dflt_err_page[405] = "<html><body><h1>405 Method Not Allowed</h1><p>HTTP metodu desteklenmiyor.</p></body></html>";
-	this->dflt_err_page[500] = "<html><body><h1>500 Internal Server err</h1><p>Sunucu hatası oluştu.</p></body></html>";
-	this->dflt_err_page[501] = "<html><body><h1>501 Not Implemented</h1><p>İşlev desteklenmiyor.</p></body></html>";
-	this->dflt_err_page[503] = "<html><body><h1>503 Service Unavailable</h1><p>Sunucu hizmet veremiyor.</p></body></html>";
+	this->dflt_page[200] = "<!DOCTYPE html>\n<html>\n<head><title>Webserv</title></head>\n<body><h1>Welcome to Webserv!</h1></body>\n</html>\n";
+	this->dflt_page[400] = "<html><body><h1>400 Bad Request</h1><p>Sunucu isteğinizi anlayamadı.</p></body></html>";
+	this->dflt_page[401] = "<html><body><h1>401 Unauthorized</h1><p>Kimlik doğrulama gerekiyor.</p></body></html>";
+	this->dflt_page[403] = "<html><body><h1>403 Forbidden</h1><p>Erişim izniniz yok.</p></body></html>";
+	this->dflt_page[404] = "<html><body><h1>404 Not Found</h1><p>Sayfa bulunamadı.</p></body></html>";
+	this->dflt_page[405] = "<html><body><h1>405 Method Not Allowed</h1><p>HTTP metodu desteklenmiyor.</p></body></html>";
+	this->dflt_page[500] = "<html><body><h1>500 Internal Server err</h1><p>Sunucu hatası oluştu.</p></body></html>";
+	this->dflt_page[501] = "<html><body><h1>501 Not Implemented</h1><p>İşlev desteklenmiyor.</p></body></html>";
+	this->dflt_page[503] = "<html><body><h1>503 Service Unavailable</h1><p>Sunucu hizmet veremiyor.</p></body></html>";
 }

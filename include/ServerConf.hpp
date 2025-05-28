@@ -16,13 +16,13 @@ class ServerConf {
 		std::string 				root;
 		std::string					error_log;
 		std::string					access_log;
-		std::map<int, std::string>	dflt_err_page;
+		std::map<int, std::string>	dflt_page;
 		std::map<int, std::string>	error_pages;
 		std::vector<std::string>	index;
 		std::vector<LocationConf>	locations;
 		std::vector<std::string>	server_name;
 
-		void						defaultErroPage();
+		void						defaultPage();
 	public:
 		//Constructor
 		ServerConf();
@@ -42,7 +42,7 @@ class ServerConf {
 		std::vector<std::string>	getServerName() const;
 		std::vector<LocationConf>	getLocations() const;
 		std::map<int, std::string>	getErrorPages() const;
-		std::map<int, std::string>	getDfltErrPage() const;
+		std::map<int, std::string>	getDfltPage() const;
 		// SET Functions
 		void						setIp(std::string ip);
 		void						setPort(int port);

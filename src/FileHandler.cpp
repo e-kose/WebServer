@@ -6,7 +6,7 @@
 /*   By: menasy <menasy@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/13 21:40:13 by menasy            #+#    #+#             */
-/*   Updated: 2025/05/27 19:30:59 by menasy           ###   ########.fr       */
+/*   Updated: 2025/05/28 13:30:24 by menasy           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -47,7 +47,7 @@ std::string WebServer::createErrorResponse(pollfd& pollStruct, const std::string
 	std::string statusCode = status.substr(0, pos);
 	std::string statusMessage = status.substr(pos + 1);
 	std::map<int, std::string> errMap = conf.getErrorPages();
-	std::map<int, std::string> defaultErrMap = conf.getDfltErrPage();
+	std::map<int, std::string> defaultErrMap = conf.getDfltPage();
 	int errCode = std::atoi(status.c_str());
 	std::cout << ">>>> ERROR CODE: " << errCode << " <<<<" << std::endl;
 	if (errMap.find(errCode) != errMap.end())
@@ -64,11 +64,14 @@ std::string WebServer::readHtmlFile(pollfd& pollStruct,std::string& path, const 
 	std::cout << "-------------- READ HTML FILE : " << path <<" --------------"<<std::endl;
 	if (path.empty())
 		return "";
+	if (path == "errorPage")
+		return conf.getDfltPage().at(404);
 	std::string newPath;
 	std::map <std::string, std::string> cgiMap;
 	cgiMap = findLocation(conf,"/cgi-bin");
 	newPath = HelperClass::checkFileWithExtension(path, cgiMap);
     std::ifstream file(newPath.c_str());
+	std::cout << ">>>> FILE PATH: " << newPath << "<<<<\n";
 	if (file.is_open()) 
 	{
 		std::size_t pos = newPath.find_last_of(".");

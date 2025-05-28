@@ -6,7 +6,7 @@
 /*   By: menasy <menasy@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/04 18:10:20 by menasy            #+#    #+#             */
-/*   Updated: 2025/05/27 17:39:23 by menasy           ###   ########.fr       */
+/*   Updated: 2025/05/28 13:33:44 by menasy           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,6 +24,8 @@
 #include <sys/socket.h>
 #include <sys/poll.h>
 #include "ServerConf.hpp"
+#include <dirent.h>
+#include <sys/stat.h>
 
 class ServerConf;
 class LocationConf;
@@ -55,7 +57,7 @@ class HelperClass
 		static std::string 					getLocInVec(const std::string& path, const std::vector<LocationConf>& locVec);
 		static std::string mergePath(const ServerConf& servConf, const LocationConf& locConf,const std::string reqFile, std::string& httpPath);
 		static bool indexHandler(std::string& mergedPath, const std::vector<std::string>& indexVec );
-
+			static std::string					indexIsExist(ServerConf& conf, std::string location);
+		static std::string					generateAutoIndexHtml(const std::string& path, const std::string& uriPath);
 
 	};
-
