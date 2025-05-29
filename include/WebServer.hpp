@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   WebServer.hpp                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: menasy <menasy@student.42.fr>              +#+  +:+       +#+        */
+/*   By: ekose <ekose@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/02 15:40:04 by menasy            #+#    #+#             */
-/*   Updated: 2025/05/28 13:50:44 by menasy           ###   ########.fr       */
+/*   Updated: 2025/05/29 19:08:15 by ekose            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -74,14 +74,16 @@ class WebServer
 																const std::string& statusCode, const std::string& statusMessage,
 																const std::string& contentType, const std::string& body);
 		std::map<std::string, std::string>	findLocation(const ServerConf& conf, std::string locStr);
-		std::string sendCgi(const std::string&filePath, std::string& fileExt, const pollfd& pollStruct, const ServerConf& conf, const std::map<std::string,std::string>&cgiExtMap);
+		std::string getCgi(const std::string& filePath, const std::string& cgiExecPath, std::vector<char *>& env);
 		std::vector<char *>	fillEnv(const ServerConf& conf, const pollfd& pollStruct, const std::string& path);
+		std::string startCgi(const std::string&filePath, std::string& fileExt, const pollfd& pollStruct, const ServerConf& conf, const std::map<std::string,std::string>&cgiExtMap);
+		std::string postCgi(const std::string& filePath, const std::string& cgiExecPath, std::vector<char *>& env, const std::string& requestBody);
 
-	public:
-		WebServer(std::vector<ServerConf>& serverConfVec);
-		WebServer(const WebServer &other);
-		WebServer &operator=(const WebServer &other);
-		~WebServer();
+		public:
+			WebServer(std::vector<ServerConf>& serverConfVec);
+			WebServer(const WebServer &other);
+			WebServer &operator=(const WebServer &other);
+			~WebServer();
 		
 	
 };

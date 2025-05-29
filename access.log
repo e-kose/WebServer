@@ -1424,3 +1424,8 @@ g«®âÒÄ>ã6µËB³e[idv{	:ÊÑ»NÈŠÎ’±’†]ÿè#À±vUŽõ(™5k½`yì©FõÛÑ l3û`È £e
 [Wed May 28 18:53:31 2025] Socket info: 127.0.0.1:36708 -> 127.0.0.1:8080 GET /upload/ 403
 [Wed May 28 18:53:52 2025] Socket info: 127.0.0.1:39858 -> 127.0.0.1:8080 GET /upload/ 403
 [Wed May 28 19:01:54 2025] Socket info: 127.0.0.1:54176 -> 127.0.0.1:8080 GET /upload/ 200
+[Thu May 29 19:09:21 2025] Socket info: 127.0.0.1:60602 -> 127.0.0.1:8080 GET /cgi-bin/hello.py/ 404
+[Thu May 29 19:09:31 2025] Socket info: 127.0.0.1:55418 -> 127.0.0.1:8080 GET /cgi-bin/hello.php/ 200
+[Thu May 29 19:10:32 2025] Socket info: 127.0.0.1:42558 -> 127.0.0.1:8080 GET /cgi-bin/hello.php/ 200
+[Thu May 29 19:11:12 2025] Socket info: 127.0.0.1:39632 -> 127.0.0.1:8080 GET /cgi-bin/abc.py/ 200
+[Thu May 29 19:12:39 2025] Socket info: 127.0.0.1:53600 -> 127.0.0.1:8080 GET /cgi-bin/abc.py/ 200
