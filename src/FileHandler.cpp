@@ -3,16 +3,16 @@
 /*                                                        :::      ::::::::   */
 /*   FileHandler.cpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ekose <ekose@student.42.fr>                +#+  +:+       +#+        */
+/*   By: menasy <menasy@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/13 21:40:13 by menasy            #+#    #+#             */
-/*   Updated: 2025/05/29 19:06:56 by ekose            ###   ########.fr       */
+/*   Updated: 2025/05/31 01:11:50 by menasy           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../include/WebServer.hpp"
 
-std::map<std::string, std::string> WebServer::findLocation(const ServerConf& conf, std::string locStr)
+std::map<std::string, std::string> WebServer::findLocationCgi(const ServerConf& conf, std::string locStr)
 {
 	std::vector<LocationConf> locVec = conf.getLocations();
 	std::map<std::string, std::string> cgiExtMap;
@@ -68,10 +68,11 @@ std::string WebServer::readHtmlFile(pollfd& pollStruct,std::string& path, const 
 		return conf.getDfltPage().at(404);
 	std::string newPath;
 	std::map <std::string, std::string> cgiMap;
-	cgiMap = findLocation(conf,"/cgi-bin");
+	cgiMap = findLocationCgi(conf,"/cgi-bin");
 	newPath = HelperClass::checkFileWithExtension(path, cgiMap);
     std::ifstream file(newPath.c_str());
-	std::cout << ">>>> FILE PATH: " << newPath << "<<<<\n";
+	std::cout << ">>>> FILE NEW PATH IN READHTML:  " << newPath << "<<<<\n";
+	
 	if (file.is_open()) 
 	{
 		std::size_t pos = newPath.find_last_of(".");
@@ -84,7 +85,8 @@ std::string WebServer::readHtmlFile(pollfd& pollStruct,std::string& path, const 
 				std::cout << ">>>> Cgi Extensions YOK -<<<<\n";
 				file.close();
 				this->sendResponse(pollStruct, "403 Forbidden");
-				return "Forbidden";
+				this->responseStatus = 403;
+				return "";
 			}
 			else if (isExecInt == 1)
 			{

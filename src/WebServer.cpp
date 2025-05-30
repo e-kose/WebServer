@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   WebServer.cpp                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ekose <ekose@student.42.fr>                +#+  +:+       +#+        */
+/*   By: menasy <menasy@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/02 15:50:42 by menasy            #+#    #+#             */
-/*   Updated: 2025/05/28 18:47:04 by ekose            ###   ########.fr       */
+/*   Updated: 2025/05/31 01:49:14 by menasy           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -333,13 +333,13 @@ bool WebServer::methodIsExist(const std::vector<std::string>& locMethodsvec, con
 	}
 	return true;
 }
-void WebServer::tryFiles(LocationConf& locConf, const std::string& httpPath, const ServerConf* serverConf,  pollfd& pollStruct)
+void WebServer::tryFiles(LocationConf* locConf, const ServerConf* serverConf,  pollfd& pollStruct)
 {
-	std::cout << "--------------- TRYFİLES --------------: "<< httpPath << std::endl;
-	std::vector<std::string> tryFilesVec = locConf.getTryFiles();
+	std::cout << "--------------- TRYFİLES --------------: " << std::endl;
+	std::vector<std::string> tryFilesVec = locConf->getTryFiles();
 	std::string newRoot, contentFile, errPage, sendMessage, resultDirectory;
 	std::string::size_type pos1;
-	newRoot = locConf.getRoot();
+	newRoot = locConf->getRoot();
 	if (newRoot.empty())
 		newRoot = serverConf->getRoot();
 	for (size_t i = 0; i < tryFilesVec.size(); i++)
@@ -354,13 +354,13 @@ void WebServer::tryFiles(LocationConf& locConf, const std::string& httpPath, con
 		resultDirectory = HelperClass::mergeDirectory(newRoot, tryFilesVec[i]);
 		std::cout << "dada " << newRoot << "try: " << tryFilesVec[i ]<< std::endl;
 		contentFile = this->readHtmlFile(pollStruct,resultDirectory, *serverConf);
-		std::cout << "00000000 " << resultDirectory << std::endl;
+		std::cout << "Result Directory in FindRequest:  " << resultDirectory << std::endl;
 		if (contentFile == "Forbidden")
 			break;
 		if (!contentFile.empty() || HelperClass::fileIsExist(resultDirectory))
 		{
 			std::vector<std::string> indexVec;
-			indexVec = locConf.getIndex();
+			indexVec = locConf->getIndex();
 			if (indexVec.size() == 0)
 				indexVec = serverConf->getIndex();
 			if (HelperClass::indexHandler(resultDirectory, indexVec))
@@ -368,9 +368,9 @@ void WebServer::tryFiles(LocationConf& locConf, const std::string& httpPath, con
 				this->resultPath = resultDirectory;
 				return ;
 			}
-			else if (locConf.getAutoIndex())
+			else if (locConf->getAutoIndex())
 			{
-				std::cout << "????????????0" <<locConf.getPath() << std::endl;
+				std::cout << "????????????0" <<locConf->getPath() << std::endl;
 				// dizindeki dosyalar listelenecek etonun metodla
 				// etoya sade gidcek gelen istek
 				std::cout << "AutoIndex is enabled for: " << resultDirectory << std::endl;
@@ -395,50 +395,68 @@ void WebServer::tryFiles(LocationConf& locConf, const std::string& httpPath, con
 }
 
 
+std::string WebServer::mergedPathHandler(std::string& mergedPath, LocationConf *locConf, const ServerConf& serverConf, pollfd& pollStruct, bool& checkNoIndex, int& mergedPathIndex)
+{
+	// /upload gelirse ne olur bunu mutlaka test edicem
+	
+	if (HelperClass::isDirectory(mergedPath) && mergedPathIndex == 0)
+	{	
+		std::vector <std::string> indexVec = HelperClass::selectLocOrServerIndex(locConf, serverConf.getIndex());
+		if (HelperClass::indexHandler(mergedPath,indexVec))
+			return methodIsExist(locConf->getMethods(), this->clientRequests[pollStruct.fd]->getMethod(), pollStruct) ? mergedPath : mergedPath = "";
+		else
+		{
+			checkNoIndex = true;
+			tryFiles(locConf, &serverConf, pollStruct);
+			return mergedPath; // ggeçici
+			// bunda lokasyon var ama listelenmesi ya da yanıt gosterilmesi falan laızm bakcam buna yarın
+			// listeleme olabilir.
+		}
+	}
+	else if (HelperClass::fileIsExist(mergedPath))
+		return methodIsExist(locConf->getMethods(), this->clientRequests[pollStruct.fd]->getMethod(), pollStruct) ? mergedPath : mergedPath = "";
+	else if (mergedPathIndex == 1)
+	{
+		tryFiles(HelperClass::findLoc("/",serverConf.getLocations()), &serverConf, pollStruct);
+		// burda farklı olacak çunku lokasyon yok vulunmuyor 
+	}
+		
+	if (mergedPathIndex == 0)
+	{
+		this->readHtmlFile(pollStruct, mergedPath, serverConf);
+		return (mergedPathHandler(mergedPath, locConf, serverConf, pollStruct, checkNoIndex, ++mergedPathIndex));
+	}
+	return "";
+}
 std::string WebServer::findRequest(pollfd& pollStruct)
 {
 	std::cout << "------------ FIND REQUEST ----------" << std::endl;
+	
 	ServerConf* serverConf = this->clientToServerMap[pollStruct.fd];
 	std::vector<LocationConf> locVec = serverConf->getLocations();
-	std::string httpPath , mergedPath, tmpPath;
-	size_t rootIndex = 0;		
+	std::string httpPath, mergedPath, retVal;
+	bool checkNoIndex = false;
+	int mergedPathIndex = 0;
+	
+	this->responseStatus = 0;
 	httpPath = this->clientRequests[pollStruct.fd]->getPath();
-	tmpPath = httpPath;
-	if (!this->clientRequests[pollStruct.fd]->getRequestFile().empty())
-		tmpPath = (httpPath + this->clientRequests[pollStruct.fd]->getRequestFile());
-	std::cout << ">>>> HTTP PATH: " << httpPath << " <<<<"<< std::endl;
-	for (size_t i = 0; i < locVec.size(); i++)
-	{
-		if (locVec[i].getPath() == "/")
-			rootIndex = i;
-		if (httpPath == locVec[i].getPath())
-		{
-			if (methodIsExist(locVec[i].getMethods(),this->clientRequests[pollStruct.fd]->getMethod(), pollStruct))
-			{
-				mergedPath = HelperClass::mergePath(*serverConf, locVec[i],
-						this->clientRequests[pollStruct.fd]->getRequestFile(), httpPath);
-				break;
-			}
-			else
-				return "";
-		}
-	}
-	if (mergedPath.empty() || HelperClass::fileIsExist(mergedPath))
-	{
-		std::cout << "Go try: " << tmpPath << std::endl;
-		std::cout << "Merged path in try: " << mergedPath << std::endl;
-		tryFiles(locVec[rootIndex], tmpPath, serverConf, pollStruct);
-		return this->resultPath;
-	}
-	else if(!HelperClass::fileIsExist(mergedPath) && readHtmlFile(pollStruct,mergedPath,*serverConf).empty())
+	std::cout << "HTTP PATH: " << httpPath << std::endl;
+	LocationConf *loc = HelperClass::findLoc(httpPath, locVec);
+	mergedPath = HelperClass::selectLocOrServerRoot(loc,serverConf->getRoot()) + this->clientRequests[pollStruct.fd]->getRequestFile();
+	retVal = this->mergedPathHandler(mergedPath, loc, *serverConf, pollStruct, checkNoIndex, mergedPathIndex);
+	
+	if (checkNoIndex)
+		std::cout <<" No index file found, trying try_files directive." << std::endl; // bunu ele alıcam try file yi duzenledikten sonra
+	if (retVal.empty() && this->responseStatus == 0)
 	{
 		std::cout << "Merged Path Is Not Exists: " << mergedPath << std::endl;
 		this->sendResponse(pollStruct,"404 Not Found");
+		this->responseStatus = 404;
 		return "";
 	}
-	std::cout << "-------- MERGED PATH: " << mergedPath << " --------------"<<std::endl;
-	return mergedPath;
+	return retVal;
 }
+
 
 void WebServer::pollOutEvent(pollfd& pollStruct)
 {

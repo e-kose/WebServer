@@ -6,7 +6,7 @@
 /*   By: menasy <menasy@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/08 16:36:39 by menasy            #+#    #+#             */
-/*   Updated: 2025/05/27 15:53:38 by menasy           ###   ########.fr       */
+/*   Updated: 2025/05/30 15:48:15 by menasy           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -222,7 +222,7 @@ std::map<std::string, std::string>  HttpRequest::parseBody()
 }
 void HttpRequest::parseRequest(const std::string& request) 
 {
-	std:: cout << "================== PARSEEEE REQUEST ================== \n"  << request << std::endl;
+	std:: cout << "================== PARSEEEE REQUEST ================== \n" << std::endl;
 	std::string tmpReq = request;
 	this->setMethod(HelperClass::createAndMove(tmpReq," "));
 	this->setPath(HelperClass::createAndMove(tmpReq," "));

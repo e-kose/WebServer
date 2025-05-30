@@ -1429,3 +1429,14 @@ g«®âÒÄ>ã6µËB³e[idv{	:ÊÑ»NÈŠÎ’±’†]ÿè#À±vUŽõ(™5k½`yì©FõÛÑ l3û`È £e
 [Thu May 29 19:10:32 2025] Socket info: 127.0.0.1:42558 -> 127.0.0.1:8080 GET /cgi-bin/hello.php/ 200
 [Thu May 29 19:11:12 2025] Socket info: 127.0.0.1:39632 -> 127.0.0.1:8080 GET /cgi-bin/abc.py/ 200
 [Thu May 29 19:12:39 2025] Socket info: 127.0.0.1:53600 -> 127.0.0.1:8080 GET /cgi-bin/abc.py/ 200
+[Fri May 30 15:41:58 2025] Socket info: 127.0.0.1:58542 -> 127.0.0.1:8080 GET // 200
+[Fri May 30 15:42:32 2025] Socket info: 127.0.0.1:56844 -> 127.0.0.1:8080 GET /asdas/ 404
+[Fri May 30 15:42:32 2025] Socket info: 127.0.0.1:56844 -> 127.0.0.1:8080 GET /asdas/ 200
+[Fri May 30 15:43:10 2025] Socket info: 127.0.0.1:51172 -> 127.0.0.1:8080 GET /upload/ 200
+[Fri May 30 15:44:03 2025] Socket info: 127.0.0.1:49334 -> 127.0.0.1:8080 GET /cgi-bin/abc/ 404
+[Fri May 30 15:44:40 2025] Socket info: 127.0.0.1:51310 -> 127.0.0.1:8080 GET /cgi-bin/abc.py/ 200
+[Fri May 30 15:47:32 2025] Socket info: 127.0.0.1:46760 -> 127.0.0.1:8080 GET /cgi-bin/abc.py/ 200
+[Fri May 30 15:48:24 2025] Socket info: 127.0.0.1:48890 -> 127.0.0.1:8080 GET /cgi-bin/abc.py/ 200
+[Fri May 30 15:48:50 2025] Socket info: 127.0.0.1:40492 -> 127.0.0.1:8080 GET /cgi-bin/abc.py/ 200
+[Fri May 30 15:50:49 2025] Socket info: 127.0.0.1:34718 -> 127.0.0.1:8080 GET /cgi-bin/abc.py/ 200
+[Fri May 30 15:52:50 2025] Socket info: 127.0.0.1:36332 -> 127.0.0.1:8080 GET /cgi-bin/abc.py/ 200

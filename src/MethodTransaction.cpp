@@ -6,7 +6,7 @@
 /*   By: menasy <menasy@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/12 07:52:01 by ekose             #+#    #+#             */
-/*   Updated: 2025/05/28 13:57:04 by menasy           ###   ########.fr       */
+/*   Updated: 2025/05/30 15:47:25 by menasy           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -41,7 +41,6 @@ void  WebServer::sendResponse(pollfd& pollStruct, const std::string& status)
 		}
 			
 	}
-	std::cout << ">>>> RESPONSE ????: " << this->response << "<<<<" << std::endl;
 	sendHandler(pollStruct, this->response);
 }
 
