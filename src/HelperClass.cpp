@@ -6,7 +6,7 @@
 /*   By: menasy <menasy@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/12 07:50:19 by ekose             #+#    #+#             */
-/*   Updated: 2025/05/31 00:41:37 by menasy           ###   ########.fr       */
+/*   Updated: 2025/06/01 22:40:28 by menasy           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -205,7 +205,7 @@ bool HelperClass::indexHandler(std::string& path, const std::vector<std::string>
 	for (size_t j = 0; j < indexVec.size(); j++)
 	{
 		tmpPath += indexVec[j];
-		if (HelperClass::fileIsExist(tmpPath))
+		if (HelperClass::fileIsExist(tmpPath) && !HelperClass::isDirectory(tmpPath))
 		{
 			path = tmpPath;
 			return true;
@@ -262,6 +262,7 @@ bool HelperClass::fileIsExist(const std::string& path)
 	if (file.is_open())
 	{
 		file.close();
+		std::cout << "File exists true: " << path << std::endl;
 		return true;
 	}
 	else
@@ -407,7 +408,11 @@ std::vector<std::string> HelperClass::selectLocOrServerIndex(const LocationConf*
 {
 	std::vector<std::string> resVec;
 	if (locConf == NULL)
+	{
 		resVec = serverIndexVec;
+		std::cout << "selectLocOrServerIndex: locConf is NULL, using server index." << std::endl;
+		std::cout << "Server size: " << serverIndexVec.size() << std::endl;
+	}
 	else
 	{
 		std::vector<std::string> locVec = locConf->getIndex();

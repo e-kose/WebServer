@@ -6,7 +6,7 @@
 /*   By: menasy <menasy@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/13 21:40:13 by menasy            #+#    #+#             */
-/*   Updated: 2025/05/31 01:11:50 by menasy           ###   ########.fr       */
+/*   Updated: 2025/06/01 23:04:22 by menasy           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -54,7 +54,7 @@ std::string WebServer::createErrorResponse(pollfd& pollStruct, const std::string
 	{
 		std::string res = HelperClass::mergeDirectory(rootPAth, errMap[errCode]);
 		content = readHtmlFile(pollStruct,res,conf);
-		if (!content.empty() && content != "Forbidden")
+		if (!content.empty() )
 			return createHttpResponse(statusCode, statusMessage, "text/html", content);
 	}
 	return createHttpResponse(statusCode, statusMessage, "text/html",defaultErrMap[errCode]);
