@@ -6,7 +6,7 @@
 /*   By: menasy <menasy@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/04 18:10:20 by menasy            #+#    #+#             */
-/*   Updated: 2025/05/28 13:33:44 by menasy           ###   ########.fr       */
+/*   Updated: 2025/05/30 22:03:42 by menasy           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -59,5 +59,9 @@ class HelperClass
 		static bool indexHandler(std::string& mergedPath, const std::vector<std::string>& indexVec );
 			static std::string					indexIsExist(ServerConf& conf, std::string location);
 		static std::string					generateAutoIndexHtml(const std::string& path, const std::string& uriPath);
-
+		static bool isDirectory(const std::string& path);
+		static LocationConf* findLoc(std::string locPath, std::vector<LocationConf> locVec);
+		static std::vector<std::string> selectLocOrServerIndex(const LocationConf* locConf, const std::vector<std::string>& serverIndexVec);
+		static std::string selectLocOrServerRoot(const LocationConf* locConf, const std::string& serverRoot);
+		
 	};
