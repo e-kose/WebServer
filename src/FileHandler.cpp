@@ -6,13 +6,13 @@
 /*   By: menasy <menasy@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/13 21:40:13 by menasy            #+#    #+#             */
-/*   Updated: 2025/06/01 23:04:22 by menasy           ###   ########.fr       */
+/*   Updated: 2025/05/28 13:30:24 by menasy           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../include/WebServer.hpp"
 
-std::map<std::string, std::string> WebServer::findLocationCgi(const ServerConf& conf, std::string locStr)
+std::map<std::string, std::string> WebServer::findLocation(const ServerConf& conf, std::string locStr)
 {
 	std::vector<LocationConf> locVec = conf.getLocations();
 	std::map<std::string, std::string> cgiExtMap;
@@ -54,7 +54,7 @@ std::string WebServer::createErrorResponse(pollfd& pollStruct, const std::string
 	{
 		std::string res = HelperClass::mergeDirectory(rootPAth, errMap[errCode]);
 		content = readHtmlFile(pollStruct,res,conf);
-		if (!content.empty() )
+		if (!content.empty() && content != "Forbidden")
 			return createHttpResponse(statusCode, statusMessage, "text/html", content);
 	}
 	return createHttpResponse(statusCode, statusMessage, "text/html",defaultErrMap[errCode]);
@@ -68,11 +68,10 @@ std::string WebServer::readHtmlFile(pollfd& pollStruct,std::string& path, const 
 		return conf.getDfltPage().at(404);
 	std::string newPath;
 	std::map <std::string, std::string> cgiMap;
-	cgiMap = findLocationCgi(conf,"/cgi-bin");
+	cgiMap = findLocation(conf,"/cgi-bin");
 	newPath = HelperClass::checkFileWithExtension(path, cgiMap);
     std::ifstream file(newPath.c_str());
-	std::cout << ">>>> FILE NEW PATH IN READHTML:  " << newPath << "<<<<\n";
-	
+	std::cout << ">>>> FILE PATH: " << newPath << "<<<<\n";
 	if (file.is_open()) 
 	{
 		std::size_t pos = newPath.find_last_of(".");
@@ -85,15 +84,14 @@ std::string WebServer::readHtmlFile(pollfd& pollStruct,std::string& path, const 
 				std::cout << ">>>> Cgi Extensions YOK -<<<<\n";
 				file.close();
 				this->sendResponse(pollStruct, "403 Forbidden");
-				this->responseStatus = 403;
-				return "";
+				return "Forbidden";
 			}
 			else if (isExecInt == 1)
 			{
 				std::string scriptContetnt;
 				std::cout << ">>>> CGI YA GONFERİLDİ <<<<\n" << ext << std::endl;
 				//mapden hangi değeri çekeceğimi bulacağım.
-				scriptContetnt = this->startCgi(newPath, ext, pollStruct,conf, cgiMap);
+				scriptContetnt = this->sendCgi(newPath, ext, pollStruct,conf, cgiMap);
 				file.close();
 				return scriptContetnt;
 			}	
@@ -163,54 +161,29 @@ std::vector<char *> WebServer::fillEnv(const ServerConf& conf, const pollfd& pol
 // 	}
 // }
 
-std::string WebServer::postCgi(const std::string& filePath, const std::string& cgiExecPath, std::vector<char *>& env, const std::string& requestBody)
+std::string WebServer::sendCgi(const std::string&filePath, std::string& fileExt, const pollfd& pollStruct, const ServerConf& conf, const std::map<std::string,std::string>&cgiExtMap)
 {
-    int inPipe[2];
-    int outPipe[2];
-
-    if (pipe(inPipe) == -1 || pipe(outPipe) == -1)
-        throw std::runtime_error("Pipe error");
-
-    pid_t pid = fork();
-    if (pid == -1)
-        throw std::runtime_error("Fork error");
-
-    if (pid == 0) {
-        dup2(inPipe[0], STDIN_FILENO);
-        dup2(outPipe[1], STDOUT_FILENO);
-        close(inPipe[1]);
-        close(outPipe[0]);
-
-        char* argv[] = {
-            const_cast<char*>(cgiExecPath.c_str()),
-            const_cast<char*>(filePath.c_str()),
-            NULL
-        };
-        execve(cgiExecPath.c_str(), argv, env.data());
-        perror("execve");
-        exit(1);
-    }
-
-    close(inPipe[0]);
-    close(outPipe[1]);
-
-    write(inPipe[1], requestBody.c_str(), requestBody.size());
-    close(inPipe[1]);
-
-    std::string result = HelperClass::fdToString(outPipe[0]);
-    close(outPipe[0]);
-    waitpid(pid, NULL, 0);
-    return result;
-}
-
-std::string WebServer::getCgi(const std::string& filePath, const std::string& cgiExecPath, std::vector<char *>& env)
-{
+	std::string cgiExecPath = cgiExtMap.at(fileExt);
+	std::string scriptContent;
+	std::cout << ">>>> CGI EXEC PATH: " << cgiExecPath << "<<<<\n";
+	std::cout << ">>>> CGI FILE PATH: " << filePath << "<<<<\n";
+	std::cout  << "Fd: " << pollStruct.fd << std::endl;
+	std::vector<char *> env = this->fillEnv(conf, pollStruct, filePath);
+	// if (this->clientRequests[pollStruct.fd]->getMethod() == "POST")
+	// 	postHandler(filePath, cgiExecPath);
 	int fd[2];
 	if (pipe(fd) == -1)
-		throw std::runtime_error("Pipe error");
+	{
+		//log yazak
+		std::cout << "Pipe error" << std::endl;
+		return "";
+	}
 	pid_t pid = fork();
 	if (pid == -1)
-		throw std::runtime_error("Fork error");
+	{
+		std::cout << "Fork error" << std::endl;
+		return "";
+	}
 	else if (pid == 0)
 	{
 		close(fd[0]);
@@ -227,29 +200,8 @@ std::string WebServer::getCgi(const std::string& filePath, const std::string& cg
 	
 	close(fd[1]);
 	waitpid(pid, NULL, 0);
-	std::string scriptContent = HelperClass::fdToString(fd[0]);
+	scriptContent = HelperClass::fdToString(fd[0]);
 	close(fd[0]);
 	std::cout << ">>>> CGI SCRIPT CONTENT: " << scriptContent << "<<<<\n";
 	return scriptContent;
-}
-
-std::string WebServer::startCgi(const std::string&filePath, std::string& fileExt, const pollfd& pollStruct, const ServerConf& conf, const std::map<std::string,std::string>&cgiExtMap)
-{
-	std::string cgiExecPath = cgiExtMap.at(fileExt);
-	std::string scriptContent;
-	std::cout << ">>>> CGI EXEC PATH: " << cgiExecPath << "<<<<\n";
-	std::cout << ">>>> CGI FILE PATH: " << filePath << "<<<<\n";
-	std::cout  << "Fd: " << pollStruct.fd << std::endl;
-	std::vector<char *> env = this->fillEnv(conf, pollStruct, filePath);
-	if (this->clientRequests[pollStruct.fd]->getMethod() == "POST")
-	{
-		std::cout << ">>>> POST METHOD HANDLER <<<<\n";
-		return postCgi(filePath, cgiExecPath, env, this->clientRequests[pollStruct.fd]->getBody());
-	}
-	else if(this->clientRequests[pollStruct.fd]->getMethod() == "GET")
-	{
-		std::cout << ">>>> GET METHOD HANDLER <<<<\n";
-		return getCgi(filePath, cgiExecPath, env);
-	}
-	return "";
 }

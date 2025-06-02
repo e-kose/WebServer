@@ -6,7 +6,7 @@
 /*   By: menasy <menasy@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/12 07:50:19 by ekose             #+#    #+#             */
-/*   Updated: 2025/06/01 22:40:28 by menasy           ###   ########.fr       */
+/*   Updated: 2025/05/28 14:19:11 by menasy           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -164,16 +164,19 @@ std::string HelperClass::checkFileWithExtension(const std::string& path, const s
 {
 	if (path.find_last_of(".") != std::string::npos)
 		return path;
-	if (HelperClass::fileIsExist(path))
+	std::ifstream file(path.c_str());
+	if (file.is_open())
+	{
+		file.close();
 		return path;
-	std::ifstream file;
+	}
 	std::vector<std::string> extVec;
 	extVec.push_back(".html");
 	extVec.push_back(".txt");
 	if (cgiExtMap.size() > 0)
 		for (std::map<std::string, std::string>::const_iterator it = cgiExtMap.begin(); it != cgiExtMap.end(); it++)
 			extVec.push_back(it->first);
-	
+
 	for (size_t i = 0; i < extVec.size(); i++)
 	{
 		std::string tmpPath = path + extVec[i];
@@ -198,19 +201,18 @@ int 	HelperClass::fileIsExecutable(const std::string& path, const std::string& e
 	return 0;
 }
 
-bool HelperClass::indexHandler(std::string& path, const std::vector<std::string>& indexVec )
+bool HelperClass::indexHandler(std::string& mergedPath, const std::vector<std::string>& indexVec )
 {
-	std::string tmpPath = path;
-	std::cout << "index Handler " << path << std::endl;
+	std::string tmpPath = mergedPath;
 	for (size_t j = 0; j < indexVec.size(); j++)
 	{
 		tmpPath += indexVec[j];
-		if (HelperClass::fileIsExist(tmpPath) && !HelperClass::isDirectory(tmpPath))
+		if (HelperClass::fileIsExist(tmpPath))
 		{
-			path = tmpPath;
+			mergedPath = tmpPath;
 			return true;
 		}
-		tmpPath = path;
+		tmpPath = mergedPath;
 	}
 	return false;
 }
@@ -262,7 +264,6 @@ bool HelperClass::fileIsExist(const std::string& path)
 	if (file.is_open())
 	{
 		file.close();
-		std::cout << "File exists true: " << path << std::endl;
 		return true;
 	}
 	else
@@ -331,8 +332,8 @@ std::string HelperClass::indexIsExist(ServerConf& conf, std::string location)
 		}
 	}
 	for (size_t i = 0; i < indexVec.size(); i++)
-		if (HelperClass::fileIsExist(HelperClass::mergeDirectory(root, indexVec[i])))
-			return HelperClass::mergeDirectory(root, indexVec[i]);
+		if (HelperClass::fileIsExist(HelperClass::mergeDirectory(root + "/", indexVec[i])))
+			return HelperClass::mergeDirectory(root + "/", indexVec[i]);
 	return "errorPage";
 }
 
@@ -356,7 +357,7 @@ std::string HelperClass::generateAutoIndexHtml(const std::string& path, const st
 	
 	struct dirent* entry;
 	while ((entry = readdir(dir)) != NULL) {
-		if (std::string(entry->d_name) == "." || std::string(entry->d_name) == "..") continue;
+		if (std::string(entry->d_name) == ".") continue;
 
 		std::string fullPath = path + "/" + entry->d_name;
 		struct stat st;
@@ -381,61 +382,4 @@ std::string HelperClass::generateAutoIndexHtml(const std::string& path, const st
 	       << html;
 
 	return header.str();
-}
-bool HelperClass::isDirectory(const std::string& path) 
-{
-    struct stat statbuf;
-    if (stat(path.c_str(), &statbuf) != 0)
-        return false; 
-    return S_ISDIR(statbuf.st_mode);
-}
-
-LocationConf* HelperClass::findLoc(std::string locPath, std::vector<LocationConf> locVec)
-{
-	LocationConf* resultLoc = NULL;
-	for (size_t i = 0; i < locVec.size(); i++)
-	{
-		if (locVec[i].getPath() == locPath)
-		{
-			resultLoc = &locVec[i];
-			break;
-		}
-	}
-	return resultLoc;
-}
-
-std::vector<std::string> HelperClass::selectLocOrServerIndex(const LocationConf* locConf, const std::vector<std::string>& serverIndexVec)
-{
-	std::vector<std::string> resVec;
-	if (locConf == NULL)
-	{
-		resVec = serverIndexVec;
-		std::cout << "selectLocOrServerIndex: locConf is NULL, using server index." << std::endl;
-		std::cout << "Server size: " << serverIndexVec.size() << std::endl;
-	}
-	else
-	{
-		std::vector<std::string> locVec = locConf->getIndex();
-		if (locVec.size() != 0)
-			resVec = locVec;
-		else
-			resVec = serverIndexVec;
-	}
-	return resVec;
-}
-
-std::string HelperClass::selectLocOrServerRoot(const LocationConf* locConf, const std::string& serverRoot)
-{
-	std::string resRoot;
-	if (locConf == NULL)
-		resRoot = serverRoot;
-	else
-	{
-		std::string locRoot = locConf->getRoot();
-		if (!locRoot.empty())
-			resRoot = locRoot;
-		else
-			resRoot = serverRoot;
-	}
-	return resRoot;
 }

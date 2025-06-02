@@ -6,7 +6,7 @@
 /*   By: menasy <menasy@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/02 15:40:04 by menasy            #+#    #+#             */
-/*   Updated: 2025/06/01 21:28:11 by menasy           ###   ########.fr       */
+/*   Updated: 2025/05/28 13:50:44 by menasy           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,7 +32,6 @@
 #include <sys/stat.h>
 #include <limits.h>
 #include <sys/wait.h>
-#include <filesystem>
 
 class WebServer 
 {
@@ -48,7 +47,6 @@ class WebServer
 		std::map<int, std::string>				requestBuffers;
 		std::string 							resultPath;
 		std::string 							response;
-		int 									responseStatus;
 
 		
 		void									pollfdVecCreat();
@@ -66,7 +64,7 @@ class WebServer
 		HttpRequest*							parseRecv(const std::string&);
 		ServerConf&								searchServerConf(std::vector<ServerConf>& , std::string);			
 		std::string 							findRequest(pollfd& pollStruct);
-		std::string								tryFiles(LocationConf* locConf, const ServerConf* serverConfMap,  pollfd& pollStruct);
+		void 									tryFiles(LocationConf& locConf, const std::string& httpPath, const ServerConf* serverConfMap,  pollfd& pollStruct);
 		bool 									methodIsExist(const std::vector<std::string>& locMethodsvec, const std::string& requestMethod, pollfd&);
 		void									sendHandler(pollfd& pollStruct, std::string& sendMessage);
 		void 									sendResponse(pollfd&, const std::string& status);
@@ -75,19 +73,15 @@ class WebServer
 		std::string 							createHttpResponse(
 																const std::string& statusCode, const std::string& statusMessage,
 																const std::string& contentType, const std::string& body);
-		std::map<std::string, std::string>	findLocationCgi(const ServerConf& conf, std::string locStr);
-		std::string getCgi(const std::string& filePath, const std::string& cgiExecPath, std::vector<char *>& env);
+		std::map<std::string, std::string>	findLocation(const ServerConf& conf, std::string locStr);
+		std::string sendCgi(const std::string&filePath, std::string& fileExt, const pollfd& pollStruct, const ServerConf& conf, const std::map<std::string,std::string>&cgiExtMap);
 		std::vector<char *>	fillEnv(const ServerConf& conf, const pollfd& pollStruct, const std::string& path);
-		std::string startCgi(const std::string&filePath, std::string& fileExt, const pollfd& pollStruct, const ServerConf& conf, const std::map<std::string,std::string>&cgiExtMap);
-		std::string postCgi(const std::string& filePath, const std::string& cgiExecPath, std::vector<char *>& env, const std::string& requestBody);
-		std::string mergedPathHandler(std::string& mergedPath, LocationConf *locConf, const ServerConf& serverConf, pollfd& pollStruct, int mergedPathIndex);
-		void 		listDirectory(const std::string& path,LocationConf* locConf, pollfd& pollStruct);
 
-		public:
-			WebServer(std::vector<ServerConf>& serverConfVec);
-			WebServer(const WebServer &other);
-			WebServer &operator=(const WebServer &other);
-			~WebServer();
+	public:
+		WebServer(std::vector<ServerConf>& serverConfVec);
+		WebServer(const WebServer &other);
+		WebServer &operator=(const WebServer &other);
+		~WebServer();
 		
 	
 };
