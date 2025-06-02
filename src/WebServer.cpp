@@ -6,7 +6,7 @@
 /*   By: menasy <menasy@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/02 15:50:42 by menasy            #+#    #+#             */
-/*   Updated: 2025/06/01 23:25:06 by menasy           ###   ########.fr       */
+/*   Updated: 2025/06/02 19:09:40 by menasy           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -266,7 +266,8 @@ void WebServer::clientRead(pollfd& pollStruct)
 
             this->clientRequests[pollStruct.fd] = this->parseRecv(requestData);
             this->clientToServerMap[pollStruct.fd] = &this->searchServerConf(this->serverConfVec, this->clientRequests[pollStruct.fd]->getHostName());
-
+			this->clientRequests[pollStruct.fd]->sepPath(this->clientToServerMap[pollStruct.fd]->getLocations());
+			
             pollStruct.events = POLLOUT;
             this->requestBuffers.erase(pollStruct.fd);
         }
@@ -329,6 +330,7 @@ bool WebServer::methodIsExist(const std::vector<std::string>& locMethodsvec, con
 	{
 		std::string sendMessage;
 		this->sendResponse(pollStruct, "405 Method Not Allowed");
+		this->responseStatus = 405;
 		return false;
 	}
 	return true;
@@ -386,41 +388,54 @@ void WebServer::listDirectory(const std::string& path,LocationConf* locConf, pol
 		this->responseStatus = 200; // liste ozel kod ekleyebilirim lazım olursa
 	}
 }
-std::string WebServer::mergedPathHandler(std::string& mergedPath, LocationConf *locConf, const ServerConf& serverConf, pollfd& pollStruct, int mergedPathIndex)
+std::string WebServer::mergedPathHandler(std::string& httpPath, LocationConf *locConf, const ServerConf& serverConf, pollfd& pollStruct, int recCount)
 {
 	// /upload sonunda / olmadan  gelirse ne olur bunu mutlaka test edicem
 	// locConf da mutlaka / olmalı bunu parsta halletemem lazım
 	std::cout << "================= MERGED PATH HANDLER ===============" << std::endl;
-	std::cout << "Merged Path Index >>>>>>>>>>>>>>>>> : " << mergedPathIndex << std::endl;
-	std::cout << "Merged Path: " << mergedPath << std::endl;
-	if (HelperClass::isDirectory(mergedPath) && mergedPathIndex == 0)
-	{	
+	std::cout << "Merged Path Index >>>>>>>>>>>>>>>>> : " << recCount << std::endl;
+	std::cout << "IN Merged Handler HttpPath: " << httpPath << std::endl;
+	std::string tmpHttpPath, rootPath, clientReq,  newMergedPath;
+	rootPath = HelperClass::selectLocOrServerRoot(locConf,serverConf.getRoot());
+	clientReq = this->clientRequests[pollStruct.fd]->getRequestFile();
+	tmpHttpPath = httpPath;
+	newMergedPath = rootPath + httpPath + clientReq;
+	std::cout << "Merged Path First: " << newMergedPath << std::endl;
+	if (HelperClass::isDirectory(newMergedPath) && recCount == 0)
+	{
+		std::cout << "Directory coming"<<  std::endl;
+
 		std::vector <std::string> indexVec = HelperClass::selectLocOrServerIndex(locConf, serverConf.getIndex());
-		if (HelperClass::indexHandler(mergedPath,indexVec))
+		std::string indexVal = HelperClass::indexHandler(newMergedPath, indexVec);
+		std::cout <<"INDEX_VAL: " << indexVal << std::endl;
+		if (!indexVal.empty())
 		{
+			newMergedPath += indexVal;
 			// duzgun path gitmiyor  rootlanmış gidiyor
-			std::cout << "After index mergedPAth: " << mergedPath << std::endl;
-			return methodIsExist(locConf->getMethods(), this->clientRequests[pollStruct.fd]->getMethod(), pollStruct) ? mergedPath : mergedPath = "";	
+			std::cout << "After index mergedPAth: " << newMergedPath << std::endl;
+			return methodIsExist(locConf->getMethods(), this->clientRequests[pollStruct.fd]->getMethod(), pollStruct) ? newMergedPath : newMergedPath = "";	
 		}
 		else
 		{
-			this->listDirectory(mergedPath, locConf, pollStruct);
+			this->listDirectory(newMergedPath, locConf, pollStruct);
 			return "";
 			// bunda lokasyon var ama listelenmesi ya da yanıt gosterilmesi falan laızm bakcam buna yarın
 			// listeleme olabilir.
 		}
 	}
-	else if (HelperClass::fileIsExist(mergedPath))
-		return methodIsExist(locConf->getMethods(), this->clientRequests[pollStruct.fd]->getMethod(), pollStruct) ? mergedPath : mergedPath = "";
-	else if (mergedPathIndex == 1)
+	else if (HelperClass::fileIsExist(newMergedPath))
+		return methodIsExist(locConf->getMethods(), this->clientRequests[pollStruct.fd]->getMethod(), pollStruct) ? newMergedPath : newMergedPath = "";
+	else if (recCount == 1)
 	{
-		return tryFiles(HelperClass::findLoc("/",serverConf.getLocations()), &serverConf, pollStruct);
+		std::vector<LocationConf> locVec = serverConf.getLocations();
+		return tryFiles(HelperClass::findLoc("/",locVec), &serverConf, pollStruct);
 		// burda farklı olacak çunku lokasyon yok bulunmuyor 
 	}
-	if (mergedPathIndex == 0)
+	if (recCount == 0)
 	{
-		this->readHtmlFile(pollStruct, mergedPath, serverConf);
-		return (mergedPathHandler(mergedPath, locConf, serverConf, pollStruct, ++mergedPathIndex));
+		this->readHtmlFile(pollStruct, newMergedPath, serverConf);
+		std::cout << "MERGEDpATHhANDLER_After ReadHtmlFile mergedPAth: " << newMergedPath << std::endl;
+		return (mergedPathHandler(newMergedPath, locConf, serverConf, pollStruct, ++recCount));
 	}
 	return "";
 }
@@ -430,20 +445,22 @@ std::string WebServer::findRequest(pollfd& pollStruct)
 	
 	ServerConf* serverConf = this->clientToServerMap[pollStruct.fd];
 	std::vector<LocationConf> locVec = serverConf->getLocations();
-	std::string httpPath, mergedPath, retVal;
+	std::string httpPath, retVal;
 		
 	this->responseStatus = 0;
 	httpPath = this->clientRequests[pollStruct.fd]->getPath();
 	std::cout << "HTTP PATH: " << httpPath << std::endl;
 	LocationConf *loc = HelperClass::findLoc(httpPath, locVec);
 	if (loc == NULL)
-		std::cout << "Location Not Found, Using Server Root" << std::endl;
-	mergedPath = HelperClass::selectLocOrServerRoot(loc,serverConf->getRoot()) + this->clientRequests[pollStruct.fd]->getRequestFile();
-	retVal = this->mergedPathHandler(mergedPath, loc, *serverConf, pollStruct, 0);
+	{
+		std::cout << "Location Not Found: " << httpPath << std::endl;
+	}
+	// confta rootların lokasonunun sonu / olmamalı bunu parsla
+	retVal = this->mergedPathHandler(httpPath, loc, *serverConf, pollStruct, 0);
 	std::cout << "Find retVal: " << retVal << std::endl;
 	if (retVal.empty() && this->responseStatus == 0)
 	{
-		std::cout << "Merged Path Is Not Exists: " << mergedPath << std::endl;
+		std::cout << "Merged Path Is Not Exists: " << retVal << std::endl;
 		this->sendResponse(pollStruct,"404 Not Found");
 		this->responseStatus = 404;
 		return "";

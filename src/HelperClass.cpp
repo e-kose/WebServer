@@ -6,7 +6,7 @@
 /*   By: menasy <menasy@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/12 07:50:19 by ekose             #+#    #+#             */
-/*   Updated: 2025/06/01 22:40:28 by menasy           ###   ########.fr       */
+/*   Updated: 2025/06/02 19:11:05 by menasy           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -198,57 +198,55 @@ int 	HelperClass::fileIsExecutable(const std::string& path, const std::string& e
 	return 0;
 }
 
-bool HelperClass::indexHandler(std::string& path, const std::vector<std::string>& indexVec )
+std::string HelperClass::indexHandler(const std::string& fullPath, const std::vector<std::string>& indexVec )
 {
-	std::string tmpPath = path;
-	std::cout << "index Handler " << path << std::endl;
+	std::string dest;
+	std::string indexVal;
+	dest = fullPath;
 	for (size_t j = 0; j < indexVec.size(); j++)
 	{
-		tmpPath += indexVec[j];
-		if (HelperClass::fileIsExist(tmpPath) && !HelperClass::isDirectory(tmpPath))
-		{
-			path = tmpPath;
-			return true;
-		}
-		tmpPath = path;
+		indexVal = indexVec[j];
+		dest += indexVal;
+		if (HelperClass::fileIsExist(dest) && !HelperClass::isDirectory(dest))
+			return indexVal;
 	}
-	return false;
+	return "";
 }
 
-std::string HelperClass::mergePath(const ServerConf& servConf, const LocationConf& locConf,const std::string reqFile, std::string& httpPath)
-{
-	std::string resPath, root;
-	std::vector<std::string> indexVec;
-	resPath = httpPath;
-	root = locConf.getRoot();
-	if (root.empty())
-		root = servConf.getRoot();
-	indexVec = locConf.getIndex();
-	if (indexVec.size() == 0)
-		indexVec = servConf.getIndex();
+// std::string HelperClass::mergePath(const ServerConf& servConf, const LocationConf& locConf,const std::string reqFile, std::string& httpPath)
+// {
+// 	std::string resPath, root;
+// 	std::vector<std::string> indexVec;
+// 	resPath = httpPath;
+// 	root = locConf.getRoot();
+// 	if (root.empty())
+// 		root = servConf.getRoot();
+// 	indexVec = locConf.getIndex();
+// 	if (indexVec.size() == 0)
+// 		indexVec = servConf.getIndex();
 
-	if (resPath[resPath.length() -1] != '/')
-	{
-		if (indexHandler(root, indexVec))
-			return root;
-		else
-			resPath += "/";	
-	}
-	resPath = HelperClass::mergeDirectory(root, resPath);
-	if (!reqFile.empty())
-		resPath += reqFile;
-	else
-	{
-		if (!indexHandler(resPath, indexVec))
-		{
-			std::cout << "İNDEX HANDLER: " << resPath << std::endl;
-			resPath = "";
-		}
-	}
-	if (!HelperClass::fileIsExist(resPath))
-		resPath = "";
-	return resPath;
-}
+// 	if (resPath[resPath.length() -1] != '/')
+// 	{
+// 		if (indexHandler(root, indexVec))
+// 			return root;
+// 		else
+// 			resPath += "/";	
+// 	}
+// 	resPath = HelperClass::mergeDirectory(root, resPath);
+// 	if (!reqFile.empty())
+// 		resPath += reqFile;
+// 	else
+// 	{
+// 		if (!indexHandler(resPath, indexVec))
+// 		{
+// 			std::cout << "İNDEX HANDLER: " << resPath << std::endl;
+// 			resPath = "";
+// 		}
+// 	}
+// 	if (!HelperClass::fileIsExist(resPath))
+// 		resPath = "";
+// 	return resPath;
+// }
 
 std::string HelperClass::mergeDirectory(const std::string& rootPath, const std::string& httpPath)
 {
@@ -390,18 +388,14 @@ bool HelperClass::isDirectory(const std::string& path)
     return S_ISDIR(statbuf.st_mode);
 }
 
-LocationConf* HelperClass::findLoc(std::string locPath, std::vector<LocationConf> locVec)
+LocationConf* HelperClass::findLoc(const std::string& locPath, std::vector<LocationConf>& locVec)
 {
-	LocationConf* resultLoc = NULL;
-	for (size_t i = 0; i < locVec.size(); i++)
-	{
-		if (locVec[i].getPath() == locPath)
-		{
-			resultLoc = &locVec[i];
-			break;
-		}
-	}
-	return resultLoc;
+    for (size_t i = 0; i < locVec.size(); i++)
+    {
+        if (locVec[i].getPath() == locPath)
+            return &locVec[i];
+    }
+    return NULL;
 }
 
 std::vector<std::string> HelperClass::selectLocOrServerIndex(const LocationConf* locConf, const std::vector<std::string>& serverIndexVec)
@@ -415,12 +409,15 @@ std::vector<std::string> HelperClass::selectLocOrServerIndex(const LocationConf*
 	}
 	else
 	{
+		
 		std::vector<std::string> locVec = locConf->getIndex();
-		if (locVec.size() != 0)
+		std::cout << "selectLocOrServerIndex: locConf = "  << locVec.size() << std::endl;
+		if (!locVec.empty())
 			resVec = locVec;
 		else
 			resVec = serverIndexVec;
 	}
+	std::cout << "ResVec size: " << resVec.size() << std::endl;
 	return resVec;
 }
 
