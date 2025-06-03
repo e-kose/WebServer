@@ -6,7 +6,7 @@
 /*   By: menasy <menasy@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/02 15:40:04 by menasy            #+#    #+#             */
-/*   Updated: 2025/06/01 21:28:11 by menasy           ###   ########.fr       */
+/*   Updated: 2025/06/03 16:54:47 by menasy           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,6 +33,12 @@
 #include <limits.h>
 #include <sys/wait.h>
 #include <filesystem>
+
+#define NOT_FOUND 404
+#define OK 200
+#define FORBIDDEN 403
+#define METHOD_NOT_ALLOWED 405
+#define NOT_RESPONDED 0
 
 class WebServer 
 {

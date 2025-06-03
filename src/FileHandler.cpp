@@ -6,7 +6,7 @@
 /*   By: menasy <menasy@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/13 21:40:13 by menasy            #+#    #+#             */
-/*   Updated: 2025/06/01 23:04:22 by menasy           ###   ########.fr       */
+/*   Updated: 2025/06/03 18:47:32 by menasy           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -68,11 +68,9 @@ std::string WebServer::readHtmlFile(pollfd& pollStruct,std::string& path, const 
 		return conf.getDfltPage().at(404);
 	std::string newPath;
 	std::map <std::string, std::string> cgiMap;
-	cgiMap = findLocationCgi(conf,"/cgi-bin");
+	cgiMap = findLocationCgi(conf,"/cgi-bin/");
 	newPath = HelperClass::checkFileWithExtension(path, cgiMap);
-    std::ifstream file(newPath.c_str());
-	std::cout << ">>>> FILE NEW PATH IN READHTML:  " << newPath << "<<<<\n";
-	
+    std::ifstream file(newPath.c_str());	
 	if (file.is_open()) 
 	{
 		std::size_t pos = newPath.find_last_of(".");
@@ -85,15 +83,15 @@ std::string WebServer::readHtmlFile(pollfd& pollStruct,std::string& path, const 
 				std::cout << ">>>> Cgi Extensions YOK -<<<<\n";
 				file.close();
 				this->sendResponse(pollStruct, "403 Forbidden");
-				this->responseStatus = 403;
+				this->responseStatus = FORBIDDEN;
 				return "";
 			}
 			else if (isExecInt == 1)
 			{
 				std::string scriptContetnt;
-				std::cout << ">>>> CGI YA GONFERİLDİ <<<<\n" << ext << std::endl;
-				//mapden hangi değeri çekeceğimi bulacağım.
+				std::cout << ">>>> CGI YA GONDERİLDİ <<<<\n" << ext << std::endl;
 				scriptContetnt = this->startCgi(newPath, ext, pollStruct,conf, cgiMap);
+				path = newPath;
 				file.close();
 				return scriptContetnt;
 			}	
@@ -145,7 +143,6 @@ std::vector<char *> WebServer::fillEnv(const ServerConf& conf, const pollfd& pol
 // 	pid_t pid = fork();
 // 	if (pid == -1)
 // 	{
-// 		std::cout << "Fork error" << std::endl;
 // 		return "";
 // 	}
 // 	else if (pid == 0)
@@ -229,7 +226,6 @@ std::string WebServer::getCgi(const std::string& filePath, const std::string& cg
 	waitpid(pid, NULL, 0);
 	std::string scriptContent = HelperClass::fdToString(fd[0]);
 	close(fd[0]);
-	std::cout << ">>>> CGI SCRIPT CONTENT: " << scriptContent << "<<<<\n";
 	return scriptContent;
 }
 
@@ -243,12 +239,12 @@ std::string WebServer::startCgi(const std::string&filePath, std::string& fileExt
 	std::vector<char *> env = this->fillEnv(conf, pollStruct, filePath);
 	if (this->clientRequests[pollStruct.fd]->getMethod() == "POST")
 	{
-		std::cout << ">>>> POST METHOD HANDLER <<<<\n";
+		std::cout << ">>>> POST METHOD HANDLER CGI<<<<\n";
 		return postCgi(filePath, cgiExecPath, env, this->clientRequests[pollStruct.fd]->getBody());
 	}
 	else if(this->clientRequests[pollStruct.fd]->getMethod() == "GET")
 	{
-		std::cout << ">>>> GET METHOD HANDLER <<<<\n";
+		std::cout << ">>>> GET METHOD HANDLER  CGI <<<<\n";
 		return getCgi(filePath, cgiExecPath, env);
 	}
 	return "";

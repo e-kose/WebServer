@@ -6,7 +6,7 @@
 /*   By: menasy <menasy@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/08 16:36:39 by menasy            #+#    #+#             */
-/*   Updated: 2025/06/02 17:46:16 by menasy           ###   ########.fr       */
+/*   Updated: 2025/06/03 18:50:08 by menasy           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -126,7 +126,7 @@ void HttpRequest::sepPath(const std::vector<LocationConf>& locVec)
 	std::string tmpPath = this->path;
 	this->path = HelperClass::getLocInVec(tmpPath, locVec);
 	this->setRequestFile(tmpPath.substr(this->path.length(), tmpPath.length()));
-	std::cout << "SET PATH___________:" << this->path <<std::endl;
+	std::cout << "SEPERATED PATH___________:" << this->path <<std::endl;
 	std::cout << "REQ FİLE___________:" << this->requestFile << std::endl;
 }
 
@@ -193,7 +193,6 @@ std::map<std::string, std::string>  HttpRequest::parseHeader(std::string& parseS
 				this->parseQuery(line);
 		}
 	}
-	// std::cout << "------------ HEADERmap -------------" << std::endl;
 	return destMap;
 }
 std::map<std::string, std::string>  HttpRequest::parseBody()

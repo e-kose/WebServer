@@ -6,7 +6,7 @@
 /*   By: menasy <menasy@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/12 07:50:19 by ekose             #+#    #+#             */
-/*   Updated: 2025/06/02 19:11:05 by menasy           ###   ########.fr       */
+/*   Updated: 2025/06/03 18:49:18 by menasy           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -134,7 +134,6 @@ void HelperClass::printVector(const std::vector<std::string>& vec)
 
 void	HelperClass::writeToFile(std::string fileName, std::string message)
 {
-	std::cout << "*******>" << message << std::endl;
 	std::ofstream ofs;
 	ofs.open(fileName.c_str(), std::ofstream::out | std::ios_base::app);
 	time_t now = time(NULL);
@@ -213,40 +212,6 @@ std::string HelperClass::indexHandler(const std::string& fullPath, const std::ve
 	return "";
 }
 
-// std::string HelperClass::mergePath(const ServerConf& servConf, const LocationConf& locConf,const std::string reqFile, std::string& httpPath)
-// {
-// 	std::string resPath, root;
-// 	std::vector<std::string> indexVec;
-// 	resPath = httpPath;
-// 	root = locConf.getRoot();
-// 	if (root.empty())
-// 		root = servConf.getRoot();
-// 	indexVec = locConf.getIndex();
-// 	if (indexVec.size() == 0)
-// 		indexVec = servConf.getIndex();
-
-// 	if (resPath[resPath.length() -1] != '/')
-// 	{
-// 		if (indexHandler(root, indexVec))
-// 			return root;
-// 		else
-// 			resPath += "/";	
-// 	}
-// 	resPath = HelperClass::mergeDirectory(root, resPath);
-// 	if (!reqFile.empty())
-// 		resPath += reqFile;
-// 	else
-// 	{
-// 		if (!indexHandler(resPath, indexVec))
-// 		{
-// 			std::cout << "İNDEX HANDLER: " << resPath << std::endl;
-// 			resPath = "";
-// 		}
-// 	}
-// 	if (!HelperClass::fileIsExist(resPath))
-// 		resPath = "";
-// 	return resPath;
-// }
 
 std::string HelperClass::mergeDirectory(const std::string& rootPath, const std::string& httpPath)
 {
@@ -402,22 +367,15 @@ std::vector<std::string> HelperClass::selectLocOrServerIndex(const LocationConf*
 {
 	std::vector<std::string> resVec;
 	if (locConf == NULL)
-	{
 		resVec = serverIndexVec;
-		std::cout << "selectLocOrServerIndex: locConf is NULL, using server index." << std::endl;
-		std::cout << "Server size: " << serverIndexVec.size() << std::endl;
-	}
 	else
 	{
-		
 		std::vector<std::string> locVec = locConf->getIndex();
-		std::cout << "selectLocOrServerIndex: locConf = "  << locVec.size() << std::endl;
 		if (!locVec.empty())
 			resVec = locVec;
 		else
 			resVec = serverIndexVec;
 	}
-	std::cout << "ResVec size: " << resVec.size() << std::endl;
 	return resVec;
 }
 

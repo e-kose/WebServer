@@ -6,7 +6,7 @@
 /*   By: menasy <menasy@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/12 07:52:01 by ekose             #+#    #+#             */
-/*   Updated: 2025/06/01 22:43:46 by menasy           ###   ########.fr       */
+/*   Updated: 2025/06/03 18:50:26 by menasy           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,7 +23,7 @@ void  WebServer::sendResponse(pollfd& pollStruct, const std::string& status)
 						+ this->clientRequests[pollStruct.fd]->getRequestFile() 
 						+ " " + status.substr(0,pos);
 	HelperClass::writeToFile("access.log",log);
-	std::cout<< "DEGER:" << this->resultPath << std::endl;
+	std::cout<< " RESPONSE DEGER:" << this->resultPath << std::endl;
 	if (code >= 400)
 		this->response = this->createErrorResponse(pollStruct,status, *clientToServerMap[fd], clientToServerMap[fd]->getRoot());
 	else if(code >= 200 && code <= 205)
@@ -59,7 +59,8 @@ bool isPathUnderRoot(const std::string& path, const std::string& root) {
 void WebServer::deleteMethod(pollfd& pollStruct)
 {
 	std::string finalPath;
-	if (!resolvePath(this->resultPath, finalPath)) {
+	if (!resolvePath(this->resultPath, finalPath)) 
+	{
 		sendResponse(pollStruct, "404 Not Found");
 		return;
 	}

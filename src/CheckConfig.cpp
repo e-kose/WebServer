@@ -6,7 +6,7 @@
 /*   By: menasy <menasy@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/30 12:42:10 by menasy            #+#    #+#             */
-/*   Updated: 2025/05/15 19:56:32 by menasy           ###   ########.fr       */
+/*   Updated: 2025/06/03 18:46:53 by menasy           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -48,7 +48,6 @@ void CheckConfig::checkConfKey(const std::string& element)
 
 void CheckConfig::checkElements(std::string str)
 {
-	// std::cout << "==================CHECK ELEMENTS=================== \n";
 	std::string::size_type pos;
 	std::string element, line, tmp = str;
 	size_t index = 1;
@@ -77,11 +76,9 @@ void CheckConfig::checkElements(std::string str)
 		if (pos == std::string::npos)
 			break;
 		line = HelperClass::trimLine(tmp.substr(0, pos + 1));
-		// std::cout << "==================LINE=================== \n" << line << std::endl;
 		if (!HelperClass::semiColonCheck(line))
 			throw std::runtime_error("Missing semicolon: " + line);
 		element = line.substr(0,line.find_first_of(" \t\n\0"));
-		// std::cout << "==================ELEMENT=================== \n" << element << std::endl;
 		checkConfKey(element);
 		tmp = tmp.substr(pos +1, tmp.length());
 	}

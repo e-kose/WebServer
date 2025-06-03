@@ -16,7 +16,6 @@ class Parser {
 		Parser &operator=(const Parser &other);
 
 
-		void printServerConfVec(std::vector<ServerConf>& serverConfVec); //BOS METOD
 	
 		void initKey();
 		std::map<std::string, int> confKeyMap(std::string);

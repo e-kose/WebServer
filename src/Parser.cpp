@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Parser.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ekose <ekose@student.42.fr>                +#+  +:+       +#+        */
+/*   By: menasy <menasy@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/30 12:39:27 by menasy            #+#    #+#             */
-/*   Updated: 2025/05/12 08:00:00 by ekose            ###   ########.fr       */
+/*   Updated: 2025/06/03 18:51:16 by menasy           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -70,15 +70,4 @@ void Parser::checkKeyCount(std::map<std::string, int> confKeyCounter)
 	for (; it != confKeyCounter.end(); it++)
 		if (it->second > 1)
 			throw std::runtime_error("Duplicate key found");
-}
-
-void Parser::printServerConfVec(std::vector<ServerConf>& serverConfVec) //BOS METOD
-{
-	std::cout << "==================SERVER CONF VEC=================== \n";
-	for (size_t i = 0; i < serverConfVec.size(); i++)
-	{
-		std::cout << "********* " << i + 1 <<". "<< "Server *******" << std::endl;
-		std::cout << "\tIP: " << serverConfVec[i].getIp() << std::endl;
-		std::cout << "\tPort: " << serverConfVec[i].getPort() << std::endl;
-	}
 }
