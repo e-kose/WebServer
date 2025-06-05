@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   WebServer.cpp                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: menasy <menasy@student.42.fr>              +#+  +:+       +#+        */
+/*   By: ekose <ekose@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/02 15:50:42 by menasy            #+#    #+#             */
-/*   Updated: 2025/06/03 19:03:39 by menasy           ###   ########.fr       */
+/*   Updated: 2025/06/05 12:26:03 by ekose            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -328,6 +328,7 @@ bool WebServer::methodIsExist(const std::vector<std::string>& locMethodsvec, con
 	}
 	if (!check)
 	{
+		std::cout <<"//////////////////////////////&&&&&&&&&&&&&&&&&&&&&&&&&&\n";
 		std::string sendMessage;
 		this->sendResponse(pollStruct, "405 Method Not Allowed");
 		this->responseStatus = METHOD_NOT_ALLOWED;

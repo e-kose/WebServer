@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   FileHandler.cpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: menasy <menasy@student.42.fr>              +#+  +:+       +#+        */
+/*   By: ekose <ekose@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/13 21:40:13 by menasy            #+#    #+#             */
-/*   Updated: 2025/06/03 18:47:32 by menasy           ###   ########.fr       */
+/*   Updated: 2025/06/05 12:02:09 by ekose            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -159,7 +159,17 @@ std::vector<char *> WebServer::fillEnv(const ServerConf& conf, const pollfd& pol
 // 		throw std::runtime_error("Execve failed");
 // 	}
 // }
-
+std::string WebServer::changeDir(const std::string& filePath)
+{
+	size_t pos = filePath.find_last_of("/");
+	if (pos == std::string::npos)
+		throw std::runtime_error("Invalid file path");
+	std::string dirPath = filePath.substr(0, pos);
+	if (chdir(dirPath.c_str()) == -1)
+		throw std::runtime_error("Change directory failed");
+	std::string fileName = filePath.substr(pos + 1);
+	return fileName;
+}
 std::string WebServer::postCgi(const std::string& filePath, const std::string& cgiExecPath, std::vector<char *>& env, const std::string& requestBody)
 {
     int inPipe[2];
@@ -177,12 +187,12 @@ std::string WebServer::postCgi(const std::string& filePath, const std::string& c
         dup2(outPipe[1], STDOUT_FILENO);
         close(inPipe[1]);
         close(outPipe[0]);
-
-        char* argv[] = {
-            const_cast<char*>(cgiExecPath.c_str()),
-            const_cast<char*>(filePath.c_str()),
-            NULL
-        };
+		std::string fileName = this->changeDir(filePath);
+		char* argv[] = {
+			const_cast<char*>(cgiExecPath.c_str()),  
+			const_cast<char*>(fileName.c_str()),
+			NULL
+		};
         execve(cgiExecPath.c_str(), argv, env.data());
         perror("execve");
         exit(1);
@@ -213,12 +223,13 @@ std::string WebServer::getCgi(const std::string& filePath, const std::string& cg
 		close(fd[0]);
 		dup2(fd[1], STDOUT_FILENO);
 		close(fd[1]);
+		std::string fileName = this->changeDir(filePath);
 		char* argv[] = {
 			const_cast<char*>(cgiExecPath.c_str()),  
-			const_cast<char*>(filePath.c_str()),     
+			const_cast<char*>(fileName.c_str()),
 			NULL
 		};
-		execve(cgiExecPath.c_str(),argv,env.data());
+		execve(argv[0],argv,env.data());
 		throw std::runtime_error("Execve failed");
 	}
 	
