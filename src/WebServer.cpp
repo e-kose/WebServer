@@ -6,7 +6,7 @@
 /*   By: menasy <menasy@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/02 15:50:42 by menasy            #+#    #+#             */
-/*   Updated: 2025/06/03 19:03:39 by menasy           ###   ########.fr       */
+/*   Updated: 2025/06/06 00:37:37 by menasy           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -266,7 +266,7 @@ void WebServer::clientRead(pollfd& pollStruct)
 
             this->clientRequests[pollStruct.fd] = this->parseRecv(requestData);
             this->clientToServerMap[pollStruct.fd] = &this->searchServerConf(this->serverConfVec, this->clientRequests[pollStruct.fd]->getHostName());
-			this->clientRequests[pollStruct.fd]->sepPath(this->clientToServerMap[pollStruct.fd]->getLocations());
+			this->clientRequests[pollStruct.fd]->sepPath(*(this->clientToServerMap[pollStruct.fd]));
 			
             pollStruct.events = POLLOUT;
             this->requestBuffers.erase(pollStruct.fd);
@@ -375,7 +375,12 @@ void WebServer::listDirectory(const std::string& path,LocationConf* locConf, pol
 {
 	bool autoIndexCheck = locConf->getAutoIndex();
 	std::cout << "----------------- LIST DIRECTORY ------------------" << std::endl;
-	if (!autoIndexCheck)
+	if (this->methodIsExist(locConf->getMethods(), this->clientRequests[pollStruct.fd]->getMethod(), pollStruct) == false)
+	{
+		this->sendResponse(pollStruct, "405 Method Not Allowed");
+		this->responseStatus = METHOD_NOT_ALLOWED;
+	}
+	else if (!autoIndexCheck)
 	{
 		this->sendResponse(pollStruct, "403 Forbidden");
 		this->responseStatus = FORBIDDEN;

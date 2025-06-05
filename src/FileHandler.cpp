@@ -6,24 +6,11 @@
 /*   By: menasy <menasy@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/13 21:40:13 by menasy            #+#    #+#             */
-/*   Updated: 2025/06/03 18:47:32 by menasy           ###   ########.fr       */
+/*   Updated: 2025/06/06 00:50:14 by menasy           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../include/WebServer.hpp"
-
-std::map<std::string, std::string> WebServer::findLocationCgi(const ServerConf& conf, std::string locStr)
-{
-	std::vector<LocationConf> locVec = conf.getLocations();
-	std::map<std::string, std::string> cgiExtMap;
-	for (size_t i = 0; i < locVec.size(); i++)
-	{
-		if (locVec[i].getPath() == locStr)
-			cgiExtMap = locVec[i].getCgiExt();
-	}
-	return cgiExtMap;
-}
-
 
 std::string WebServer::createHttpResponse(
 	const std::string& statusCode, const std::string& statusMessage,
@@ -68,7 +55,7 @@ std::string WebServer::readHtmlFile(pollfd& pollStruct,std::string& path, const 
 		return conf.getDfltPage().at(404);
 	std::string newPath;
 	std::map <std::string, std::string> cgiMap;
-	cgiMap = findLocationCgi(conf,"/cgi-bin/");
+	cgiMap = HelperClass::findLocationCgi(conf.getLocations(),"/cgi-bin/");
 	newPath = HelperClass::checkFileWithExtension(path, cgiMap);
     std::ifstream file(newPath.c_str());	
 	if (file.is_open()) 
@@ -122,6 +109,7 @@ std::vector<char *> WebServer::fillEnv(const ServerConf& conf, const pollfd& pol
 	envVec.push_back("SERVER_NAME=" + this->clientRequests[fd]->getHostName());
 	envVec.push_back("SERVER_PORT=" + HelperClass::intToString(conf.getPort()));
 	envVec.push_back("REMOTE_ADDR=" + this->socketInfo(this->clientToAddrMap[fd], fd));
+	envVec.push_back("PATH_INFO=" + this->clientRequests[fd]->getPathInfo());
 	envVec.push_back("REDIRECT_STATUS=200");
 
 	for (size_t i = 0; i < envVec.size(); i++)

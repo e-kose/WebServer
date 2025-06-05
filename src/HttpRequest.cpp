@@ -6,7 +6,7 @@
 /*   By: menasy <menasy@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/08 16:36:39 by menasy            #+#    #+#             */
-/*   Updated: 2025/06/03 18:50:08 by menasy           ###   ########.fr       */
+/*   Updated: 2025/06/06 00:53:28 by menasy           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -77,6 +77,9 @@ std::string HttpRequest::getRequestFile() const {
 std::string HttpRequest::getContentType() const {
 	return contentType;
 }
+std::string HttpRequest::getPathInfo() const {
+	return pathInfo;
+}
 std::string HttpRequest::getQueryString() const {
 	return queryString;
 }
@@ -87,24 +90,24 @@ std::map<std::string, std::string> HttpRequest::getQueryParams() const {
 	return queryParams;
 }
 
-void HttpRequest::setHeaders(const std::map<std::string, std::string>  headers) {
+void HttpRequest::setHeaders(std::map<std::string, std::string>  headers) {
 	this->headers = headers;
 }
 
-void HttpRequest::setMethod(const std::string method) {
+void HttpRequest::setMethod(std::string method) {
 	this->method = method;
 }
 
-void HttpRequest::setRequestFile(const std::string requestFile) {
+void HttpRequest::setRequestFile(std::string requestFile) {
 	this->requestFile = requestFile;
 }
-void HttpRequest::setContentType(const std::string contentType) {
+void HttpRequest::setContentType(std::string contentType) {
 	this->contentType = contentType;
 }
 
 
 
-void HttpRequest::setPath(const std::string path) 
+void HttpRequest::setPath(std::string path) 
 {
 	std::cout << "GELEN PATH:" << path << std::endl;
 	std::string tmpPath = path;
@@ -118,23 +121,64 @@ void HttpRequest::setPath(const std::string path)
 	}
 	this->path = tmpPath;
 }
-
-void HttpRequest::sepPath(const std::vector<LocationConf>& locVec)
+void HttpRequest::setPathInfo(std::string sepInfoPath, ServerConf& conf)
 {
+	std::vector<LocationConf> locVec = conf.getLocations();
+	std::map<std::string, std::string> cgiMap = HelperClass::findLocationCgi(locVec, "/cgi-bin/");
+	LocationConf* locConf = HelperClass::findLoc(this->path, locVec);
+	std::string rootPath = HelperClass::selectLocOrServerRoot(locConf, conf.getRoot());
+	std::string fullPath = rootPath + sepInfoPath;
+	size_t j = 0;
+	std::string sub;
+	while (fullPath[j])
+	{
+		while (fullPath[j] && fullPath[j] != '/')
+			j++;
+		sub = fullPath.substr(0, j);
+		if (!HelperClass::isDirectory(sub))
+		{
+			if (!HelperClass::fileIsExist(sub))
+				sub = HelperClass::checkFileWithExtension(sub, cgiMap);
+			if (HelperClass::fileIsExist(sub) && !HelperClass::isDirectory(sub))
+			{
+				this->pathInfo = fullPath.substr(j, fullPath.length() - j);
+				this->setRequestFile(sepInfoPath.substr(this->path.length(), sepInfoPath.length() - this->path.length() - this->pathInfo.length()));
+				std::cout << "SEPERATED PATH___________:" << this->path <<std::endl;
+				std::cout << "REQUEST FILE___________:" << this->requestFile << std::endl;
+				std::cout << "PATH INFO___________:" << this->pathInfo << std::endl;
+				std::cout << "QUERY STRING___________:" << this->queryString << std::endl;
+				return ;
+			}
+		}
+		if (fullPath[j] == '/')
+			j++;
+	}
+}
+
+void HttpRequest::sepPath(ServerConf conf)
+{
+	std::vector<LocationConf> locVec = conf.getLocations(); 
 	if (this->path == "/")
 		return;
 	std::string tmpPath = this->path;
 	this->path = HelperClass::getLocInVec(tmpPath, locVec);
-	this->setRequestFile(tmpPath.substr(this->path.length(), tmpPath.length()));
+	if (this->path.find("cgi-bin") != std::string::npos)
+	{
+		this->setPathInfo(tmpPath, conf);
+		return ;
+	}
+	this->setRequestFile(tmpPath.substr(this->path.length(), tmpPath.length() - this->path.length()));
 	std::cout << "SEPERATED PATH___________:" << this->path <<std::endl;
 	std::cout << "REQ FİLE___________:" << this->requestFile << std::endl;
+	std::cout << "QUERY STRING___________:" << this->queryString << std::endl;
+
 }
 
-void HttpRequest::setVersion(const std::string version) {
+void HttpRequest::setVersion(std::string version) {
 	this->version = version;
 }
 
-void HttpRequest::setHostName(const std::string hostName) {
+void HttpRequest::setHostName(std::string hostName) {
 	std::string::size_type pos = hostName.find_first_of(':');
 	if (pos != std::string::npos)
 		this->hostName = hostName.substr(0, pos);
@@ -150,20 +194,22 @@ void	HttpRequest::addQuery(std::string key, std::string value)
 {
 	this->queryParams[key] = value;
 }
-void HttpRequest::setBody(const std::string body) {
+void HttpRequest::setBody(std::string body) {
 	this->body = body;
 }
 
-void HttpRequest::setBodyMap(const std::map<std::string, std::string>  bodyMap) {
+void HttpRequest::setBodyMap(std::map<std::string, std::string>  bodyMap) {
 	this->bodyMap = bodyMap;
 }
-void HttpRequest::setQueryParams(const std::map<std::string, std::string> queryParams) {
+void HttpRequest::setQueryParams(std::map<std::string, std::string> queryParams) {
 	this->queryParams = queryParams;
 }
 
-void HttpRequest::setQueryString(const std::string queryString) {
+void HttpRequest::setQueryString(std::string queryString) {
 	this->queryString = queryString;
 }
+
+
 std::map<std::string, std::string>  HttpRequest::parseHeader(std::string& parseStr)
 {
 	std::map<std::string, std::string> destMap;

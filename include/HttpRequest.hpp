@@ -24,20 +24,20 @@ class HelperClass;
 class HttpRequest 
 {
 	private:
-		std::string method;								// GET, POST, etc.
-		std::string path;   							// /users/5
-		std::string version;							// HTTP/1.1
+		std::string method;								
+		std::string path;   							
+		std::string version;							
 		std::string hostName;
 		std::string requestFile;
 		std::string contentType;
-		int port;									// Port numarası
+		int port;									
 		std::map<std::string, std::string>headers; 	// Tüm HTTP headerları
 		std::map<std::string, std::string>bodyMap;
-
-		std::string body;								// içerik kısmı json falan 
-		std::string queryString;						// /search?q=test ise q=test bu olacak mı bilmiyroum daha
-		size_t contentLength;						// Header'dan alcaz
-		std::map<std::string, std::string> queryParams; // query parametreleri ayrıştırılmış hali	 en son bakacam	
+		std::string body;								
+		std::string queryString;						
+		size_t contentLength;						
+		std::map<std::string, std::string> queryParams;
+		std::string pathInfo;
 	public:
 		HttpRequest();
 		HttpRequest(const HttpRequest &other);
@@ -62,21 +62,23 @@ class HttpRequest
 		std::string getBody() const;
 		std::map<std::string, std::string> getBodyMap() const;
 		std::map<std::string, std::string> getQueryParams() const;
+		std::string getPathInfo() const;
 
-		void setMethod(const std::string method);
-		void setPath(const std::string path);
+		void setMethod(std::string method);
+		void setPath(std::string path);
 		void setPort(int port);
-		void setVersion(const std::string version);
-		void setHostName(const std::string hostName);
-		void setContentType(const std::string contentType);
-		void setRequestFile(const std::string requestFile);
+		void setVersion(std::string version);
+		void setHostName(std::string hostName);
+		void setContentType(std::string contentType);
+		void setRequestFile(std::string requestFile);
 		void setContentLength(size_t length);
-		void setHeaders(const  std::map<std::string, std::string> headers);
-		void setBody(const std::string body);
-		void setBodyMap(const std::map<std::string, std::string> bodyMap);
-		void setQueryParams(const std::map<std::string, std::string> queryParams);
-		void setQueryString(const std::string queryString);
+		void setHeaders( std::map<std::string, std::string> headers);
+		void setBody(std::string body);
+		void setBodyMap(std::map<std::string, std::string> bodyMap);
+		void setQueryParams(std::map<std::string, std::string> queryParams);
+		void setQueryString(std::string queryString);
 		void addQuery(std::string key, std::string value);
-		void sepPath(const std::vector<LocationConf>&);
+		void sepPath(ServerConf conf);
+		void setPathInfo(std::string pathInfo, ServerConf& conf);
 };
 	
