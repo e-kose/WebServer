@@ -6,7 +6,7 @@
 /*   By: menasy <menasy@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/08 16:36:39 by menasy            #+#    #+#             */
-/*   Updated: 2025/06/06 00:53:28 by menasy           ###   ########.fr       */
+/*   Updated: 2025/06/06 12:19:33 by menasy           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -153,10 +153,12 @@ void HttpRequest::setPathInfo(std::string sepInfoPath, ServerConf& conf)
 		if (fullPath[j] == '/')
 			j++;
 	}
+	this->setRequestFile(sepInfoPath.substr(this->path.length(), sepInfoPath.length() - this->path.length()));
 }
 
 void HttpRequest::sepPath(ServerConf conf)
 {
+	std::cout << ">>>>>>>>>>>> SEP_PATH <<<<<<<<<<<<<<<<<<" << std::endl;
 	std::vector<LocationConf> locVec = conf.getLocations(); 
 	if (this->path == "/")
 		return;

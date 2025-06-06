@@ -29,7 +29,7 @@ class HttpRequest
 		std::string version;							
 		std::string hostName;
 		std::string requestFile;
-		std::string contentType;
+		std::string contentType;	
 		int port;									
 		std::map<std::string, std::string>headers; 	// Tüm HTTP headerları
 		std::map<std::string, std::string>bodyMap;

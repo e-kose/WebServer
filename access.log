@@ -1559,3 +1559,7 @@ g«®âÒÄ>ã6µËB³e[idv{	:ÊÑ»NÈŠÎ’±’†]ÿè#À±vUŽõ(™5k½`yì©FõÛÑ l3û`È £e
 [Fri Jun  6 00:49:14 2025] Socket info: 127.0.0.1:54026 -> 127.0.0.1:8080 GET /cgi-bin//scripts/show_user 200
 [Fri Jun  6 00:50:46 2025] Socket info: 127.0.0.1:53842 -> 127.0.0.1:8080 GET /cgi-bin//scripts/show_user 200
 [Fri Jun  6 00:52:26 2025] Socket info: 127.0.0.1:55898 -> 127.0.0.1:8080 GET /cgi-bin//scripts/show_user.py 200
+[Fri Jun  6 12:10:17 2025] Socket info: 127.0.0.1:51626 -> 127.0.0.1:8080 GET /cgi-bin// 403
+[Fri Jun  6 12:14:21 2025] Socket info: 127.0.0.1:57984 -> 127.0.0.1:8080 GET /cgi-bin// 403
+[Fri Jun  6 12:16:08 2025] Socket info: 127.0.0.1:35934 -> 127.0.0.1:8080 GET /cgi-bin// 403
+[Fri Jun  6 12:20:04 2025] Socket info: 127.0.0.1:39890 -> 127.0.0.1:8080 GET /cgi-bin//scripts/show_useasa/1234 404
