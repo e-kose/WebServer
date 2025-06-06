@@ -1537,6 +1537,7 @@ g«®âÒÄ>ã6µËB³e[idv{	:ÊÑ»NÈŠÎ’±’†]ÿè#À±vUŽõ(™5k½`yì©FõÛÑ l3û`È £e
 [Tue Jun  3 18:58:13 2025] Socket info: 127.0.0.1:40696 -> 127.0.0.1:8080 POST //dnm/ 200
 [Tue Jun  3 18:58:28 2025] Socket info: 127.0.0.1:60612 -> 127.0.0.1:8080 POST //dnm/ 403
 [Tue Jun  3 19:02:04 2025] Socket info: 127.0.0.1:39424 -> 127.0.0.1:8080 POST //dnm/ 403
+<<<<<<< HEAD
 [Thu Jun  5 11:02:22 2025] Socket info: 127.0.0.1:58476 -> 127.0.0.1:8080 GET /cgi-bin//abc.py 200
 [Thu Jun  5 11:02:49 2025] Socket info: 127.0.0.1:41968 -> 127.0.0.1:8080 GET /cgi-bin//abc 200
 [Thu Jun  5 11:02:52 2025] Socket info: 127.0.0.1:41970 -> 127.0.0.1:8080 GET /cgi-bin//ab 404
@@ -1587,3 +1588,56 @@ g«®âÒÄ>ã6µËB³e[idv{	:ÊÑ»NÈŠÎ’±’†]ÿè#À±vUŽõ(™5k½`yì©FõÛÑ l3û`È £e
 [Fri Jun  6 19:42:51 2025] Socket info: 127.0.0.1:32912 -> 127.0.0.1:8080 GET //index 403
 [Fri Jun  6 19:42:56 2025] Socket info: 127.0.0.1:32922 -> 127.0.0.1:8080 GET /index// 200
 [Fri Jun  6 19:51:57 2025] Socket info: 127.0.0.1:54744 -> 127.0.0.1:8080 GET /index// 200
+=======
+[Thu Jun  5 16:32:03 2025] Socket info: 127.0.0.1:45050 -> 127.0.0.1:8080 GET /index// 200
+[Thu Jun  5 16:32:29 2025] Socket info: 127.0.0.1:60190 -> 127.0.0.1:8080 GET /index// 405
+[Thu Jun  5 16:42:24 2025] Socket info: 127.0.0.1:41292 -> 127.0.0.1:8080 GET /cgi-bin//scripts/get_data 200
+[Thu Jun  5 16:45:44 2025] Socket info: 127.0.0.1:35036 -> 127.0.0.1:8080 GET /index// 405
+[Thu Jun  5 16:46:06 2025] Socket info: 127.0.0.1:43912 -> 127.0.0.1:8080 GET /index// 405
+[Thu Jun  5 16:47:13 2025] Socket info: 127.0.0.1:40666 -> 127.0.0.1:8080 GET /index// 200
+[Thu Jun  5 16:47:39 2025] Socket info: 127.0.0.1:47672 -> 127.0.0.1:8080 GET /index// 200
+[Thu Jun  5 16:50:11 2025] Socket info: 127.0.0.1:50916 -> 127.0.0.1:8080 GET /index// 403
+[Thu Jun  5 16:53:11 2025] Socket info: 127.0.0.1:60294 -> 127.0.0.1:8080 GET /index// 405
+[Thu Jun  5 16:53:11 2025] Socket info: 127.0.0.1:60294 -> 127.0.0.1:8080 GET /index// 405
+[Thu Jun  5 17:02:24 2025] Socket info: 127.0.0.1:60412 -> 127.0.0.1:8080 GET /cgi-bin//show_user.py 404
+[Thu Jun  5 17:02:37 2025] Socket info: 127.0.0.1:59156 -> 127.0.0.1:8080 GET /cgi-bin//scripts/show_user.py 200
+[Thu Jun  5 17:03:02 2025] Socket info: 127.0.0.1:60298 -> 127.0.0.1:8080 GET /cgi-bin//scripts/show_user.py/1234 404
+[Fri Jun  6 00:40:33 2025] Socket info: 127.0.0.1:48974 -> 127.0.0.1:8080 GET /cgi-bin//scripts/show_user.py/1234 404
+[Fri Jun  6 00:43:48 2025] Socket info: 127.0.0.1:47750 -> 127.0.0.1:8080 GET /cgi-bin// 403
+[Fri Jun  6 00:45:21 2025] Socket info: 127.0.0.1:51606 -> 127.0.0.1:8080 GET /cgi-bin//scripts/show_user.py/1234 404
+[Fri Jun  6 00:47:56 2025] Socket info: 127.0.0.1:37126 -> 127.0.0.1:8080 GET /cgi-bin//scripts/show_user.py 200
+[Fri Jun  6 00:48:33 2025] Socket info: 127.0.0.1:35354 -> 127.0.0.1:8080 GET /cgi-bin//scripts/show_user 200
+[Fri Jun  6 00:48:44 2025] Socket info: 127.0.0.1:60666 -> 127.0.0.1:8080 GET /cgi-bin//scripts/show_user 200
+[Fri Jun  6 00:49:14 2025] Socket info: 127.0.0.1:54026 -> 127.0.0.1:8080 GET /cgi-bin//scripts/show_user 200
+[Fri Jun  6 00:50:46 2025] Socket info: 127.0.0.1:53842 -> 127.0.0.1:8080 GET /cgi-bin//scripts/show_user 200
+[Fri Jun  6 00:52:26 2025] Socket info: 127.0.0.1:55898 -> 127.0.0.1:8080 GET /cgi-bin//scripts/show_user.py 200
+[Fri Jun  6 12:10:17 2025] Socket info: 127.0.0.1:51626 -> 127.0.0.1:8080 GET /cgi-bin// 403
+[Fri Jun  6 12:14:21 2025] Socket info: 127.0.0.1:57984 -> 127.0.0.1:8080 GET /cgi-bin// 403
+[Fri Jun  6 12:16:08 2025] Socket info: 127.0.0.1:35934 -> 127.0.0.1:8080 GET /cgi-bin// 403
+[Fri Jun  6 12:20:04 2025] Socket info: 127.0.0.1:39890 -> 127.0.0.1:8080 GET /cgi-bin//scripts/show_useasa/1234 404
+>>>>>>> origin/menasy
+[Fri Jun  6 20:00:29 2025] Socket info: 127.0.0.1:56224 -> 127.0.0.1:8080 GET /index// 405
+[Fri Jun  6 20:00:29 2025] Socket info: 127.0.0.1:56224 -> 127.0.0.1:8080 GET /index// 405
+[Fri Jun  6 20:00:36 2025] Socket info: 127.0.0.1:45632 -> 127.0.0.1:8080 GET // 405
+[Fri Jun  6 20:01:03 2025] Socket info: 127.0.0.1:33550 -> 127.0.0.1:8080 GET // 200
+[Fri Jun  6 20:01:08 2025] Socket info: 127.0.0.1:33560 -> 127.0.0.1:8080 GET //index 403
+[Fri Jun  6 20:01:10 2025] Socket info: 127.0.0.1:49260 -> 127.0.0.1:8080 GET /index// 403
+[Fri Jun  6 20:01:13 2025] Socket info: 127.0.0.1:49264 -> 127.0.0.1:8080 GET //index 403
+[Fri Jun  6 20:01:18 2025] Socket info: 127.0.0.1:49280 -> 127.0.0.1:8080 GET /index//index 200
+[Fri Jun  6 20:01:22 2025] Socket info: 127.0.0.1:55478 -> 127.0.0.1:8080 GET /index// 403
+[Fri Jun  6 20:02:05 2025] Socket info: 127.0.0.1:41924 -> 127.0.0.1:8080 GET /index// 200
+[Fri Jun  6 20:07:14 2025] Socket info: 127.0.0.1:42952 -> 127.0.0.1:8080 GET /index// 200
+[Fri Jun  6 20:07:20 2025] Socket info: 127.0.0.1:45268 -> 127.0.0.1:8080 GET // 200
+[Fri Jun  6 20:29:05 2025] Socket info: 127.0.0.1:46918 -> 127.0.0.1:8080 GET /cgi-bin//abc.py 200
+[Fri Jun  6 20:33:31 2025] Socket info: 127.0.0.1:45062 -> 127.0.0.1:8080 GET /redirect-me// 200
+[Fri Jun  6 20:33:55 2025] Socket info: 127.0.0.1:34360 -> 127.0.0.1:8080 GET //eroors/ 404
+[Fri Jun  6 20:34:07 2025] Socket info: 127.0.0.1:51078 -> 127.0.0.1:8080 GET /errors// 200
+[Fri Jun  6 20:35:03 2025] Socket info: 127.0.0.1:45186 -> 127.0.0.1:8080 GET /errors// 200
+[Fri Jun  6 20:35:34 2025] Socket info: 127.0.0.1:57200 -> 127.0.0.1:8080 GET /errors// 200
+[Fri Jun  6 20:36:10 2025] Socket info: 127.0.0.1:58680 -> 127.0.0.1:8080 GET /errors// 200
+[Fri Jun  6 20:36:32 2025] Socket info: 127.0.0.1:60622 -> 127.0.0.1:8080 GET /errors// 200
+[Fri Jun  6 20:37:02 2025] Socket info: 127.0.0.1:33104 -> 127.0.0.1:8080 GET /errors// 200
+[Fri Jun  6 20:37:46 2025] Socket info: 127.0.0.1:59434 -> 127.0.0.1:8080 GET /errors//index 404
+[Fri Jun  6 20:43:59 2025] Socket info: 127.0.0.1:38354 -> 127.0.0.1:8080 GET /errors// 200
+[Fri Jun  6 20:45:31 2025] Socket info: 127.0.0.1:45336 -> 127.0.0.1:8080 GET // 403
+[Fri Jun  6 20:45:49 2025] Socket info: 127.0.0.1:52652 -> 127.0.0.1:8080 GET // 200

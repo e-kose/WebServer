@@ -6,7 +6,7 @@
 /*   By: ekose <ekose@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/12 07:50:19 by ekose             #+#    #+#             */
-/*   Updated: 2025/06/06 19:17:44 by ekose            ###   ########.fr       */
+/*   Updated: 2025/06/06 19:58:40 by ekose            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -362,7 +362,16 @@ LocationConf* HelperClass::findLoc(const std::string& locPath, std::vector<Locat
     }
     return NULL;
 }
-
+std::map<std::string, std::string>HelperClass::findLocationCgi(const std::vector<LocationConf> locVec, std::string locStr)
+{
+	std::map<std::string, std::string> cgiExtMap;
+	for (size_t i = 0; i < locVec.size(); i++)
+	{
+		if (locVec[i].getPath() == locStr)
+			cgiExtMap = locVec[i].getCgiExt();
+	}
+	return cgiExtMap;
+}
 std::vector<std::string> HelperClass::selectLocOrServerIndex(const LocationConf* locConf, const std::vector<std::string>& serverIndexVec)
 {
 	std::vector<std::string> resVec;

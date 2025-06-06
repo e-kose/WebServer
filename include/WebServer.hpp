@@ -6,7 +6,7 @@
 /*   By: ekose <ekose@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/02 15:40:04 by menasy            #+#    #+#             */
-/*   Updated: 2025/06/06 18:33:29 by ekose            ###   ########.fr       */
+/*   Updated: 2025/06/06 19:58:06 by ekose            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -82,7 +82,6 @@ class WebServer
 		std::string 							createHttpResponse(
 																const std::string& statusCode, const std::string& statusMessage,
 																const std::string& contentType, const std::string& body);
-		std::map<std::string, std::string>	findLocationCgi(const ServerConf& conf, std::string locStr);
 		std::string getCgi(const std::string& filePath, const std::string& cgiExecPath, std::vector<char *>& env);
 		std::vector<char *>	fillEnv(const ServerConf& conf, const pollfd& pollStruct, const std::string& path);
 		std::string startCgi(const std::string&filePath, std::string& fileExt, const pollfd& pollStruct, const ServerConf& conf, const std::map<std::string,std::string>&cgiExtMap);

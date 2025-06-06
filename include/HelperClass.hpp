@@ -6,7 +6,7 @@
 /*   By: ekose <ekose@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/04 18:10:20 by menasy            #+#    #+#             */
-/*   Updated: 2025/06/06 18:59:14 by ekose            ###   ########.fr       */
+/*   Updated: 2025/06/06 19:56:42 by ekose            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -64,4 +64,6 @@ class HelperClass
 		static std::vector<std::string> 	selectLocOrServerIndex(const LocationConf* locConf, const std::vector<std::string>& serverIndexVec);
 		static std::string					selectLocOrServerRoot(const LocationConf* locConf, const std::string& serverRoot);
 		static bool							unchunkBody(const std::string& chunked, std::string& out);
+		static std::map<std::string, std::string>	findLocationCgi(const std::vector<LocationConf> locVec, std::string locStr);
+
 	};
