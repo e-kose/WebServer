@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   HttpRequest.cpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: menasy <menasy@student.42.fr>              +#+  +:+       +#+        */
+/*   By: ekose <ekose@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/08 16:36:39 by menasy            #+#    #+#             */
-/*   Updated: 2025/06/03 18:50:08 by menasy           ###   ########.fr       */
+/*   Updated: 2025/06/06 18:58:26 by ekose            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,7 +27,10 @@ HttpRequest::HttpRequest() {
 	this->queryParams.clear();
 	this->bodyMap.clear();
 	this->hostName = "";
-	
+	this->requestFile = "";
+	this->port = 0;
+	this->contentType = "";
+	this->chunkedTransfer = false;
 }
 HttpRequest::HttpRequest(const HttpRequest &other) {
 	*this = other;
@@ -44,6 +47,10 @@ HttpRequest &HttpRequest::operator=(const HttpRequest &other) {
 		this->queryParams = other.queryParams;
 		this->bodyMap = other.bodyMap;
 		this->hostName = other.hostName;
+		this->requestFile = other.requestFile;
+		this->port = other.port;
+		this->contentType = other.contentType;
+		this->chunkedTransfer = other.chunkedTransfer;
 	}
 	return *this;
 }
@@ -87,6 +94,14 @@ std::map<std::string, std::string> HttpRequest::getQueryParams() const {
 	return queryParams;
 }
 
+int HttpRequest::getPort() const {
+	return port;
+}
+
+bool HttpRequest::getChunkedTransfer() const {
+	return chunkedTransfer;
+}
+
 void HttpRequest::setHeaders(const std::map<std::string, std::string>  headers) {
 	this->headers = headers;
 }
@@ -102,7 +117,13 @@ void HttpRequest::setContentType(const std::string contentType) {
 	this->contentType = contentType;
 }
 
+void HttpRequest::setPort(int port) {
+	this->port = port;
+}
 
+void HttpRequest::setChunkedTransfer(bool chunked) {
+	this->chunkedTransfer = chunked;
+}
 
 void HttpRequest::setPath(const std::string path) 
 {
@@ -185,6 +206,10 @@ std::map<std::string, std::string>  HttpRequest::parseHeader(std::string& parseS
 	}
 	this->setHostName(destMap["Host"]);
 	this->setContentType(destMap["Content-Type"]);
+	if (destMap.find("Content-Length") != destMap.end())
+		this->setContentLength(std::atoi(destMap["Content-Length"].c_str()));
+	if (destMap.find("Transfer-Encoding") != destMap.end() && destMap["Transfer-Encoding"] == "chunked")
+		this->setChunkedTransfer(true);
 	if(this->getContentType() == "application/x-www-form-urlencoded")
 	{
 		while (std::getline(strStream, line))

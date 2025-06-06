@@ -148,6 +148,7 @@ void ServerConf::defaultPage()
 	this->dflt_page[403] = "<html><body><h1>403 Forbidden</h1><p>Erişim izniniz yok.</p></body></html>";
 	this->dflt_page[404] = "<html><body><h1>404 Not Found</h1><p>Sayfa bulunamadı.</p></body></html>";
 	this->dflt_page[405] = "<html><body><h1>405 Method Not Allowed</h1><p>HTTP metodu desteklenmiyor.</p></body></html>";
+	this->dflt_page[413] = "<html><body><h1>413 Payload Too Large</h1><p>İstek çok büyük.</p></body></html>";
 	this->dflt_page[500] = "<html><body><h1>500 Internal Server err</h1><p>Sunucu hatası oluştu.</p></body></html>";
 	this->dflt_page[501] = "<html><body><h1>501 Not Implemented</h1><p>İşlev desteklenmiyor.</p></body></html>";
 	this->dflt_page[503] = "<html><body><h1>503 Service Unavailable</h1><p>Sunucu hizmet veremiyor.</p></body></html>";

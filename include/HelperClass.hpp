@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   HelperClass.hpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: menasy <menasy@student.42.fr>              +#+  +:+       +#+        */
+/*   By: ekose <ekose@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/04 18:10:20 by menasy            #+#    #+#             */
-/*   Updated: 2025/06/02 19:07:10 by menasy           ###   ########.fr       */
+/*   Updated: 2025/06/06 18:59:14 by ekose            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -56,12 +56,12 @@ class HelperClass
 		static std::string 					fdToString(int& fd);
 		static std::string 					getLocInVec(const std::string& path, const std::vector<LocationConf>& locVec);
 		// static std::string mergePath(const ServerConf& servConf, const LocationConf& locConf,const std::string reqFile, std::string& httpPath);
-		static std::string indexHandler(const std::string& fullPath,const std::vector<std::string>& indexVec);
-			static std::string					indexIsExist(ServerConf& conf, std::string location);
+		static std::string					indexHandler(const std::string& fullPath,const std::vector<std::string>& indexVec);
+			static std::string				indexIsExist(ServerConf& conf, std::string location);
 		static std::string					generateAutoIndexHtml(const std::string& path, const std::string& uriPath);
-		static bool isDirectory(const std::string& path);
-		static LocationConf* findLoc(const std::string& locPath, std::vector<LocationConf>& locVec);
-		static std::vector<std::string> selectLocOrServerIndex(const LocationConf* locConf, const std::vector<std::string>& serverIndexVec);
-		static std::string selectLocOrServerRoot(const LocationConf* locConf, const std::string& serverRoot);
-		
+		static bool 						isDirectory(const std::string& path);
+		static LocationConf* 				findLoc(const std::string& locPath, std::vector<LocationConf>& locVec);
+		static std::vector<std::string> 	selectLocOrServerIndex(const LocationConf* locConf, const std::vector<std::string>& serverIndexVec);
+		static std::string					selectLocOrServerRoot(const LocationConf* locConf, const std::string& serverRoot);
+		static bool							unchunkBody(const std::string& chunked, std::string& out);
 	};

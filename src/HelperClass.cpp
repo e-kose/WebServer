@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   HelperClass.cpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: menasy <menasy@student.42.fr>              +#+  +:+       +#+        */
+/*   By: ekose <ekose@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/12 07:50:19 by ekose             #+#    #+#             */
-/*   Updated: 2025/06/03 18:49:18 by menasy           ###   ########.fr       */
+/*   Updated: 2025/06/06 19:17:44 by ekose            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -393,4 +393,38 @@ std::string HelperClass::selectLocOrServerRoot(const LocationConf* locConf, cons
 			resRoot = serverRoot;
 	}
 	return resRoot;
+}
+
+bool HelperClass::unchunkBody(const std::string& chunked, std::string& out)
+{
+    size_t pos = 0;
+    while (true)
+    {
+        size_t newline = chunked.find("\r\n", pos);
+        if (newline == std::string::npos)
+            return false;
+
+        std::string sizeStr = chunked.substr(pos, newline - pos);
+        char* endptr = NULL;
+        long chunkSize = std::strtol(sizeStr.c_str(), &endptr, 16);
+
+        if (endptr == sizeStr.c_str() || chunkSize < 0)
+            return false;
+
+        pos = newline + 2;
+
+        if (chunkSize == 0)
+            return true;
+
+        if (chunked.size() < pos + chunkSize + 2)
+            return false;
+
+        out.append(chunked, pos, chunkSize);
+        pos += chunkSize;
+
+        if (chunked.substr(pos, 2) != "\r\n")
+            return false;
+
+        pos += 2;
+    }
 }

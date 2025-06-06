@@ -6,7 +6,7 @@
 /*   By: ekose <ekose@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/02 15:40:04 by menasy            #+#    #+#             */
-/*   Updated: 2025/06/05 11:43:35 by ekose            ###   ########.fr       */
+/*   Updated: 2025/06/06 18:33:29 by ekose            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,6 +39,7 @@
 #define FORBIDDEN 403
 #define METHOD_NOT_ALLOWED 405
 #define NOT_RESPONDED 0
+#define PAYLOAD_TOO_LARGE 413
 
 class WebServer 
 {

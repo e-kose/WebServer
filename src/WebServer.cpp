@@ -6,7 +6,7 @@
 /*   By: ekose <ekose@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/02 15:50:42 by menasy            #+#    #+#             */
-/*   Updated: 2025/06/05 12:26:03 by ekose            ###   ########.fr       */
+/*   Updated: 2025/06/06 19:42:25 by ekose            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -204,9 +204,8 @@ void	WebServer::acceptNewClient(pollfd& pollStruct)
 
 void WebServer::clientRead(pollfd& pollStruct)
 {
-    char buffer[4096];
+	char buffer[4096];
     std::string& requestData = this->requestBuffers[pollStruct.fd];
-
     while (true)
     {
         int bytesReceived = recv(pollStruct.fd, buffer, sizeof(buffer), 0);
@@ -215,12 +214,9 @@ void WebServer::clientRead(pollfd& pollStruct)
         {
             if (errno == EAGAIN || errno == EWOULDBLOCK)
                 break;
-            else
-            {
-                std::cerr << ">>>> Error reading from client: " << strerror(errno) << " <<<<" << std::endl;
-                closeCliSocket(pollStruct.fd);
-                return;
-            }
+            std::cerr << ">>>> Error reading from client: " << strerror(errno) << " <<<<" << std::endl;
+            closeCliSocket(pollStruct.fd);
+            return;
         }
         else if (bytesReceived == 0)
         {
@@ -230,13 +226,33 @@ void WebServer::clientRead(pollfd& pollStruct)
         }
 
         requestData.append(buffer, bytesReceived);
-
         size_t headerEnd = requestData.find("\r\n\r\n");
-        if (headerEnd != std::string::npos)
+        if (headerEnd == std::string::npos)
+			continue;
+        this->clientRequests[pollStruct.fd] = this->parseRecv(requestData);
+       	this->clientToServerMap[pollStruct.fd] = &this->searchServerConf(this->serverConfVec, this->clientRequests[pollStruct.fd]->getHostName());
+		size_t maxBodySizeInBytes = this->clientToServerMap[pollStruct.fd]->getBodySize() * 1024 * 1024;
+        if (requestData.size() > maxBodySizeInBytes)
         {
-            size_t contentLength = 0;
-            std::string header = requestData.substr(0, headerEnd);
+            sendResponse(pollStruct, "413 Payload Too Large");
+            this->responseStatus = PAYLOAD_TOO_LARGE;
+            return;
+        }
+        std::string header = requestData.substr(0, headerEnd);
+        bool isChunked = header.find("Transfer-Encoding: chunked") != std::string::npos;
+        size_t bodyStart = headerEnd + 4;
 
+        if (isChunked)
+        {
+            std::string chunkedBody = requestData.substr(bodyStart);
+            std::string unchunkedBody;
+            if (!HelperClass::unchunkBody(chunkedBody, unchunkedBody))
+                return;
+            requestData = header + "\r\n\r\n" + unchunkedBody;
+            break;
+        }
+        else
+        {
             size_t pos = header.find("Content-Length:");
             if (pos != std::string::npos)
             {
@@ -244,13 +260,14 @@ void WebServer::clientRead(pollfd& pollStruct)
                 while (pos < header.size() && isspace(header[pos])) pos++;
                 size_t end = header.find("\r\n", pos);
                 std::string lengthStr = header.substr(pos, end - pos);
-                contentLength = std::atoi(lengthStr.c_str());
-            }
+                size_t contentLength = std::atoi(lengthStr.c_str());
 
-            size_t totalSize = headerEnd + 4 + contentLength;
-            if (requestData.size() < totalSize)
-                continue;
-            break;
+                if (requestData.size() < headerEnd + 4 + contentLength)
+                    continue;
+                break;
+            }
+            else
+                break;
         }
     }
 
@@ -265,17 +282,16 @@ void WebServer::clientRead(pollfd& pollStruct)
             }
 
             this->clientRequests[pollStruct.fd] = this->parseRecv(requestData);
-            this->clientToServerMap[pollStruct.fd] = &this->searchServerConf(this->serverConfVec, this->clientRequests[pollStruct.fd]->getHostName());
-			this->clientRequests[pollStruct.fd]->sepPath(this->clientToServerMap[pollStruct.fd]->getLocations());
-			
+       		this->clientToServerMap[pollStruct.fd] = &this->searchServerConf(this->serverConfVec, this->clientRequests[pollStruct.fd]->getHostName());
+            this->clientRequests[pollStruct.fd]->sepPath(this->clientToServerMap[pollStruct.fd]->getLocations());
+
             pollStruct.events = POLLOUT;
             this->requestBuffers.erase(pollStruct.fd);
         }
-        catch(const std::exception& e)
+        catch (const std::exception& e)
         {
             std::cerr << "Error parsing request: " << e.what() << std::endl;
             closeCliSocket(pollStruct.fd);
-            return;
         }
     }
 }
@@ -477,7 +493,7 @@ void WebServer::pollOutEvent(pollfd& pollStruct)
 	}
 	else if (this->clientRequests[pollStruct.fd]->getMethod() == "POST")
 	{
-		
+		std::cout << "------------ POST METHOD ---------" << std::endl;
 	}
 	else if (this->clientRequests[pollStruct.fd]->getMethod() == "DELETE")
 	{

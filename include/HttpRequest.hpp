@@ -38,6 +38,7 @@ class HttpRequest
 		std::string queryString;						// /search?q=test ise q=test bu olacak mı bilmiyroum daha
 		size_t contentLength;						// Header'dan alcaz
 		std::map<std::string, std::string> queryParams; // query parametreleri ayrıştırılmış hali	 en son bakacam	
+		bool                               chunkedTransfer;
 	public:
 		HttpRequest();
 		HttpRequest(const HttpRequest &other);
@@ -62,6 +63,7 @@ class HttpRequest
 		std::string getBody() const;
 		std::map<std::string, std::string> getBodyMap() const;
 		std::map<std::string, std::string> getQueryParams() const;
+		bool getChunkedTransfer() const;
 
 		void setMethod(const std::string method);
 		void setPath(const std::string path);
@@ -78,5 +80,6 @@ class HttpRequest
 		void setQueryString(const std::string queryString);
 		void addQuery(std::string key, std::string value);
 		void sepPath(const std::vector<LocationConf>&);
+		void setChunkedTransfer(bool chunked);
 };
 	
