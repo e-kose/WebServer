@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   WebServer.cpp                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ekose <ekose@student.42.fr>                +#+  +:+       +#+        */
+/*   By: menasy <menasy@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/02 15:50:42 by menasy            #+#    #+#             */
-/*   Updated: 2025/06/07 15:41:53 by ekose            ###   ########.fr       */
+/*   Updated: 2025/06/07 22:05:57 by menasy           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -345,18 +345,17 @@ bool WebServer::methodIsExist(const std::vector<std::string>& locMethodsvec, con
 	if (!check)
 	{
 		std::cout <<"//////////////////////////////&&&&&&&&&&&&&&&&&&&&&&&&&&\n";
-		std::string sendMessage;
 		this->sendResponse(pollStruct, "405 Method Not Allowed");
 		this->responseStatus = METHOD_NOT_ALLOWED;
 		return false;
 	}
 	return true;
 }
-std::string WebServer::tryFiles(std::string tryPath, LocationConf* locConf, const ServerConf* serverConf,  pollfd& pollStruct)
+std::string WebServer::tryFiles(std::string tryPath, LocationConf* locConf, const ServerConf* serverConf,  pollfd& pollStruct, std::vector<LocationConf>& locVec)
 {
 	std::cout << ">>>>>>>>>>>>>>>>>>> TRYFİLES <<<<<<<<<<<<<<<<<<<<<<: " << std::endl;
 	std::cout << "Try Path: " << tryPath << std::endl;
-	std::vector<std::string> tryFilesVec = locConf->getTryFiles();
+	std::vector<std::string> tryFilesVec = HelperClass::selectTryFiles(locConf, locVec);
 	std::string findedPath, errPage, resultDirectory;
 	std::string::size_type pos1;
 	bool isFind = false;
@@ -389,14 +388,18 @@ std::string WebServer::tryFiles(std::string tryPath, LocationConf* locConf, cons
 
 void WebServer::listDirectory(const std::string& path,LocationConf* locConf, pollfd& pollStruct)
 {
-	bool autoIndexCheck = locConf->getAutoIndex();
 	std::cout << "----------------- LIST DIRECTORY ------------------" << std::endl;
-	if (this->methodIsExist(locConf->getMethods(), this->clientRequests[pollStruct.fd]->getMethod(), pollStruct) == false)
+	if ((locConf != NULL && locConf->getReturn().size() > 0))
 	{
-		this->sendResponse(pollStruct, "405 Method Not Allowed");
-		this->responseStatus = METHOD_NOT_ALLOWED;
+		std::cout << "Location Return Codes: " << std::endl;
+		if (locConf->getReturn().find(301) != locConf->getReturn().end())
+			this->sendResponse(pollStruct, "301 Moved Permanently");
+		else if (locConf->getReturn().find(302) != locConf->getReturn().end())
+			this->sendResponse(pollStruct, "302 Found");
 	}
-	else if (!autoIndexCheck)
+	else if (this->methodIsExist(locConf->getMethods(), this->clientRequests[pollStruct.fd]->getMethod(), pollStruct) == false)
+		return ;
+	else if (!locConf->getAutoIndex())
 	{
 		this->sendResponse(pollStruct, "403 Forbidden");
 		this->responseStatus = FORBIDDEN;
@@ -415,8 +418,7 @@ std::string WebServer::mergedPathHandler(std::string& newMergedPath, LocationCon
 	// locConf da mutlaka / olmalı bunu parsta halletemem lazım
 	std::cout << "================= MERGED PATH HANDLER ===============" << std::endl;
 	std::cout << "Merged Path: " << newMergedPath << std::endl;
-
-	if (HelperClass::isDirectory(newMergedPath) && (recCount == 0 ))
+	if (HelperClass::isDirectory(newMergedPath) && (recCount == 0))
 	{
 		std::vector <std::string> indexVec = HelperClass::selectLocOrServerIndex(locConf, serverConf.getIndex());
 		std::string indexVal = HelperClass::indexHandler(newMergedPath, indexVec);
@@ -436,7 +438,7 @@ std::string WebServer::mergedPathHandler(std::string& newMergedPath, LocationCon
 	else if (recCount == 1)
 	{
 		std::vector<LocationConf> locVec = serverConf.getLocations();
-		return tryFiles(newMergedPath,HelperClass::findLoc("/",locVec), &serverConf, pollStruct);
+		return tryFiles(newMergedPath,locConf, &serverConf, pollStruct, locVec);
 	}
 	if (recCount == 0 || recCount == 2)
 	{
@@ -471,6 +473,13 @@ std::string WebServer::findRequest(pollfd& pollStruct)
 		this->responseStatus = NOT_FOUND;
 		return "";
 	}
+	else if (!retVal.empty() && (loc != NULL && loc->getReturn().size() > 0))
+	{
+		if (loc->getReturn().find(301) != loc->getReturn().end())
+			this->sendResponse(pollStruct, "301 Moved Permanently");
+		else if (loc->getReturn().find(302) != loc->getReturn().end())
+			this->sendResponse(pollStruct, "302 Found");
+	}
 	return retVal;
 }
 
@@ -492,12 +501,6 @@ void WebServer::pollOutEvent(pollfd& pollStruct)
 	}
 	if (this->clientRequests[pollStruct.fd]->getMethod() == "GET")
 	{
-		std::vector<LocationConf> locations = this->clientToServerMap[pollStruct.fd]->getLocations();
-		LocationConf* locConf = HelperClass::findLoc(this->clientRequests[pollStruct.fd]->getPath(), locations);
-		if (locConf->getReturn().find(301) != locConf->getReturn().end())
-			this->sendResponse(pollStruct, "301 Moved Permanently");
-		else if (locConf->getReturn().find(302) != locConf->getReturn().end())
-			this->sendResponse(pollStruct, "302 Found");
 		this->sendResponse(pollStruct, "200 OK");
 	}
 	else if (this->clientRequests[pollStruct.fd]->getMethod() == "POST")

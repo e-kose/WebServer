@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   FileHandler.cpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ekose <ekose@student.42.fr>                +#+  +:+       +#+        */
+/*   By: menasy <menasy@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/13 21:40:13 by menasy            #+#    #+#             */
-/*   Updated: 2025/06/07 16:26:38 by ekose            ###   ########.fr       */
+/*   Updated: 2025/06/07 21:45:47 by menasy           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -69,7 +69,7 @@ std::string WebServer::redirectResponse(pollfd& pollStruct,
 	response += "Content-Length: 0\r\n";
 	response += "Connection: close\r\n";
 	response += "\r\n";
-
+	this->responseStatus = code;
 	return response;
 }
 

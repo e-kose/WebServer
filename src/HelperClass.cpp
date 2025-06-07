@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   HelperClass.cpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ekose <ekose@student.42.fr>                +#+  +:+       +#+        */
+/*   By: menasy <menasy@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/12 07:50:19 by ekose             #+#    #+#             */
-/*   Updated: 2025/06/06 19:58:40 by ekose            ###   ########.fr       */
+/*   Updated: 2025/06/07 22:06:29 by menasy           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -402,6 +402,20 @@ std::string HelperClass::selectLocOrServerRoot(const LocationConf* locConf, cons
 			resRoot = serverRoot;
 	}
 	return resRoot;
+}
+std::vector<std::string> HelperClass::selectTryFiles(const LocationConf* locConf, std::vector<LocationConf>& locVec)
+{
+	std::vector<std::string> resVec;
+	LocationConf * rootLoc = HelperClass::findLoc("/", locVec);
+	if (locConf == NULL)
+		return rootLoc->getTryFiles();
+	else
+	{
+		if (locConf->getTryFiles().size() == 0)
+			return rootLoc->getTryFiles();
+	}	
+	return locConf->getTryFiles();
+	
 }
 
 bool HelperClass::unchunkBody(const std::string& chunked, std::string& out)
