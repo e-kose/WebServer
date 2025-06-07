@@ -6,7 +6,7 @@
 /*   By: ekose <ekose@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/02 15:40:04 by menasy            #+#    #+#             */
-/*   Updated: 2025/06/06 19:58:06 by ekose            ###   ########.fr       */
+/*   Updated: 2025/06/07 16:20:16 by ekose            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -73,7 +73,7 @@ class WebServer
 		HttpRequest*							parseRecv(const std::string&);
 		ServerConf&								searchServerConf(std::vector<ServerConf>& , std::string);			
 		std::string 							findRequest(pollfd& pollStruct);
-		std::string								tryFiles(LocationConf* locConf, const ServerConf* serverConfMap,  pollfd& pollStruct);
+		std::string								tryFiles(std::string tryPath,LocationConf* locConf, const ServerConf* serverConfMap,  pollfd& pollStruct);
 		bool 									methodIsExist(const std::vector<std::string>& locMethodsvec, const std::string& requestMethod, pollfd&);
 		void									sendHandler(pollfd& pollStruct, std::string& sendMessage);
 		void 									sendResponse(pollfd&, const std::string& status);
@@ -89,6 +89,8 @@ class WebServer
 		std::string mergedPathHandler(std::string& mergedPath, LocationConf *locConf, const ServerConf& serverConf, pollfd& pollStruct, int mergedPathIndex);
 		void 		listDirectory(const std::string& path,LocationConf* locConf, pollfd& pollStruct);
 		std::string changeDir(const std::string& filePath);
+		std::string redirectResponse(pollfd& poolStruct,const std::string& statusCode,
+										const std::string& statusMessage, const std::string& contentType);
 		public:
 			WebServer(std::vector<ServerConf>& serverConfVec);
 			WebServer(const WebServer &other);

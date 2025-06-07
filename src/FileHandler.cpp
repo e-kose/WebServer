@@ -6,7 +6,7 @@
 /*   By: ekose <ekose@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/13 21:40:13 by menasy            #+#    #+#             */
-/*   Updated: 2025/06/06 19:58:21 by ekose            ###   ########.fr       */
+/*   Updated: 2025/06/07 16:26:38 by ekose            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -46,6 +46,34 @@ std::string WebServer::createErrorResponse(pollfd& pollStruct, const std::string
 	}
 	return createHttpResponse(statusCode, statusMessage, "text/html",defaultErrMap[errCode]);
 }
+
+std::string WebServer::redirectResponse(pollfd& pollStruct,
+										const std::string& statusCode,
+										const std::string& statusMessage,
+										const std::string& contentType)
+{
+	std::vector<LocationConf> locations = this->clientToServerMap[pollStruct.fd]->getLocations();
+	LocationConf* locConf = HelperClass::findLoc(this->resultPath, locations);
+	std::map<int, std::string> retMap = locConf->getReturn();
+
+	int code = std::atoi(statusCode.c_str());
+
+	std::string response = "HTTP/1.1 " + statusCode + " " + statusMessage + "\r\n";
+	response += "Content-Type: " + contentType + "\r\n";
+
+	if (retMap.find(code) != retMap.end())
+		response += "Location: " + retMap[code] + "\r\n";
+	else
+		response += "Location: /\r\n";
+
+	response += "Content-Length: 0\r\n";
+	response += "Connection: close\r\n";
+	response += "\r\n";
+
+	return response;
+}
+
+
 std::string WebServer::readHtmlFile(pollfd& pollStruct,std::string& path, const ServerConf& conf) 
 {
 	std::cout << "-------------- READ HTML FILE : " << path <<" --------------"<<std::endl;
@@ -119,34 +147,6 @@ std::vector<char *> WebServer::fillEnv(const ServerConf& conf, const pollfd& pol
 	env.push_back(NULL);
 	return env;
 }
-// std::string WebServer::postHandler(const std::string&filePath, std::string& cgiPath)
-// {
-// 	int cinFd[2];
-// 	int outFd[2];
-
-// 	if (pipe(cinFd) == -1 || pipe(outFd) == -1)
-// 	{
-// 		return "";
-// 	}
-// 	pid_t pid = fork();
-// 	if (pid == -1)
-// 	{
-// 		return "";
-// 	}
-// 	else if (pid == 0)
-// 	{
-// 		close(fd[0]);
-// 		dup2(fd[1], STDOUT_FILENO);
-// 		close(fd[1]);
-// 		char* argv[] = {
-// 			const_cast<char*>(cgiExecPath.c_str()),  
-// 			const_cast<char*>(filePath.c_str()),     
-// 			NULL
-// 		};
-// 		execve(cgiExecPath.c_str(),argv,env.data());
-// 		throw std::runtime_error("Execve failed");
-// 	}
-// }
 std::string WebServer::changeDir(const std::string& filePath)
 {
 	size_t pos = filePath.find_last_of("/");

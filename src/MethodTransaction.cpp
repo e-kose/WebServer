@@ -6,7 +6,7 @@
 /*   By: ekose <ekose@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/12 07:52:01 by ekose             #+#    #+#             */
-/*   Updated: 2025/06/06 19:41:47 by ekose            ###   ########.fr       */
+/*   Updated: 2025/06/07 16:23:24 by ekose            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,6 +26,8 @@ void  WebServer::sendResponse(pollfd& pollStruct, const std::string& status)
 	std::cout<< " RESPONSE DEGER:" << this->resultPath << std::endl;
 	if (code >= 400)
 		this->response = this->createErrorResponse(pollStruct,status, *clientToServerMap[fd], clientToServerMap[fd]->getRoot());
+	else if (code == 301 || code == 302)
+		this->response = redirectResponse(pollStruct, status.substr(0, pos), status.substr(pos + 1), "text/html");
 	else if(code >= 200 && code <= 205)
 	{
 		std::string httpMethod = this->clientRequests[pollStruct.fd]->getMethod();

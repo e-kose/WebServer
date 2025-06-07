@@ -1615,6 +1615,7 @@ g«®âÒÄ>ã6µËB³e[idv{	:ÊÑ»NÈŠÎ’±’†]ÿè#À±vUŽõ(™5k½`yì©FõÛÑ l3û`È £e
 [Fri Jun  6 12:14:21 2025] Socket info: 127.0.0.1:57984 -> 127.0.0.1:8080 GET /cgi-bin// 403
 [Fri Jun  6 12:16:08 2025] Socket info: 127.0.0.1:35934 -> 127.0.0.1:8080 GET /cgi-bin// 403
 [Fri Jun  6 12:20:04 2025] Socket info: 127.0.0.1:39890 -> 127.0.0.1:8080 GET /cgi-bin//scripts/show_useasa/1234 404
+<<<<<<< HEAD
 >>>>>>> origin/menasy
 [Fri Jun  6 20:00:29 2025] Socket info: 127.0.0.1:56224 -> 127.0.0.1:8080 GET /index// 405
 [Fri Jun  6 20:00:29 2025] Socket info: 127.0.0.1:56224 -> 127.0.0.1:8080 GET /index// 405
@@ -1641,3 +1642,32 @@ g«®âÒÄ>ã6µËB³e[idv{	:ÊÑ»NÈŠÎ’±’†]ÿè#À±vUŽõ(™5k½`yì©FõÛÑ l3û`È £e
 [Fri Jun  6 20:43:59 2025] Socket info: 127.0.0.1:38354 -> 127.0.0.1:8080 GET /errors// 200
 [Fri Jun  6 20:45:31 2025] Socket info: 127.0.0.1:45336 -> 127.0.0.1:8080 GET // 403
 [Fri Jun  6 20:45:49 2025] Socket info: 127.0.0.1:52652 -> 127.0.0.1:8080 GET // 200
+=======
+[Sat Jun  7 00:23:43 2025] Socket info: 127.0.0.1:57672 -> 127.0.0.1:8080 GET // 405
+[Sat Jun  7 00:23:46 2025] Socket info: 127.0.0.1:57676 -> 127.0.0.1:8080 GET // 405
+[Sat Jun  7 00:23:47 2025] Socket info: 127.0.0.1:57684 -> 127.0.0.1:8080 GET //favicon.ico 404
+[Sat Jun  7 00:23:54 2025] Socket info: 127.0.0.1:37268 -> 127.0.0.1:8080 GET // 405
+[Sat Jun  7 00:24:11 2025] Socket info: 127.0.0.1:37280 -> 127.0.0.1:8080 GET // 405
+[Sat Jun  7 00:24:38 2025] Socket info: 127.0.0.1:56632 -> 127.0.0.1:8080 GET /errors// 200
+[Sat Jun  7 00:30:39 2025] Socket info: 127.0.0.1:51176 -> 127.0.0.1:8080 GET /errors// 200
+[Sat Jun  7 00:34:59 2025] Socket info: 127.0.0.1:37224 -> 127.0.0.1:8080 GET /errors// 403
+[Sat Jun  7 00:34:59 2025] Socket info: 127.0.0.1:37224 -> 127.0.0.1:8080 GET /errors// 403
+[Sat Jun  7 00:37:26 2025] Socket info: 127.0.0.1:49730 -> 127.0.0.1:8080 GET /errors// 200
+[Sat Jun  7 00:37:26 2025] Socket info: 127.0.0.1:49730 -> 127.0.0.1:8080 GET /errors// 200
+[Sat Jun  7 00:48:35 2025] Socket info: 127.0.0.1:57604 -> 127.0.0.1:8080 GET /errors// 404
+[Sat Jun  7 00:49:51 2025] Socket info: 127.0.0.1:42966 -> 127.0.0.1:8080 GET /errors// 404
+[Sat Jun  7 00:50:15 2025] Socket info: 127.0.0.1:34086 -> 127.0.0.1:8080 GET /errors// 405
+[Sat Jun  7 00:50:15 2025] Socket info: 127.0.0.1:34086 -> 127.0.0.1:8080 GET /errors// 405
+[Sat Jun  7 00:50:35 2025] Socket info: 127.0.0.1:58372 -> 127.0.0.1:8080 GET /errors// 405
+[Sat Jun  7 00:50:35 2025] Socket info: 127.0.0.1:58372 -> 127.0.0.1:8080 GET /errors// 405
+[Sat Jun  7 00:50:42 2025] Socket info: 127.0.0.1:47938 -> 127.0.0.1:8080 GET /errors// 200
+[Sat Jun  7 00:50:50 2025] Socket info: 127.0.0.1:38992 -> 127.0.0.1:8080 GET /errors// 200
+[Sat Jun  7 00:50:55 2025] Socket info: 127.0.0.1:39008 -> 127.0.0.1:8080 GET /errors// 403
+[Sat Jun  7 00:53:03 2025] Socket info: 127.0.0.1:34788 -> 127.0.0.1:8080 GET /errors// 403
+[Sat Jun  7 00:53:39 2025] Socket info: 127.0.0.1:40206 -> 127.0.0.1:8080 GET // 200
+[Sat Jun  7 00:53:45 2025] Socket info: 127.0.0.1:40212 -> 127.0.0.1:8080 GET //csad 404
+[Sat Jun  7 00:53:48 2025] Socket info: 127.0.0.1:42332 -> 127.0.0.1:8080 GET //asda 404
+[Sat Jun  7 00:53:51 2025] Socket info: 127.0.0.1:42336 -> 127.0.0.1:8080 GET /a/ 200
+>>>>>>> origin/menasy
+[Sat Jun  7 15:04:02 2025] Socket info: 127.0.0.1:40286 -> 127.0.0.1:8080 GET /errors// 403
+[Sat Jun  7 16:24:37 2025] Socket info: 127.0.0.1:47004 -> 127.0.0.1:8080 GET /redirect-me// 404

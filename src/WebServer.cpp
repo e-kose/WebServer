@@ -6,7 +6,7 @@
 /*   By: ekose <ekose@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/02 15:50:42 by menasy            #+#    #+#             */
-/*   Updated: 2025/06/06 20:00:04 by ekose            ###   ########.fr       */
+/*   Updated: 2025/06/07 15:41:53 by ekose            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -352,16 +352,15 @@ bool WebServer::methodIsExist(const std::vector<std::string>& locMethodsvec, con
 	}
 	return true;
 }
-std::string WebServer::tryFiles(LocationConf* locConf, const ServerConf* serverConf,  pollfd& pollStruct)
+std::string WebServer::tryFiles(std::string tryPath, LocationConf* locConf, const ServerConf* serverConf,  pollfd& pollStruct)
 {
 	std::cout << ">>>>>>>>>>>>>>>>>>> TRYFİLES <<<<<<<<<<<<<<<<<<<<<<: " << std::endl;
+	std::cout << "Try Path: " << tryPath << std::endl;
 	std::vector<std::string> tryFilesVec = locConf->getTryFiles();
 	std::string findedPath, errPage, resultDirectory;
 	std::string::size_type pos1;
 	bool isFind = false;
 	
-	std::string tryPath = HelperClass::selectLocOrServerRoot(locConf, serverConf->getRoot()) 
-			+ this->clientRequests[pollStruct.fd]->getRequestFile();
 	for (size_t i = 0; i < tryFilesVec.size(); i++)
 	{
 		pos1 = tryFilesVec[i].find("$uri");
@@ -417,7 +416,7 @@ std::string WebServer::mergedPathHandler(std::string& newMergedPath, LocationCon
 	std::cout << "================= MERGED PATH HANDLER ===============" << std::endl;
 	std::cout << "Merged Path: " << newMergedPath << std::endl;
 
-	if (HelperClass::isDirectory(newMergedPath) && recCount == 0)
+	if (HelperClass::isDirectory(newMergedPath) && (recCount == 0 ))
 	{
 		std::vector <std::string> indexVec = HelperClass::selectLocOrServerIndex(locConf, serverConf.getIndex());
 		std::string indexVal = HelperClass::indexHandler(newMergedPath, indexVec);
@@ -437,7 +436,7 @@ std::string WebServer::mergedPathHandler(std::string& newMergedPath, LocationCon
 	else if (recCount == 1)
 	{
 		std::vector<LocationConf> locVec = serverConf.getLocations();
-		return tryFiles(HelperClass::findLoc("/",locVec), &serverConf, pollStruct);
+		return tryFiles(newMergedPath,HelperClass::findLoc("/",locVec), &serverConf, pollStruct);
 	}
 	if (recCount == 0 || recCount == 2)
 	{
@@ -493,7 +492,12 @@ void WebServer::pollOutEvent(pollfd& pollStruct)
 	}
 	if (this->clientRequests[pollStruct.fd]->getMethod() == "GET")
 	{
-		std::cout << "------------ GET METHOD ---------" << std::endl;
+		std::vector<LocationConf> locations = this->clientToServerMap[pollStruct.fd]->getLocations();
+		LocationConf* locConf = HelperClass::findLoc(this->clientRequests[pollStruct.fd]->getPath(), locations);
+		if (locConf->getReturn().find(301) != locConf->getReturn().end())
+			this->sendResponse(pollStruct, "301 Moved Permanently");
+		else if (locConf->getReturn().find(302) != locConf->getReturn().end())
+			this->sendResponse(pollStruct, "302 Found");
 		this->sendResponse(pollStruct, "200 OK");
 	}
 	else if (this->clientRequests[pollStruct.fd]->getMethod() == "POST")
