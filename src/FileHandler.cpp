@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   FileHandler.cpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: menasy <menasy@student.42.fr>              +#+  +:+       +#+        */
+/*   By: ekose <ekose@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/13 21:40:13 by menasy            #+#    #+#             */
-/*   Updated: 2025/06/07 21:45:47 by menasy           ###   ########.fr       */
+/*   Updated: 2025/06/08 09:59:04 by ekose            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -53,9 +53,8 @@ std::string WebServer::redirectResponse(pollfd& pollStruct,
 										const std::string& contentType)
 {
 	std::vector<LocationConf> locations = this->clientToServerMap[pollStruct.fd]->getLocations();
-	LocationConf* locConf = HelperClass::findLoc(this->resultPath, locations);
+	LocationConf* locConf = HelperClass::findLoc(this->clientRequests[pollStruct.fd]->getPath(), locations);
 	std::map<int, std::string> retMap = locConf->getReturn();
-
 	int code = std::atoi(statusCode.c_str());
 
 	std::string response = "HTTP/1.1 " + statusCode + " " + statusMessage + "\r\n";
