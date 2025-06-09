@@ -17,13 +17,11 @@ class LocationConf{
 		std::map<int, std::string>	return_;
 		std::map<std::string, std::string>	cgi_ext;
 	public:
-		//Constructor
 		LocationConf();
 		LocationConf(const LocationConf& src);
 		LocationConf& operator=(const LocationConf& target);
 		~LocationConf();
 
-		// GET Functions
 		bool								getAutoIndex() const;
 		std::string							getPath() const;
 		std::vector<std::string>			getMethods() const;
@@ -34,7 +32,6 @@ class LocationConf{
 		std::map<int, std::string>			getReturn() const;
 		std::map<std::string, std::string>	getCgiExt() const;
 		
-		// SET Functions
 		void						setPath(std::string);
 		void						setMethods(std::vector<std::string>);
 		void						setAutoIndex(bool);

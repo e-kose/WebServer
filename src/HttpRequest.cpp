@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   HttpRequest.cpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ekose <ekose@student.42.fr>                +#+  +:+       +#+        */
+/*   By: menasy <menasy@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/08 16:36:39 by menasy            #+#    #+#             */
-/*   Updated: 2025/06/07 15:03:21 by ekose            ###   ########.fr       */
+/*   Updated: 2025/06/09 22:26:29 by menasy           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -136,7 +136,7 @@ void HttpRequest::setPath(std::string path)
 	if (pos != std::string::npos)
 	{
 		std::string queryStr = tmpPath.substr(pos + 1);
-		this->setQueryString(queryStr); // env için koydum
+		this->setQueryString(queryStr);
 		this->parseQuery(queryStr);
 		tmpPath = tmpPath.substr(0, pos);
 	}

@@ -6,7 +6,7 @@
 /*   By: menasy <menasy@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/04 18:10:20 by menasy            #+#    #+#             */
-/*   Updated: 2025/06/07 22:04:40 by menasy           ###   ########.fr       */
+/*   Updated: 2025/06/09 22:25:30 by menasy           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -55,7 +55,6 @@ class HelperClass
 		static int 							fileIsExecutable(const std::string& path, const std::string& extension, const std::map<std::string, std::string>& cgiExtMap);
 		static std::string 					fdToString(int& fd);
 		static std::string 					getLocInVec(const std::string& path, const std::vector<LocationConf>& locVec);
-		// static std::string mergePath(const ServerConf& servConf, const LocationConf& locConf,const std::string reqFile, std::string& httpPath);
 		static std::string					indexHandler(const std::string& fullPath,const std::vector<std::string>& indexVec);
 			static std::string				indexIsExist(ServerConf& conf, std::string location);
 		static std::string					generateAutoIndexHtml(const std::string& path, const std::string& uriPath);

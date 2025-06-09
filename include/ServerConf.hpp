@@ -24,14 +24,13 @@ class ServerConf {
 
 		void						defaultPage();
 	public:
-		//Constructor
+		
 		ServerConf();
 		~ServerConf();
 		ServerConf(const ServerConf &other);
 		ServerConf &operator=(const ServerConf &other);
 		
 		
-		// GET Functions
 		int getPort() const;
 		size_t						getBodySize() const;
 		std::string					getIp() const;
@@ -43,7 +42,7 @@ class ServerConf {
 		std::vector<LocationConf>	getLocations() const;
 		std::map<int, std::string>	getErrorPages() const;
 		std::map<int, std::string>	getDfltPage() const;
-		// SET Functions
+
 		void						setIp(std::string ip);
 		void						setPort(int port);
 		void						setRoot(std::string root);

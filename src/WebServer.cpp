@@ -6,7 +6,7 @@
 /*   By: menasy <menasy@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/02 15:50:42 by menasy            #+#    #+#             */
-/*   Updated: 2025/06/09 16:04:55 by menasy           ###   ########.fr       */
+/*   Updated: 2025/06/09 22:27:51 by menasy           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -348,10 +348,11 @@ bool WebServer::methodIsExist(LocationConf* locConf, const std::string& requestM
 		}
 	}
 	else
-		if (requestMethod == "GET")
-			check = true;
+		requestMethod == "GET" ? check = true : check = false;
+		
 	if (!check)
-	{		this->sendResponse(pollStruct, "405 Method Not Allowed");
+	{	
+		this->sendResponse(pollStruct, "405 Method Not Allowed");
 		this->responseStatus = METHOD_NOT_ALLOWED;
 		return false;
 	}
@@ -422,7 +423,6 @@ void WebServer::listDirectory(const std::string& path,LocationConf* locConf, pol
 std::string WebServer::mergedPathHandler(std::string& newMergedPath, LocationConf *locConf, const ServerConf& serverConf, pollfd& pollStruct, int recCount)
 {
 	// /upload sonunda / olmadan  gelirse ne olur bunu mutlaka test edicem
-	// locConf da mutlaka / olmalı bunu parsta halletemem lazım
 	std::cout << "================= MERGED PATH HANDLER ===============" << std::endl;
 	std::cout << "Merged Path: " << newMergedPath << std::endl;
 	if (HelperClass::isDirectory(newMergedPath) && (recCount == 0))
