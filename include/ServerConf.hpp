@@ -46,10 +46,7 @@ class ServerConf {
 		void						setIp(std::string ip);
 		void						setPort(int port);
 		void						setRoot(std::string root);
-		void						setServerName(std::vector<std::string>& server_name);
-		void						setIndex(std::vector<std::string>);
 		void						setBodySize(size_t body_size);
-		void						setErrorPages(std::map<int, std::string>& error_pages);
 		void						setLocations(std::vector<LocationConf>& locations);
 		void						setErrorLog(std::string);
 		void						setAccesLog(std::string);

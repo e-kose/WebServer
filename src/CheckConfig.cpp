@@ -6,7 +6,7 @@
 /*   By: menasy <menasy@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/30 12:42:10 by menasy            #+#    #+#             */
-/*   Updated: 2025/06/09 16:44:44 by menasy           ###   ########.fr       */
+/*   Updated: 2025/06/09 23:30:27 by menasy           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -116,32 +116,21 @@ void CheckConfig::bracketsCheck(std::string str)
 			tmp = str.substr(index,str.length());
 	}
 }
-// void CheckConfig::checkRequiredElements()
-// {
-// 	if (this->serverConfVec.empty())
-// 		throw std::runtime_error("No server directive found");
-// 	std::vector<ServerConf>::iterator it = this->serverConfVec.begin();
-// 	for (; it != this->serverConfVec.end(); it++)
-// 	{
-// 		if (it->getLocations().empty())
-// 			throw std::runtime_error("No location directive found in server block");
-// 		else
-// 		{
-// 			std::vector<LocationConf> locVec = it->getLocations();
-// 			bool hasRoot = false;
-// 			for (size_t i = 0; i < locVec.size(); i++)
-// 			{
-// 				if (locVec[i].getPath() == "/")
-// 				{
-// 					hasRoot = true;
-// 					break;
-// 				}
-// 			}
-// 			if (!hasRoot)
-// 				throw std::runtime_error("No root location directive found in server block");
-// 		}
-// 	}
-// }
+void CheckConfig::checkRequiredElements()
+{
+	if (this->serverConfVec.empty())
+		throw std::runtime_error("No server directive found");
+	std::vector<ServerConf>::iterator it = this->serverConfVec.begin();
+	for (; it != this->serverConfVec.end(); it++)
+	{
+		if (it->getLocations().empty())
+			throw std::runtime_error("No location directive found in server block");
+		if (it->getRoot().empty())
+			throw std::runtime_error("No root directive found in server block");
+		if (it->getServerName().empty())
+			throw std::runtime_error("No server_name directive found in server block");
+	}
+}
 
 std::string CheckConfig::fileHandler() 
 {
@@ -167,8 +156,6 @@ std::string CheckConfig::fileHandler()
 	return destStr;
 }
 
-
-
 void CheckConfig::checkConfig() {
 	
 	try
@@ -178,7 +165,7 @@ void CheckConfig::checkConfig() {
 		bracketsCheck(this->fullText);
 		std::vector<std::string> tek = this->seperation();
 		this->serverConfVec =  this->createConfVec(tek);
-		
+		this->checkRequiredElements(); // serverde mutlaka olması gerekenleri kotnrol ediyorum.
 		std::cout << "==================SUCCESFULY FİNİSHED=================== \n";
 		WebServer web(serverConfVec);
 	}
