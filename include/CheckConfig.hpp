@@ -6,7 +6,7 @@
 /*   By: menasy <menasy@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/30 12:42:07 by menasy            #+#    #+#             */
-/*   Updated: 2025/05/06 15:42:08 by menasy           ###   ########.fr       */
+/*   Updated: 2025/06/09 14:16:27 by menasy           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,6 +35,7 @@ class CheckConfig : public Tokenizer
 		void bracketsCheck(std::string str);
 		void checkElements(std::string str);
 		void checkConfKey(const std::string& element);
+		void checkRequiredElements();
 		void emptyValueCheck();
 		void checkValue();
 

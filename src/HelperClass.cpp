@@ -6,7 +6,7 @@
 /*   By: menasy <menasy@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/12 07:50:19 by ekose             #+#    #+#             */
-/*   Updated: 2025/06/07 22:06:29 by menasy           ###   ########.fr       */
+/*   Updated: 2025/06/09 15:04:18 by menasy           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -408,7 +408,12 @@ std::vector<std::string> HelperClass::selectTryFiles(const LocationConf* locConf
 	std::vector<std::string> resVec;
 	LocationConf * rootLoc = HelperClass::findLoc("/", locVec);
 	if (locConf == NULL)
-		return rootLoc->getTryFiles();
+	{
+		if (rootLoc == NULL)
+			return resVec;
+		else
+			return rootLoc->getTryFiles();
+	}
 	else
 	{
 		if (locConf->getTryFiles().size() == 0)

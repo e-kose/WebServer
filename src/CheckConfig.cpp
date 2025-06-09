@@ -6,7 +6,7 @@
 /*   By: menasy <menasy@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/30 12:42:10 by menasy            #+#    #+#             */
-/*   Updated: 2025/06/03 18:46:53 by menasy           ###   ########.fr       */
+/*   Updated: 2025/06/09 16:44:44 by menasy           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -116,6 +116,32 @@ void CheckConfig::bracketsCheck(std::string str)
 			tmp = str.substr(index,str.length());
 	}
 }
+// void CheckConfig::checkRequiredElements()
+// {
+// 	if (this->serverConfVec.empty())
+// 		throw std::runtime_error("No server directive found");
+// 	std::vector<ServerConf>::iterator it = this->serverConfVec.begin();
+// 	for (; it != this->serverConfVec.end(); it++)
+// 	{
+// 		if (it->getLocations().empty())
+// 			throw std::runtime_error("No location directive found in server block");
+// 		else
+// 		{
+// 			std::vector<LocationConf> locVec = it->getLocations();
+// 			bool hasRoot = false;
+// 			for (size_t i = 0; i < locVec.size(); i++)
+// 			{
+// 				if (locVec[i].getPath() == "/")
+// 				{
+// 					hasRoot = true;
+// 					break;
+// 				}
+// 			}
+// 			if (!hasRoot)
+// 				throw std::runtime_error("No root location directive found in server block");
+// 		}
+// 	}
+// }
 
 std::string CheckConfig::fileHandler() 
 {

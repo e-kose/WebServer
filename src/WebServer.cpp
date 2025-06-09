@@ -6,7 +6,7 @@
 /*   By: menasy <menasy@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/02 15:50:42 by menasy            #+#    #+#             */
-/*   Updated: 2025/06/07 22:05:57 by menasy           ###   ########.fr       */
+/*   Updated: 2025/06/09 16:04:55 by menasy           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -231,6 +231,8 @@ void WebServer::clientRead(pollfd& pollStruct)
 			continue;
         this->clientRequests[pollStruct.fd] = this->parseRecv(requestData);
        	this->clientToServerMap[pollStruct.fd] = &this->searchServerConf(this->serverConfVec, this->clientRequests[pollStruct.fd]->getHostName());
+		this->clientRequests[pollStruct.fd]->sepPath(*(this->clientToServerMap[pollStruct.fd]));
+
 		size_t maxBodySizeInBytes = this->clientToServerMap[pollStruct.fd]->getBodySize() * 1024 * 1024;
         if (requestData.size() > maxBodySizeInBytes)
         {
@@ -270,7 +272,6 @@ void WebServer::clientRead(pollfd& pollStruct)
                 break;
         }
     }
-
     if (!requestData.empty())
     {
         try
@@ -334,18 +335,23 @@ void WebServer::sendHandler(pollfd& pollStruct, std::string& sendMessage)
 	sendMessage.clear();
 }
 
-bool WebServer::methodIsExist(const std::vector<std::string>& locMethodsvec, const std::string& requestMethod,pollfd& pollStruct)
+bool WebServer::methodIsExist(LocationConf* locConf, const std::string& requestMethod,pollfd& pollStruct)
 {
 	bool check = false;
-	for (size_t i = 0; i < locMethodsvec.size(); i++)
+	if (locConf != NULL)
 	{
-		if (locMethodsvec[i] == requestMethod)
-			check = true;
+		std::vector<std::string> locMethodsvec = locConf->getMethods();
+		for (size_t i = 0; i < locMethodsvec.size(); i++)
+		{
+			if (locMethodsvec[i] == requestMethod)
+				check = true;
+		}
 	}
+	else
+		if (requestMethod == "GET")
+			check = true;
 	if (!check)
-	{
-		std::cout <<"//////////////////////////////&&&&&&&&&&&&&&&&&&&&&&&&&&\n";
-		this->sendResponse(pollStruct, "405 Method Not Allowed");
+	{		this->sendResponse(pollStruct, "405 Method Not Allowed");
 		this->responseStatus = METHOD_NOT_ALLOWED;
 		return false;
 	}
@@ -359,27 +365,28 @@ std::string WebServer::tryFiles(std::string tryPath, LocationConf* locConf, cons
 	std::string findedPath, errPage, resultDirectory;
 	std::string::size_type pos1;
 	bool isFind = false;
-	
-	for (size_t i = 0; i < tryFilesVec.size(); i++)
+	if (tryFilesVec.size() > 0)
 	{
-		pos1 = tryFilesVec[i].find("$uri");
-		if (pos1 == std::string::npos && HelperClass::strIsDigit(tryFilesVec[i]))
-			break ;
-		if (pos1 + 4 == tryFilesVec[i].length())
-			tryFilesVec[i] = tryPath;
-		else
-			tryFilesVec[i] = tryPath + tryFilesVec[i].substr(pos1 + 4, tryFilesVec[i].length());
-		resultDirectory = tryFilesVec[i];
-
-		// tekrar dizin kontrolune gonderilmesi lazım.
-		findedPath = mergedPathHandler(resultDirectory, locConf, *serverConf, pollStruct, 2);
-		if (!findedPath.empty() && this->responseStatus == NOT_RESPONDED) // listelemeye girmedi ve 404 donmeli
-			isFind = true;
+		for (size_t i = 0; i < tryFilesVec.size(); i++)
+		{
+			pos1 = tryFilesVec[i].find("$uri");
+			if (pos1 == std::string::npos && HelperClass::strIsDigit(tryFilesVec[i]))
+				break ;
+			if (pos1 + 4 == tryFilesVec[i].length())
+				tryFilesVec[i] = tryPath;
+			else
+				tryFilesVec[i] = tryPath + tryFilesVec[i].substr(pos1 + 4, tryFilesVec[i].length());
+			resultDirectory = tryFilesVec[i];
+			
+			findedPath = mergedPathHandler(resultDirectory, locConf, *serverConf, pollStruct, 2);
+			if (!findedPath.empty() && this->responseStatus == NOT_RESPONDED) // listelemeye girmedi ve 404 donmeli
+				isFind = true;
+		}
 	}
 	if (!isFind && this->responseStatus == NOT_RESPONDED)
 	{
-		errPage = tryFilesVec[tryFilesVec.size() -1];
-		this->sendResponse(pollStruct, "404 Not Found");
+		tryFilesVec.size() > 0 ? errPage = tryFilesVec[tryFilesVec.size() -1] : errPage = "404";
+		this->sendResponse(pollStruct, (errPage + " Not Found"));
 		this->responseStatus = NOT_FOUND;
 		return "";
 	}
@@ -397,9 +404,9 @@ void WebServer::listDirectory(const std::string& path,LocationConf* locConf, pol
 		else if (locConf->getReturn().find(302) != locConf->getReturn().end())
 			this->sendResponse(pollStruct, "302 Found");
 	}
-	else if (this->methodIsExist(locConf->getMethods(), this->clientRequests[pollStruct.fd]->getMethod(), pollStruct) == false)
+	else if (locConf != NULL && this->methodIsExist(locConf, this->clientRequests[pollStruct.fd]->getMethod(), pollStruct) == false)
 		return ;
-	else if (!locConf->getAutoIndex())
+	else if (locConf == NULL || (locConf != NULL && !locConf->getAutoIndex()))
 	{
 		this->sendResponse(pollStruct, "403 Forbidden");
 		this->responseStatus = FORBIDDEN;
@@ -420,12 +427,15 @@ std::string WebServer::mergedPathHandler(std::string& newMergedPath, LocationCon
 	std::cout << "Merged Path: " << newMergedPath << std::endl;
 	if (HelperClass::isDirectory(newMergedPath) && (recCount == 0))
 	{
+		std::cout << "Merged Path is Directory: " << newMergedPath << std::endl;
+		if (newMergedPath[newMergedPath.length() - 1] != '/')
+			newMergedPath += '/';
 		std::vector <std::string> indexVec = HelperClass::selectLocOrServerIndex(locConf, serverConf.getIndex());
 		std::string indexVal = HelperClass::indexHandler(newMergedPath, indexVec);
 		if (!indexVal.empty())
 		{
 			newMergedPath += indexVal;
-			return methodIsExist(locConf->getMethods(), this->clientRequests[pollStruct.fd]->getMethod(), pollStruct) ? newMergedPath : newMergedPath = "";	
+			return methodIsExist(locConf, this->clientRequests[pollStruct.fd]->getMethod(), pollStruct) ? newMergedPath : newMergedPath = "";	
 		}
 		else
 		{
@@ -434,7 +444,7 @@ std::string WebServer::mergedPathHandler(std::string& newMergedPath, LocationCon
 		}
 	}
 	else if (HelperClass::fileIsExist(newMergedPath))
-		return methodIsExist(locConf->getMethods(), this->clientRequests[pollStruct.fd]->getMethod(), pollStruct) ? newMergedPath : newMergedPath = "";
+		return methodIsExist(locConf, this->clientRequests[pollStruct.fd]->getMethod(), pollStruct) ? newMergedPath : newMergedPath = "";
 	else if (recCount == 1)
 	{
 		std::vector<LocationConf> locVec = serverConf.getLocations();
