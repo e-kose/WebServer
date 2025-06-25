@@ -6,7 +6,7 @@
 /*   By: menasy <menasy@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/08 16:36:39 by menasy            #+#    #+#             */
-/*   Updated: 2025/06/09 22:26:29 by menasy           ###   ########.fr       */
+/*   Updated: 2025/06/26 00:25:59 by menasy           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -130,7 +130,6 @@ void HttpRequest::setChunkedTransfer(bool chunked) {
 
 void HttpRequest::setPath(std::string path) 
 {
-	std::cout << "GELEN PATH:" << path << std::endl;
 	std::string tmpPath = path;
 	size_t pos = tmpPath.find_first_of('?');
 	if (pos != std::string::npos)
@@ -145,8 +144,8 @@ void HttpRequest::setPath(std::string path)
 void HttpRequest::setPathInfo(std::string sepInfoPath, ServerConf& conf)
 {
 	std::vector<LocationConf> locVec = conf.getLocations();
-	std::map<std::string, std::string> cgiMap = HelperClass::findLocationCgi(locVec, "/cgi-bin/");
 	LocationConf* locConf = HelperClass::findLoc(this->path, locVec);
+	std::map<std::string, std::string> cgiMap = HelperClass::findLocationCgi(locConf);
 	std::string rootPath = HelperClass::selectLocOrServerRoot(locConf, conf.getRoot());
 	std::string fullPath = rootPath + sepInfoPath;
 	size_t j = 0;
@@ -159,7 +158,7 @@ void HttpRequest::setPathInfo(std::string sepInfoPath, ServerConf& conf)
 		if (!HelperClass::isDirectory(sub))
 		{
 			if (!HelperClass::fileIsExist(sub))
-				sub = HelperClass::checkFileWithExtension(sub, cgiMap);
+				sub = HelperClass::checkFileWithExtension(sub);
 			if (HelperClass::fileIsExist(sub) && !HelperClass::isDirectory(sub))
 			{
 				this->pathInfo = fullPath.substr(j, fullPath.length() - j);
@@ -221,9 +220,7 @@ void HttpRequest::setBody(std::string body) {
 	this->body = body;
 }
 
-void HttpRequest::setBodyMap(std::map<std::string, std::string>  bodyMap) {
-	this->bodyMap = bodyMap;
-}
+
 void HttpRequest::setQueryParams(std::map<std::string, std::string> queryParams) {
 	this->queryParams = queryParams;
 }
@@ -300,13 +297,12 @@ void HttpRequest::parseRequest(const std::string& request)
 	this->setPath(HelperClass::createAndMove(tmpReq," "));
 	this->setVersion(HelperClass::createAndMove(tmpReq,"\n"));
 	this->setHeaders(this->parseHeader(tmpReq));
-	if (tmpReq.find_first_of("{") == std::string::npos && !tmpReq.empty())
-	{
-		this->setBody("");
-		return ;
-	}
-	this->setBody(tmpReq.substr(tmpReq.find_first_of("{"), tmpReq.find_last_of("}") - tmpReq.find_first_of("{") + 1));
-	this->setBodyMap(this->parseBody());
+	std:: cout << "*******************************************************************************************\n";
+	std::cout << "TMP REQUEST: " << tmpReq << std::endl;
+	size_t headerEnd = tmpReq.find("\r\n\r\n");
+	if (headerEnd != std::string::npos)
+		this->setBody(tmpReq.substr(headerEnd + 4));
+	// this->setBodyMap(this->parseBody()); // key value body bolme 
 
 }
 

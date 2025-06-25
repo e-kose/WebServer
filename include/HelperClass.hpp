@@ -6,7 +6,7 @@
 /*   By: menasy <menasy@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/04 18:10:20 by menasy            #+#    #+#             */
-/*   Updated: 2025/06/09 22:25:30 by menasy           ###   ########.fr       */
+/*   Updated: 2025/06/25 23:51:21 by menasy           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,7 +36,15 @@ class HelperClass
 		HelperClass(const HelperClass &other);
 		HelperClass &operator=(const HelperClass &other);
 		~HelperClass();
+		static std::vector<std::string> scriptExtVec;
+		static std::vector<std::string> fileExtVec;
 	public:
+
+		static std::vector<std::string> 		getScriptExtVec();
+		static std::vector<std::string> 		getFileExtVec();
+		static void  							fillScriptExtVec();
+		static void  							fillFileExtVec();
+	
 		static std::string 					intToString(int value);
 		static std::string					trimLine(const std::string& str);
 		static std::string					trimWithCharacter(const std::string& str, std::string characters);
@@ -51,7 +59,7 @@ class HelperClass
 		static std::string					mergeDirectory(const std::string& rootPath, const std::string& httpPath);
 		static bool							fileIsExist(const std::string& path);
 		static bool							strIsDigit(const std::string&);
-		static	std::string 				checkFileWithExtension(const std::string& path, const std::map<std::string, std::string>& cgiExtMap);
+		static	std::string 				checkFileWithExtension(const std::string& path);
 		static int 							fileIsExecutable(const std::string& path, const std::string& extension, const std::map<std::string, std::string>& cgiExtMap);
 		static std::string 					fdToString(int& fd);
 		static std::string 					getLocInVec(const std::string& path, const std::vector<LocationConf>& locVec);
@@ -63,7 +71,8 @@ class HelperClass
 		static std::vector<std::string> 	selectLocOrServerIndex(const LocationConf* locConf, const std::vector<std::string>& serverIndexVec);
 		static std::string					selectLocOrServerRoot(const LocationConf* locConf, const std::string& serverRoot);
 		static bool							unchunkBody(const std::string& chunked, std::string& out);
-		static std::map<std::string, std::string>	findLocationCgi(const std::vector<LocationConf> locVec, std::string locStr);
+		static std::map<std::string, std::string>	findLocationCgi(LocationConf* locConf);
 		static std::vector<std::string> 	selectTryFiles(const LocationConf* locConf, std::vector<LocationConf>& locVec);
+		static bool 						isItScript(std::string extension);
 
 	};

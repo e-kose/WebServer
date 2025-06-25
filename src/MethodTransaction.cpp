@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   MethodTransaction.cpp                              :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ekose <ekose@student.42.fr>                +#+  +:+       +#+        */
+/*   By: menasy <menasy@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/12 07:52:01 by ekose             #+#    #+#             */
-/*   Updated: 2025/06/08 09:50:40 by ekose            ###   ########.fr       */
+/*   Updated: 2025/06/25 23:36:55 by menasy           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,7 +32,7 @@ void  WebServer::sendResponse(pollfd& pollStruct, const std::string& status)
 	else if(code >= 200 && code <= 205)
 	{
 		std::string httpMethod = this->clientRequests[pollStruct.fd]->getMethod();
-		if (httpMethod == "GET" && this->response.empty())
+		if ((httpMethod == "GET" || httpMethod == "POST") && this->response.empty())
 			this->response = this->createHttpResponse(status.substr(0, pos), "OK", "text/html", this->readHtmlFile(pollStruct,this->resultPath, *this->clientToServerMap[fd]));
 		else if (httpMethod == "DELETE" && this->response.empty())
 		{

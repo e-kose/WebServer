@@ -6,7 +6,7 @@
 /*   By: menasy <menasy@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/30 12:42:10 by menasy            #+#    #+#             */
-/*   Updated: 2025/06/09 23:30:27 by menasy           ###   ########.fr       */
+/*   Updated: 2025/06/25 23:54:28 by menasy           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -166,6 +166,8 @@ void CheckConfig::checkConfig() {
 		std::vector<std::string> tek = this->seperation();
 		this->serverConfVec =  this->createConfVec(tek);
 		this->checkRequiredElements(); // serverde mutlaka olması gerekenleri kotnrol ediyorum.
+		HelperClass::fillScriptExtVec();
+	 	HelperClass::fillFileExtVec();		
 		std::cout << "==================SUCCESFULY FİNİSHED=================== \n";
 		WebServer web(serverConfVec);
 	}

@@ -6,15 +6,19 @@
 /*   By: menasy <menasy@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/12 07:50:19 by ekose             #+#    #+#             */
-/*   Updated: 2025/06/09 15:04:18 by menasy           ###   ########.fr       */
+/*   Updated: 2025/06/25 23:51:50 by menasy           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../include/HelperClass.hpp"
 #include "../include/LocationConf.hpp"
 #include "../include/ServerConf.hpp"
+std::vector<std::string> HelperClass::scriptExtVec;
+std::vector<std::string> HelperClass::fileExtVec;
 
-HelperClass::HelperClass() {
+HelperClass::HelperClass() 
+{
+
 }
 HelperClass::HelperClass(const HelperClass &other) {
 	*this = other;
@@ -28,7 +32,33 @@ HelperClass &HelperClass::operator=(const HelperClass &other) {
 HelperClass::~HelperClass() {
 }
 
-
+void HelperClass::fillScriptExtVec() 
+{
+	scriptExtVec.push_back(".php");
+	scriptExtVec.push_back(".py");
+	scriptExtVec.push_back(".pl");
+	scriptExtVec.push_back(".rb");
+	scriptExtVec.push_back(".js");
+}
+void HelperClass::fillFileExtVec() 
+{
+	fileExtVec.push_back(".html");
+	fileExtVec.push_back(".htm");
+	fileExtVec.push_back(".css");
+	fileExtVec.push_back(".txt");
+	fileExtVec.push_back(".jpg");
+	fileExtVec.push_back(".jpeg");
+	fileExtVec.push_back(".png");
+	fileExtVec.push_back(".gif");
+	fileExtVec.push_back(".svg");
+	fileExtVec.push_back(".ico");
+}
+std::vector<std::string> HelperClass::getScriptExtVec() {
+    return scriptExtVec;
+}
+std::vector<std::string> HelperClass::getFileExtVec() {
+    return fileExtVec;
+}
 size_t HelperClass::characterCounter(const std::string& str, char c)
 {
 	size_t counter = 0;
@@ -159,19 +189,17 @@ std::string HelperClass::createAndMove(std::string& str, std::string character)
 	return dest;
 }
 
-std::string HelperClass::checkFileWithExtension(const std::string& path, const std::map<std::string, std::string>& cgiExtMap)
+std::string HelperClass::checkFileWithExtension(const std::string& path)
 {
-	if (path.find_last_of(".") != std::string::npos)
-		return path;
-	if (HelperClass::fileIsExist(path))
+	if (path.find_last_of(".") != std::string::npos || HelperClass::fileIsExist(path))
 		return path;
 	std::ifstream file;
 	std::vector<std::string> extVec;
-	extVec.push_back(".html");
-	extVec.push_back(".txt");
-	if (cgiExtMap.size() > 0)
-		for (std::map<std::string, std::string>::const_iterator it = cgiExtMap.begin(); it != cgiExtMap.end(); it++)
-			extVec.push_back(it->first);
+
+	for (size_t i = 0; i < HelperClass::getFileExtVec().size(); i++)
+		extVec.push_back(HelperClass::getFileExtVec()[i]);
+	for (size_t i = 0; i < HelperClass::getScriptExtVec().size(); i++)
+			extVec.push_back(HelperClass::getScriptExtVec()[i]);
 	
 	for (size_t i = 0; i < extVec.size(); i++)
 	{
@@ -182,20 +210,7 @@ std::string HelperClass::checkFileWithExtension(const std::string& path, const s
 	}
 	return path;
 }
-int 	HelperClass::fileIsExecutable(const std::string& path, const std::string& extension, const std::map<std::string, std::string>& cgiExtMap)
-{
-	
-	for (std::map<std::string, std::string>::const_iterator it = cgiExtMap.begin(); it != cgiExtMap.end(); it++)
-	{
-		if (extension == it->first)
-		{
-			if (path.find("cgi-bin/") == std::string::npos)
-				return -1;
-			return 1;
-		}
-	}
-	return 0;
-}
+
 
 std::string HelperClass::indexHandler(const std::string& fullPath, const std::vector<std::string>& indexVec )
 {
@@ -362,14 +377,22 @@ LocationConf* HelperClass::findLoc(const std::string& locPath, std::vector<Locat
     }
     return NULL;
 }
-std::map<std::string, std::string>HelperClass::findLocationCgi(const std::vector<LocationConf> locVec, std::string locStr)
+bool HelperClass::isItScript(std::string extension)
+{
+	std::vector<std::string> scriptVec = HelperClass::getScriptExtVec();
+	std::cout << "Extension ısIt:" << extension << std::endl;
+	for(size_t i = 0; i < scriptVec.size(); i++)
+	{
+		if(extension == scriptVec[i])
+			return true;
+	}
+	return false; 	
+}
+std::map<std::string, std::string>HelperClass::findLocationCgi(LocationConf* locConf)
 {
 	std::map<std::string, std::string> cgiExtMap;
-	for (size_t i = 0; i < locVec.size(); i++)
-	{
-		if (locVec[i].getPath() == locStr)
-			cgiExtMap = locVec[i].getCgiExt();
-	}
+	if (locConf != NULL)
+		cgiExtMap = locConf->getCgiExt();
 	return cgiExtMap;
 }
 std::vector<std::string> HelperClass::selectLocOrServerIndex(const LocationConf* locConf, const std::vector<std::string>& serverIndexVec)

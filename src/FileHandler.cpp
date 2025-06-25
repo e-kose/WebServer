@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   FileHandler.cpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ekose <ekose@student.42.fr>                +#+  +:+       +#+        */
+/*   By: menasy <menasy@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/13 21:40:13 by menasy            #+#    #+#             */
-/*   Updated: 2025/06/08 09:59:04 by ekose            ###   ########.fr       */
+/*   Updated: 2025/06/26 00:47:40 by menasy           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -72,7 +72,50 @@ std::string WebServer::redirectResponse(pollfd& pollStruct,
 	return response;
 }
 
-
+int WebServer::fileIsExecutable(const std::string& extension, const std::map<std::string, std::string>& cgiExtMap)
+{
+	bool isItScript = HelperClass::isItScript(extension);
+	if (!isItScript)
+		return 0;
+	else if ((isItScript && cgiExtMap.empty()))
+		return -1;
+	else
+	{
+		for (std::map<std::string, std::string>::const_iterator it = cgiExtMap.begin(); it != cgiExtMap.end(); it++)
+		{
+			if (extension == it->first)
+				return 1;
+		}
+		return -1;
+	}
+	return 0;
+}
+std::string WebServer::checkCgi(LocationConf* locConf, const ServerConf& conf, pollfd& pollStruct, std::string& newPath, int& status)
+{
+	std::cout << "================== CHECK_CGI ======================= "<< std::endl;
+	std::map<std::string, std::string> cgiMap = HelperClass::findLocationCgi(locConf);
+	std::size_t pos = newPath.find_last_of(".");
+	if (pos != std::string::npos)
+	{
+		std::string ext = newPath.substr(pos, newPath.length());
+		status = fileIsExecutable(ext, cgiMap);
+		if (status == 1)
+		{
+			std::string scriptContetnt;
+			std::cout << ">>>> CGI YA GONDERİLDİ <<<<\n" << ext << std::endl;
+			scriptContetnt = this->startCgi(newPath, ext, pollStruct, conf, cgiMap);
+			return scriptContetnt;
+		}
+		else if (status == -1)
+		{
+			std::cout << ">>>> Cgi YOK -<<<<\n";
+			this->sendResponse(pollStruct, "403 Forbidden");
+			this->responseStatus = FORBIDDEN;
+			return "";
+		}	
+	}
+	return "";
+}
 std::string WebServer::readHtmlFile(pollfd& pollStruct,std::string& path, const ServerConf& conf) 
 {
 	std::cout << "-------------- READ HTML FILE : " << path <<" --------------"<<std::endl;
@@ -81,34 +124,19 @@ std::string WebServer::readHtmlFile(pollfd& pollStruct,std::string& path, const 
 	if (path == "errorPage")
 		return conf.getDfltPage().at(404);
 	std::string newPath;
-	std::map <std::string, std::string> cgiMap;
-	cgiMap = HelperClass::findLocationCgi(conf.getLocations(),"/cgi-bin/");
-	newPath = HelperClass::checkFileWithExtension(path, cgiMap);
+	int status = 0;	
+	std::string locPath = this->clientRequests[pollStruct.fd]->getPath();
+	std::vector<LocationConf> locVec = conf.getLocations();
+	LocationConf* locConf = HelperClass::findLoc(locPath, locVec);
+	newPath = HelperClass::checkFileWithExtension(path);
     std::ifstream file(newPath.c_str());	
 	if (file.is_open()) 
 	{
-		std::size_t pos = newPath.find_last_of(".");
-		if (pos != std::string::npos)
+		std::string retValCgi = checkCgi(locConf, conf, pollStruct, newPath, status);
+		if (status != 0)
 		{
-			std::string ext = newPath.substr(pos, newPath.length());
-			int isExecInt = HelperClass::fileIsExecutable(newPath, ext, cgiMap);
-			if (isExecInt == -1)
-			{
-				std::cout << ">>>> Cgi Extensions YOK -<<<<\n";
-				file.close();
-				this->sendResponse(pollStruct, "403 Forbidden");
-				this->responseStatus = FORBIDDEN;
-				return "";
-			}
-			else if (isExecInt == 1)
-			{
-				std::string scriptContetnt;
-				std::cout << ">>>> CGI YA GONDERİLDİ <<<<\n" << ext << std::endl;
-				scriptContetnt = this->startCgi(newPath, ext, pollStruct,conf, cgiMap);
-				path = newPath;
-				file.close();
-				return scriptContetnt;
-			}	
+			file.close();
+			return retValCgi;
 		}
     }
 	else
@@ -138,7 +166,7 @@ std::vector<char *> WebServer::fillEnv(const ServerConf& conf, const pollfd& pol
 	envVec.push_back("REMOTE_ADDR=" + this->socketInfo(this->clientToAddrMap[fd], fd));
 	envVec.push_back("PATH_INFO=" + this->clientRequests[fd]->getPathInfo());
 	envVec.push_back("REDIRECT_STATUS=200");
-
+	
 	for (size_t i = 0; i < envVec.size(); i++)
 	{
 		env.push_back(const_cast<char *>(envVec[i].c_str()));
@@ -238,6 +266,8 @@ std::string WebServer::startCgi(const std::string&filePath, std::string& fileExt
 	if (this->clientRequests[pollStruct.fd]->getMethod() == "POST")
 	{
 		std::cout << ">>>> POST METHOD HANDLER CGI<<<<\n";
+		std::cout << ">>>> POST BODY: " << this->clientRequests[pollStruct.fd]->getBody() << "<<<<\n";
+		std::cout << " SIZE : " << this->clientRequests[pollStruct.fd]->getBody().size() << std::endl;
 		return postCgi(filePath, cgiExecPath, env, this->clientRequests[pollStruct.fd]->getBody());
 	}
 	else if(this->clientRequests[pollStruct.fd]->getMethod() == "GET")

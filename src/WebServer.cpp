@@ -6,7 +6,7 @@
 /*   By: menasy <menasy@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/02 15:50:42 by menasy            #+#    #+#             */
-/*   Updated: 2025/06/09 22:27:51 by menasy           ###   ########.fr       */
+/*   Updated: 2025/06/25 23:35:35 by menasy           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -511,11 +511,14 @@ void WebServer::pollOutEvent(pollfd& pollStruct)
 	}
 	if (this->clientRequests[pollStruct.fd]->getMethod() == "GET")
 	{
+		std::cout << "------------- GET METHOD --------------- "<< std::endl;
 		this->sendResponse(pollStruct, "200 OK");
 	}
 	else if (this->clientRequests[pollStruct.fd]->getMethod() == "POST")
 	{
 		std::cout << "------------ POST METHOD ---------" << std::endl;
+		this->sendResponse(pollStruct, "200 OK");
+
 	}
 	else if (this->clientRequests[pollStruct.fd]->getMethod() == "DELETE")
 	{
