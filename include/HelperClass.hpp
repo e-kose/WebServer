@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   HelperClass.hpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: menasy <menasy@student.42.fr>              +#+  +:+       +#+        */
+/*   By: ekose <ekose@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/04 18:10:20 by menasy            #+#    #+#             */
-/*   Updated: 2025/06/07 22:04:40 by menasy           ###   ########.fr       */
+/*   Updated: 2025/06/25 12:36:56 by ekose            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -66,5 +66,4 @@ class HelperClass
 		static bool							unchunkBody(const std::string& chunked, std::string& out);
 		static std::map<std::string, std::string>	findLocationCgi(const std::vector<LocationConf> locVec, std::string locStr);
 		static std::vector<std::string> 	selectTryFiles(const LocationConf* locConf, std::vector<LocationConf>& locVec);
-
 	};

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   HelperClass.cpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: menasy <menasy@student.42.fr>              +#+  +:+       +#+        */
+/*   By: ekose <ekose@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/12 07:50:19 by ekose             #+#    #+#             */
-/*   Updated: 2025/06/07 22:06:29 by menasy           ###   ########.fr       */
+/*   Updated: 2025/06/25 18:14:34 by ekose            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -340,7 +340,7 @@ std::string HelperClass::generateAutoIndexHtml(const std::string& path, const st
 	header << "HTTP/1.1 200 OK\r\n"
 	       << "Content-Type: text/html\r\n"
 	       << "Content-Length: " << html.size() << "\r\n"
-	       << "Connection: close\r\n\r\n"
+	       << "Connection: keep-alive\r\n\r\n"
 	       << html;
 
 	return header.str();
@@ -431,13 +431,16 @@ bool HelperClass::unchunkBody(const std::string& chunked, std::string& out)
         char* endptr = NULL;
         long chunkSize = std::strtol(sizeStr.c_str(), &endptr, 16);
 
-        if (endptr == sizeStr.c_str() || chunkSize < 0)
+        if (endptr == sizeStr.c_str() || *endptr != '\0' || chunkSize < 0)
             return false;
 
         pos = newline + 2;
 
-        if (chunkSize == 0)
+        if (chunkSize == 0) {
+            if (chunked.substr(pos, 2) != "\r\n")
+                return false;
             return true;
+        }
 
         if (chunked.size() < pos + chunkSize + 2)
             return false;
@@ -451,3 +454,4 @@ bool HelperClass::unchunkBody(const std::string& chunked, std::string& out)
         pos += 2;
     }
 }
+

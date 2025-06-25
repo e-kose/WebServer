@@ -6,7 +6,7 @@
 /*   By: ekose <ekose@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/12 07:52:01 by ekose             #+#    #+#             */
-/*   Updated: 2025/06/08 10:06:29 by ekose            ###   ########.fr       */
+/*   Updated: 2025/06/25 12:51:39 by ekose            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,11 +33,11 @@ void  WebServer::sendResponse(pollfd& pollStruct, const std::string& status)
 	{
 		std::string httpMethod = this->clientRequests[pollStruct.fd]->getMethod();
 		if (httpMethod == "GET" && this->response.empty())
-			this->response = this->createHttpResponse(status.substr(0, pos), "OK", "text/html", this->readHtmlFile(pollStruct,this->resultPath, *this->clientToServerMap[fd]));
+			this->response = this->createHttpResponse(pollStruct,status.substr(0, pos), "OK", "text/html", this->readHtmlFile(pollStruct,this->resultPath, *this->clientToServerMap[fd]));
 		else if (httpMethod == "DELETE" && this->response.empty())
 		{
 			std::string filePath =HelperClass::indexIsExist(*clientToServerMap[fd],this->clientRequests[pollStruct.fd]->getPath());
-			this->response = this->createHttpResponse(status.substr(0, pos), "OK", "text/html",
+			this->response = this->createHttpResponse(pollStruct,status.substr(0, pos), "OK", "text/html",
 												this->readHtmlFile(pollStruct,
 												filePath,
 												*this->clientToServerMap[fd]));

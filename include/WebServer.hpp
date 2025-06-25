@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   WebServer.hpp                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: menasy <menasy@student.42.fr>              +#+  +:+       +#+        */
+/*   By: ekose <ekose@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/02 15:40:04 by menasy            #+#    #+#             */
-/*   Updated: 2025/06/07 20:20:46 by menasy           ###   ########.fr       */
+/*   Updated: 2025/06/25 15:55:00 by ekose            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,6 +40,7 @@
 #define METHOD_NOT_ALLOWED 405
 #define NOT_RESPONDED 0
 #define PAYLOAD_TOO_LARGE 413
+#define TIMEOUT_SEC 8
 
 class WebServer 
 {
@@ -50,14 +51,16 @@ class WebServer
 		std::vector<ServerConf>&				serverConfVec;
 		std::map<int, std::vector<ServerConf> >	socketMap;
 		std::map<int, ServerConf*>				clientToServerMap;
+		std::map<int, time_t> 					lastActivity;
 		std::map<int, struct sockaddr_in>		clientToAddrMap;
 		std::map<int, HttpRequest*>     		clientRequests;
 		std::map<int, std::string>				requestBuffers;
+		std::map<int, bool>						clientKeepAlive; 
 		std::string 							resultPath;
 		std::string 							response;
 		int 									responseStatus;
 
-		
+		void 									checkTimeouts();
 		void									pollfdVecCreat();
 		std::string								socketInfo(sockaddr_in&, int);
 		void									closeCliSocket(int);
@@ -79,7 +82,7 @@ class WebServer
 		void 									sendResponse(pollfd&, const std::string& status);
 		std::string 							readHtmlFile(pollfd& ,std::string& path, const ServerConf& conf); 
 		std::string 							createErrorResponse(pollfd& pollStruct,const std::string& status, const ServerConf& conf, const std::string& rootPAth);
-		std::string 							createHttpResponse(
+		std::string 							createHttpResponse(pollfd& pollStruct,
 																const std::string& statusCode, const std::string& statusMessage,
 																const std::string& contentType, const std::string& body);
 		std::string getCgi(const std::string& filePath, const std::string& cgiExecPath, std::vector<char *>& env);
