@@ -32,12 +32,12 @@ void  WebServer::sendResponse(pollfd& pollStruct, const std::string& status)
 	else if(code >= 200 && code <= 205)
 	{
 		std::string httpMethod = this->clientRequests[pollStruct.fd]->getMethod();
-		if ((httpMethod == "GET" || httpMethod == "POST") && this->response.empty())
-			this->response = this->createHttpResponse(status.substr(0, pos), "OK", "text/html", this->readHtmlFile(pollStruct,this->resultPath, *this->clientToServerMap[fd]));
+		if ((httpMethod == "GET"  || httpMethod == "POST") && this->response.empty())
+			this->response = this->createHttpResponse(pollStruct,status.substr(0, pos), "OK", "text/html", this->readHtmlFile(pollStruct,this->resultPath, *this->clientToServerMap[fd]));
 		else if (httpMethod == "DELETE" && this->response.empty())
 		{
 			std::string filePath =HelperClass::indexIsExist(*clientToServerMap[fd],this->clientRequests[pollStruct.fd]->getPath());
-			this->response = this->createHttpResponse(status.substr(0, pos), "OK", "text/html",
+			this->response = this->createHttpResponse(pollStruct,status.substr(0, pos), "OK", "text/html",
 												this->readHtmlFile(pollStruct,
 												filePath,
 												*this->clientToServerMap[fd]));

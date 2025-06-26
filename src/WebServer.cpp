@@ -3,7 +3,7 @@
 /*                                                        :::      ::::::::   */
 /*   WebServer.cpp                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: menasy <menasy@student.42.fr>              +#+  +:+       +#+        */
+/*   By: ekose <ekose@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/02 15:50:42 by menasy            #+#    #+#             */
 /*   Updated: 2025/06/25 23:35:35 by menasy           ###   ########.fr       */
@@ -31,6 +31,9 @@ WebServer &WebServer::operator=(const WebServer &other)
 		this->resultPath = other.resultPath;
 		this->clientRequests = other.clientRequests;
 		this->requestBuffers = other.requestBuffers;
+		this->clientKeepAlive = other.clientKeepAlive;
+		this->response = other.response;
+		this->responseStatus = other.responseStatus;
 	}
 	return *this;
 }
@@ -60,8 +63,12 @@ void 	WebServer::closeCliSocket(int fd)
 				if (this->clientRequests[fd])
 					delete this->clientRequests[fd];
 				this->clientRequests[fd] = NULL;
+				shutdown(fd, SHUT_WR);
 				close(fd);
+				clientKeepAlive.erase(fd);
+				clientRequests.erase(fd);
 				clientToServerMap.erase(fd);
+				requestBuffers.erase(fd);
 				pollVec.erase(it);
 				clientToAddrMap.erase(fd);
 				break;
@@ -199,6 +206,8 @@ void	WebServer::acceptNewClient(pollfd& pollStruct)
 		pollfd clientFd = {clientSock, (POLLIN | POLLOUT | POLLERR), 0};
 		pollVec.push_back(clientFd);
 		this->clientToAddrMap[clientSock] = addr;
+		this->lastActivity[clientSock] = time(NULL);
+		this->clientKeepAlive[clientSock] = false;
 	}
 }
 
@@ -209,7 +218,8 @@ void WebServer::clientRead(pollfd& pollStruct)
     while (true)
     {
         int bytesReceived = recv(pollStruct.fd, buffer, sizeof(buffer), 0);
-
+		std::cout << ">>>> Client Read: " << pollStruct.fd << " <<<<" << std::endl;
+		std::cout << ">>>> Bytes Received: " << bytesReceived << " <<<<" << std::endl;
         if (bytesReceived < 0)
         {
             if (errno == EAGAIN || errno == EWOULDBLOCK)
@@ -229,6 +239,13 @@ void WebServer::clientRead(pollfd& pollStruct)
         size_t headerEnd = requestData.find("\r\n\r\n");
         if (headerEnd == std::string::npos)
 			continue;
+		this->clientKeepAlive[pollStruct.fd] = false;
+		if (requestData.find("Connection: keep-alive") != std::string::npos ||
+		    (requestData.find("HTTP/1.1") != std::string::npos &&
+		     requestData.find("Connection: close") == std::string::npos)) {
+		    this->clientKeepAlive[pollStruct.fd] = true;
+		}
+
         this->clientRequests[pollStruct.fd] = this->parseRecv(requestData);
        	this->clientToServerMap[pollStruct.fd] = &this->searchServerConf(this->serverConfVec, this->clientRequests[pollStruct.fd]->getHostName());
 		this->clientRequests[pollStruct.fd]->sepPath(*(this->clientToServerMap[pollStruct.fd]));
@@ -249,7 +266,7 @@ void WebServer::clientRead(pollfd& pollStruct)
             std::string chunkedBody = requestData.substr(bodyStart);
             std::string unchunkedBody;
             if (!HelperClass::unchunkBody(chunkedBody, unchunkedBody))
-                return;
+                continue;
             requestData = header + "\r\n\r\n" + unchunkedBody;
             break;
         }
@@ -281,7 +298,7 @@ void WebServer::clientRead(pollfd& pollStruct)
                 delete this->clientRequests[pollStruct.fd];
                 this->clientRequests[pollStruct.fd] = NULL;
             }
-
+			this->lastActivity[pollStruct.fd] = time(NULL);
             this->clientRequests[pollStruct.fd] = this->parseRecv(requestData);
             this->clientToServerMap[pollStruct.fd] = &this->searchServerConf(this->serverConfVec, this->clientRequests[pollStruct.fd]->getHostName());
 			this->clientRequests[pollStruct.fd]->sepPath(*(this->clientToServerMap[pollStruct.fd]));
@@ -298,41 +315,51 @@ void WebServer::clientRead(pollfd& pollStruct)
 }
 void WebServer::sendHandler(pollfd& pollStruct, std::string& sendMessage)
 {
-	int checkSend = 0;
-	int lengthMessage;
-	
-	lengthMessage = sendMessage.length();
-	while (checkSend < lengthMessage)
-	{
-		checkSend = send(pollStruct.fd, sendMessage.c_str(), sendMessage.length(), 0);
-		if (checkSend == -1)
-		{
-			int& errCode = errno;
-			if (errCode == EAGAIN || errCode == EWOULDBLOCK)
-			{
-				//Soket non-blocking modda ve veri göndermek için yeterli buffer alanı yok demek. Yeniden veri gondercem.
-				pollStruct.events = POLLOUT;
-				break ; 
-			}
-			else
-			{
-				//errCode == ECONNRESET ||  errCode == EPIPE || errCode == EBADF
-				//İstemci bağlantıyı aniden kapatmış.
-				if (errCode != EBADF)
+    size_t totalSent = 0;
+    size_t lengthMessage = sendMessage.size();
+
+    while (totalSent < lengthMessage)
+    {
+        ssize_t sent = send(pollStruct.fd, sendMessage.c_str() + totalSent, lengthMessage - totalSent, 0);
+
+        if (sent == -1)
+        {
+            if (errno == EAGAIN || errno == EWOULDBLOCK)
+            {
+                pollStruct.events = POLLOUT;
+                break;
+            }
+            else
+            {
+                if (errno != EBADF){
+                    shutdown(pollStruct.fd, SHUT_WR);
 					close(pollStruct.fd);
-				for (std::vector<pollfd>::iterator it = this->pollVec.begin(); it != this->pollVec.end(); ++it) 
-				{
-					if (it->fd == pollStruct.fd) 
-					{
-						this->pollVec.erase(it);
-						break; 
-					}
 				}
-				break ;
-			}
-		}
+                for (std::vector<pollfd>::iterator it = this->pollVec.begin(); it != this->pollVec.end(); ++it)
+                {
+                    if (it->fd == pollStruct.fd)
+                    {
+                        this->pollVec.erase(it);
+                        break;
+                    }
+                }
+                break;
+            }
+        }
+        else
+            totalSent += sent;
+    }
+
+    if (totalSent == lengthMessage)
+    {
+        sendMessage.clear();
+		if (this->clientKeepAlive[pollStruct.fd])
+			pollStruct.events = POLLIN;
+		else
+			this->closeCliSocket(pollStruct.fd);
 	}
-	sendMessage.clear();
+	else
+		pollStruct.events = POLLOUT;
 }
 
 bool WebServer::methodIsExist(LocationConf* locConf, const std::string& requestMethod,pollfd& pollStruct)
@@ -493,6 +520,22 @@ std::string WebServer::findRequest(pollfd& pollStruct)
 	return retVal;
 }
 
+void WebServer::checkTimeouts() {
+    time_t now = time(NULL);
+
+    for (std::map<int, time_t>::iterator it = lastActivity.begin(); it != lastActivity.end(); ) {
+        int fd = it->first;
+        time_t last = it->second;
+		std::cout << "Checking timeout for fd: " << fd << std::endl;
+        if (now - last > TIMEOUT_SEC) {
+            std::cout << ">>>> Timeout. Closing idle connection: " << fd << std::endl;
+            closeCliSocket(fd);
+			lastActivity.erase(it++);
+        } else {
+            ++it;
+        }
+    }
+}
 
 void WebServer::pollOutEvent(pollfd& pollStruct)
 {
@@ -504,6 +547,7 @@ void WebServer::pollOutEvent(pollfd& pollStruct)
 	// std::string method = this->clientRequests[pollStruct.fd]->getMethod();
 	this->resultPath = findRequest(pollStruct);
 	std::cout << ">>>> RESULT PATH: " << this->resultPath << "<<<<" << std::endl;
+	std::cout << "Content-Type: " << this->clientRequests[pollStruct.fd]->getContentType() << std::endl;
 	if (this->resultPath.empty())
 	{
 		std::cout << ">>>> Result path is empty<<<" << std::endl;
@@ -535,11 +579,13 @@ void	WebServer::runServer()
 	this->pollfdVecCreat();
 	while (true)
 	{
-		int result = poll(pollVec.data(), pollVec.size(), -1);
+		int result = poll(pollVec.data(), pollVec.size(), 1000);
 		if (result < 0)
 			throw std::runtime_error("poll() error. Terminating server.");
 		for (size_t i = 0; i < pollVec.size(); i++)
 		{
+			checkTimeouts();
+			std::cout << "FD " << pollVec[i].fd << " has event " << pollVec[i].revents << std::endl;
 			 if (pollVec[i].revents & POLLERR) 
 			{
         		HelperClass::writeToFile(this->clientToServerMap[pollVec[i].fd]->getErrorLog(), "POLL ERROR");
@@ -549,13 +595,13 @@ void	WebServer::runServer()
 			if (this->socketMap.count(pollVec[i].fd) && (pollVec[i].revents & POLLIN))
 			{
 				this->acceptNewClient(pollVec[i]);
+				std::cout << "new client accepted on socket: " << pollVec[i].fd << std::endl;
 				continue;
 			}
 
 			if (pollVec[i].revents & POLLIN)
 			{
 				this->clientRead(pollVec[i]);
-				pollVec[i].events = POLLOUT;
 				continue;
 			}
 			
@@ -566,6 +612,5 @@ void	WebServer::runServer()
 				pollVec[i].events = POLLIN;
 			}
 		}
-
 	}
 }

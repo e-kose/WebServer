@@ -12,7 +12,7 @@
 
 #include "../include/WebServer.hpp"
 
-std::string WebServer::createHttpResponse(
+std::string WebServer::createHttpResponse(pollfd& pollStruct,
 	const std::string& statusCode, const std::string& statusMessage,
 	const std::string& contentType, const std::string& body) 
 {
@@ -21,7 +21,13 @@ std::string WebServer::createHttpResponse(
 	std::string response = "HTTP/1.1 " + statusCode + " " + statusMessage + "\r\n";
 	response += "Content-Type: " + contentType + "\r\n";
 	response += "Content-Length: " + ss.str() + "\r\n";
-	response += "Connection: close\r\n"; 
+	if (this->clientKeepAlive[pollStruct.fd])
+	{
+		response += "Keep-Alive: timeout=" + HelperClass::intToString(TIMEOUT_SEC) + "\r\n";
+		response += "Connection: keep-alive\r\n";
+	}
+	else
+		response += "Connection: close\r\n"; 
 	response += "\r\n";
 	response += body;	
 	return response;
@@ -42,9 +48,9 @@ std::string WebServer::createErrorResponse(pollfd& pollStruct, const std::string
 		std::string res = HelperClass::mergeDirectory(rootPAth, errMap[errCode]);
 		content = readHtmlFile(pollStruct,res,conf);
 		if (!content.empty() )
-			return createHttpResponse(statusCode, statusMessage, "text/html", content);
+			return createHttpResponse(pollStruct, statusCode, statusMessage, "text/html", content);
 	}
-	return createHttpResponse(statusCode, statusMessage, "text/html",defaultErrMap[errCode]);
+	return createHttpResponse(pollStruct, statusCode, statusMessage, "text/html",defaultErrMap[errCode]);
 }
 
 std::string WebServer::redirectResponse(pollfd& pollStruct,
@@ -66,7 +72,14 @@ std::string WebServer::redirectResponse(pollfd& pollStruct,
 		response += "Location: /\r\n";
 
 	response += "Content-Length: 0\r\n";
-	response += "Connection: close\r\n";
+	std::cout << "0*0*0*0*0*0*0*00*0*Keep-Alive: " << this->clientKeepAlive[pollStruct.fd] << std::endl;
+	if (this->clientKeepAlive[pollStruct.fd])
+	{
+		response += "Keep-Alive: timeout=" + HelperClass::intToString(TIMEOUT_SEC) + "\r\n";
+		response += "Connection: keep-alive\r\n";
+	}
+	else
+		response += "Connection: close\r\n";
 	response += "\r\n";
 	this->responseStatus = code;
 	return response;
