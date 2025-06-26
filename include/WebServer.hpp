@@ -40,6 +40,7 @@
 #define METHOD_NOT_ALLOWED 405
 #define NOT_RESPONDED 0
 #define PAYLOAD_TOO_LARGE 413
+#define BAD_REQUEST 400
 #define TIMEOUT_SEC 8
 
 class WebServer 

@@ -60,7 +60,6 @@ class HelperClass
 		static bool							fileIsExist(const std::string& path);
 		static bool							strIsDigit(const std::string&);
 		static	std::string 				checkFileWithExtension(const std::string& path);
-		static int 							fileIsExecutable(const std::string& path, const std::string& extension, const std::map<std::string, std::string>& cgiExtMap);
 		static std::string 					fdToString(int& fd);
 		static std::string 					getLocInVec(const std::string& path, const std::vector<LocationConf>& locVec);
 		static std::string					indexHandler(const std::string& fullPath,const std::vector<std::string>& indexVec);
@@ -74,5 +73,6 @@ class HelperClass
 		static std::map<std::string, std::string>	findLocationCgi(LocationConf* locConf);
 		static std::vector<std::string> 	selectTryFiles(const LocationConf* locConf, std::vector<LocationConf>& locVec);
 		static bool 						isItScript(std::string extension);
+		static void 						freeEnv(std::vector<char*>& env);
 
 	};

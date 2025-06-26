@@ -111,6 +111,7 @@ std::string WebServer::checkCgi(LocationConf* locConf, const ServerConf& conf, p
 	if (pos != std::string::npos)
 	{
 		std::string ext = newPath.substr(pos, newPath.length());
+		std::cout << "Extension: " << ext << std::endl;
 		status = fileIsExecutable(ext, cgiMap);
 		if (status == 1)
 		{
@@ -180,9 +181,12 @@ std::vector<char *> WebServer::fillEnv(const ServerConf& conf, const pollfd& pol
 	envVec.push_back("PATH_INFO=" + this->clientRequests[fd]->getPathInfo());
 	envVec.push_back("REDIRECT_STATUS=200");
 	
-	for (size_t i = 0; i < envVec.size(); i++)
-	{
-		env.push_back(const_cast<char *>(envVec[i].c_str()));
+	for (size_t i = 0; i < envVec.size(); i++) {
+    // Her bir string için yeni bir karakter dizisi (char array) ayır.
+    char* var = new char[envVec[i].size() + 1]; // +1 for null terminator
+		std::strncpy(var, envVec[i].c_str(), envVec[i].size());
+		var[envVec[i].size()] = '\0'; // Ensure null-termination
+		env.push_back(var);
 	}
 	env.push_back(NULL);
 	return env;
@@ -281,12 +285,15 @@ std::string WebServer::startCgi(const std::string&filePath, std::string& fileExt
 		std::cout << ">>>> POST METHOD HANDLER CGI<<<<\n";
 		std::cout << ">>>> POST BODY: " << this->clientRequests[pollStruct.fd]->getBody() << "<<<<\n";
 		std::cout << " SIZE : " << this->clientRequests[pollStruct.fd]->getBody().size() << std::endl;
-		return postCgi(filePath, cgiExecPath, env, this->clientRequests[pollStruct.fd]->getBody());
+		scriptContent = postCgi(filePath, cgiExecPath, env, this->clientRequests[pollStruct.fd]->getBody());
 	}
 	else if(this->clientRequests[pollStruct.fd]->getMethod() == "GET")
 	{
 		std::cout << ">>>> GET METHOD HANDLER  CGI <<<<\n";
-		return getCgi(filePath, cgiExecPath, env);
+		scriptContent = getCgi(filePath, cgiExecPath, env);
 	}
-	return "";
+	else
+		scriptContent = "";
+	HelperClass::freeEnv(env);
+	return scriptContent;
 }

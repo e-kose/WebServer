@@ -13,10 +13,10 @@
   </form>
 
   <h2>🔸 POST (Dosya Yükle) Testi</h2>
-  <form method="post" action="/cgi-bin/upload.py" enctype="multipart/form-data">
-    <input type="file" name="file" required>
-    <button type="submit">Upload File</button>
-  </form>
+<form method="post" action="/cgi-bin/upload.py" enctype="multipart/form-data">
+  <input type="file" name="file" required> <!-- 'file' yerine 'dosya' -->
+  <button type="submit">Dosya Yükle</button>
+</form>	
 
   <h2>🔻 DELETE Testi</h2>
   <form id="delete-form">

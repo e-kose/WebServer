@@ -16,3 +16,93 @@
 [Thu Jun 26 13:19:19 2025] Socket info: 127.0.0.1:50488 -> 127.0.0.1:8080 GET // 200
 [Thu Jun 26 13:23:58 2025] Socket info: 127.0.0.1:33898 -> 127.0.0.1:8080 GET // 200
 [Thu Jun 26 13:24:21 2025] Socket info: 127.0.0.1:41184 -> 127.0.0.1:8080 GET // 200
+[Thu Jun 26 14:12:35 2025] Socket info: 127.0.0.1:40470 -> 127.0.0.1:8080 GET //new.html 404
+[Thu Jun 26 14:12:42 2025] Socket info: 127.0.0.1:40470 -> 127.0.0.1:8080 DELETE /upload//testfile.txt 404
+[Thu Jun 26 14:12:49 2025] Socket info: 127.0.0.1:40470 -> 127.0.0.1:8080 GET // 200
+[Thu Jun 26 14:13:57 2025] Socket info: 127.0.0.1:33244 -> 127.0.0.1:8080 GET // 200
+[Thu Jun 26 14:14:00 2025] Socket info: 127.0.0.1:33244 -> 127.0.0.1:8080 GET //dnm.php 200
+[Thu Jun 26 14:14:00 2025] Socket info: 127.0.0.1:33244 -> 127.0.0.1:8080 GET //dnm.php 403
+[Thu Jun 26 14:16:33 2025] Socket info: 127.0.0.1:44978 -> 127.0.0.1:8080 GET //dnm.php 200
+[Thu Jun 26 14:18:11 2025] Socket info: 127.0.0.1:57482 -> 127.0.0.1:8080 GET // 200
+[Thu Jun 26 14:18:17 2025] Socket info: 127.0.0.1:57482 -> 127.0.0.1:8080 GET //dnm 200
+[Thu Jun 26 14:18:24 2025] Socket info: 127.0.0.1:57482 -> 127.0.0.1:8080 GET //dnm.php 200
+[Thu Jun 26 14:19:55 2025] Socket info: 127.0.0.1:51636 -> 127.0.0.1:8080 GET //deneme.py 200
+[Thu Jun 26 14:19:55 2025] Socket info: 127.0.0.1:51636 -> 127.0.0.1:8080 GET //deneme.py 403
+[Thu Jun 26 14:20:29 2025] Socket info: 127.0.0.1:48130 -> 127.0.0.1:8080 GET //deneme.py 200
+[Thu Jun 26 14:23:02 2025] Socket info: 127.0.0.1:35450 -> 127.0.0.1:8080 GET // 200
+[Thu Jun 26 14:23:07 2025] Socket info: 127.0.0.1:35450 -> 127.0.0.1:8080 POST /cgi-bin//upload.py 200
+[Thu Jun 26 14:49:40 2025] Socket info: 127.0.0.1:54858 -> 127.0.0.1:8080 POST /cgi-bin//upload.py 200
+[Thu Jun 26 14:50:57 2025] Socket info: 127.0.0.1:49170 -> 127.0.0.1:8080 GET // 200
+[Thu Jun 26 14:51:05 2025] Socket info: 127.0.0.1:49170 -> 127.0.0.1:8080 POST /cgi-bin//upload.py 200
+[Thu Jun 26 14:52:47 2025] Socket info: 127.0.0.1:46962 -> 127.0.0.1:8080 POST /cgi-bin//upload.py 200
+[Thu Jun 26 14:56:04 2025] Socket info: 127.0.0.1:59212 -> 127.0.0.1:8080 POST /cgi-bin//upload.py 200
+[Thu Jun 26 14:56:44 2025] Socket info: 127.0.0.1:41158 -> 127.0.0.1:8080 POST /cgi-bin//upload.py 200
+[Thu Jun 26 14:57:54 2025] Socket info: 127.0.0.1:52262 -> 127.0.0.1:8080 POST /cgi-bin//upload.py 200
+[Thu Jun 26 14:57:58 2025] Socket info: 127.0.0.1:52262 -> 127.0.0.1:8080 POST /cgi-bin//upload.py 200
+[Thu Jun 26 14:59:14 2025] Socket info: 127.0.0.1:42262 -> 127.0.0.1:8080 POST /cgi-bin//upload.py 200
+[Thu Jun 26 14:59:41 2025] Socket info: 127.0.0.1:34034 -> 127.0.0.1:8080 POST /cgi-bin//upload.py 200
+[Thu Jun 26 14:59:53 2025] Socket info: 127.0.0.1:43062 -> 127.0.0.1:8080 POST /cgi-bin//upload.py 200
+[Thu Jun 26 15:02:08 2025] Socket info: 127.0.0.1:44170 -> 127.0.0.1:8080 POST /cgi-bin//upload.py 200
+[Thu Jun 26 15:02:12 2025] Socket info: 127.0.0.1:44170 -> 127.0.0.1:8080 GET // 200
+[Thu Jun 26 15:02:15 2025] Socket info: 127.0.0.1:44170 -> 127.0.0.1:8080 POST /cgi-bin//upload.py 200
+[Thu Jun 26 15:03:23 2025] Socket info: 127.0.0.1:57154 -> 127.0.0.1:8080 POST /cgi-bin//upload.py 200
+[Thu Jun 26 15:03:29 2025] Socket info: 127.0.0.1:57154 -> 127.0.0.1:8080 POST /cgi-bin//upload.py 200
+[Thu Jun 26 15:05:01 2025] Socket info: 127.0.0.1:33376 -> 127.0.0.1:8080 POST /cgi-bin//upload.py 200
+[Thu Jun 26 15:05:48 2025] Socket info: 127.0.0.1:41836 -> 127.0.0.1:8080 GET // 200
+[Thu Jun 26 15:05:52 2025] Socket info: 127.0.0.1:41836 -> 127.0.0.1:8080 POST /cgi-bin//upload.py 200
+[Thu Jun 26 15:08:00 2025] Socket info: 127.0.0.1:53786 -> 127.0.0.1:8080 POST /cgi-bin//upload.py 200
+[Thu Jun 26 15:13:21 2025] Socket info: 127.0.0.1:34038 -> 127.0.0.1:8080 GET // 200
+[Thu Jun 26 15:13:26 2025] Socket info: 127.0.0.1:34038 -> 127.0.0.1:8080 POST /cgi-bin//upload.py 200
+[Thu Jun 26 15:20:08 2025] Socket info: 127.0.0.1:43582 -> 127.0.0.1:8080 POST /cgi-bin//upload.py 200
+[Thu Jun 26 15:20:08 2025] Socket info: 127.0.0.1:43582 -> 127.0.0.1:8080 ------WebKitFormBoundaryPT0TGiljcOdcLdb4
+Content-Disposition: /form-data; 404
+[Thu Jun 26 15:20:32 2025] Socket info: 127.0.0.1:40816 -> 127.0.0.1:8080 POST /cgi-bin//upload.py 200
+[Thu Jun 26 15:20:32 2025] Socket info: 127.0.0.1:40816 -> 127.0.0.1:8080 ------WebKitFormBoundaryKM4DV36d2j4usjdv
+Content-Disposition: /form-data; 404
+[Thu Jun 26 15:21:39 2025] Socket info: 127.0.0.1:55544 -> 127.0.0.1:8080 POST /cgi-bin//upload.py 200
+[Thu Jun 26 15:21:39 2025] Socket info: 127.0.0.1:55544 -> 127.0.0.1:8080 ------WebKitFormBoundarykhucarn8iPAyha1n
+Content-Disposition: /form-data; 404
+[Thu Jun 26 15:21:39 2025] Socket info: 127.0.0.1:55560 -> 127.0.0.1:8080 POST /cgi-bin//upload.py 200
+[Thu Jun 26 15:21:40 2025] Socket info: 127.0.0.1:55560 -> 127.0.0.1:8080 ------WebKitFormBoundarykhucarn8iPAyha1n
+Content-Disposition: /form-data; 404
+[Thu Jun 26 15:21:40 2025] Socket info: 127.0.0.1:55572 -> 127.0.0.1:8080 POST /cgi-bin//upload.py 200
+[Thu Jun 26 15:21:40 2025] Socket info: 127.0.0.1:55572 -> 127.0.0.1:8080 ------WebKitFormBoundarykhucarn8iPAyha1n
+Content-Disposition: /form-data; 404
+[Thu Jun 26 15:23:03 2025] Socket info: 127.0.0.1:55018 -> 127.0.0.1:8080 POST /cgi-bin//upload.py 200
+[Thu Jun 26 15:23:03 2025] Socket info: 127.0.0.1:55018 -> 127.0.0.1:8080 ------WebKitFormBoundarybeA7OGm1m9nWvxwp
+Content-Disposition: /form-data; 404
+[Thu Jun 26 15:24:05 2025] Socket info: 127.0.0.1:50664 -> 127.0.0.1:8080 GET // 200
+[Thu Jun 26 15:24:23 2025] Socket info: 127.0.0.1:55688 -> 127.0.0.1:8080 POST /cgi-bin//upload.py 200
+[Thu Jun 26 15:24:24 2025] Socket info: 127.0.0.1:55688 -> 127.0.0.1:8080 ------WebKitFormBoundarymMau638baR1uMkBw
+Content-Disposition: /form-data; 404
+[Thu Jun 26 15:24:24 2025] Socket info: 127.0.0.1:55690 -> 127.0.0.1:8080 POST /cgi-bin//upload.py 200
+[Thu Jun 26 15:24:25 2025] Socket info: 127.0.0.1:55690 -> 127.0.0.1:8080 ------WebKitFormBoundarymMau638baR1uMkBw
+Content-Disposition: /form-data; 404
+[Thu Jun 26 15:24:35 2025] Socket info: 127.0.0.1:50652 -> 127.0.0.1:8080 POST /cgi-bin//upload.py 200
+[Thu Jun 26 15:24:35 2025] Socket info: 127.0.0.1:50652 -> 127.0.0.1:8080 ------WebKitFormBoundarySYBHzT5wwqHxIFBO
+Content-Disposition: /form-data; 404
+[Thu Jun 26 15:24:36 2025] Socket info: 127.0.0.1:50662 -> 127.0.0.1:8080 POST /cgi-bin//upload.py 200
+[Thu Jun 26 15:24:37 2025] Socket info: 127.0.0.1:50662 -> 127.0.0.1:8080 ------WebKitFormBoundarySYBHzT5wwqHxIFBO
+Content-Disposition: /form-data; 404
+[Thu Jun 26 16:46:44 2025] Socket info: 127.0.0.1:57660 -> 127.0.0.1:8080 GET // 200
+[Thu Jun 26 16:46:46 2025] Socket info: 127.0.0.1:57660 -> 127.0.0.1:8080 GET //favicon.ico 404
+[Thu Jun 26 16:46:51 2025] Socket info: 127.0.0.1:57660 -> 127.0.0.1:8080 POST /cgi-bin//upload.py 200
+[Thu Jun 26 16:46:51 2025] Socket info: 127.0.0.1:57660 -> 127.0.0.1:8080 ------WebKitFormBoundaryrt4KMomVtC2Zt7ir
+Content-Disposition: /form-data; 404
+[Thu Jun 26 16:48:40 2025] Socket info: 127.0.0.1:54648 -> 127.0.0.1:8080 POST /cgi-bin//upload.py 200
+[Thu Jun 26 16:48:40 2025] Socket info: 127.0.0.1:54648 -> 127.0.0.1:8080 ------WebKitFormBoundarySnF2WBLBxRmQgDq4
+Content-Disposition: /form-data; 404
+[Thu Jun 26 16:49:27 2025] Socket info: 127.0.0.1:58034 -> 127.0.0.1:8080 GET // 200
+[Thu Jun 26 16:49:33 2025] Socket info: 127.0.0.1:58034 -> 127.0.0.1:8080 POST /cgi-bin//upload.py 200
+[Thu Jun 26 16:52:04 2025] Socket info: 127.0.0.1:55222 -> 127.0.0.1:8080 POST /cgi-bin//upload.py 200
+[Thu Jun 26 17:07:25 2025] Socket info: 127.0.0.1:54004 -> 127.0.0.1:8080 GET // 200
+[Thu Jun 26 17:07:30 2025] Socket info: 127.0.0.1:54004 -> 127.0.0.1:8080 POST /cgi-bin//upload.py 200
+[Thu Jun 26 17:08:26 2025] Socket info: 127.0.0.1:45492 -> 127.0.0.1:8080 GET /cgi-bin//upload.py 200
+[Thu Jun 26 17:08:51 2025] Socket info: 127.0.0.1:45482 -> 127.0.0.1:8080 POST /cgi-bin//upload.py 200
+[Thu Jun 26 17:09:29 2025] Socket info: 127.0.0.1:49880 -> 127.0.0.1:8080 POST /cgi-bin//upload.py 200
+[Thu Jun 26 17:09:36 2025] Socket info: 127.0.0.1:49880 -> 127.0.0.1:8080 POST /cgi-bin//upload.py 200
+[Thu Jun 26 17:10:03 2025] Socket info: 127.0.0.1:37480 -> 127.0.0.1:8080 POST /cgi-bin//upload.py 200
+[Thu Jun 26 17:10:39 2025] Socket info: 127.0.0.1:36270 -> 127.0.0.1:8080 POST /cgi-bin//upload.py 200
+[Thu Jun 26 17:11:27 2025] Socket info: 127.0.0.1:34768 -> 127.0.0.1:8080 POST /cgi-bin//upload.py 200
+[Thu Jun 26 17:12:09 2025] Socket info: 127.0.0.1:52598 -> 127.0.0.1:8080 POST /cgi-bin//upload.py 200
+[Thu Jun 26 17:12:29 2025] Socket info: 127.0.0.1:52214 -> 127.0.0.1:8080 POST /cgi-bin//upload.py 200

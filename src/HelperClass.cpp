@@ -483,3 +483,9 @@ bool HelperClass::unchunkBody(const std::string& chunked, std::string& out)
     }
 }
 
+void HelperClass::freeEnv(std::vector<char*>& env) 
+{
+	for (std::vector<char*>::iterator it = env.begin(); it != env.end(); ++it)
+		if (*it) delete[] *it;
+	env.clear();
+}

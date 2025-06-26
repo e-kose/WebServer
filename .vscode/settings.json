@@ -122,7 +122,14 @@
 	"__config": "cpp",
 	"codecvt": "cpp",
 	"ratio": "cpp",
-	"iomanip": "cpp"
+	"iomanip": "cpp",
+	"charconv": "cpp",
+	"chrono": "cpp",
+	"format": "cpp",
+	"span": "cpp",
+	"text_encoding": "cpp",
+	"cinttypes": "cpp",
+	"variant": "cpp"
 },
   "C_Cpp.codeAnalysis.clangTidy.enabled": true,
   "C_Cpp.codeAnalysis.clangTidy.checks": "unused-*,-unused-exception-parameter",

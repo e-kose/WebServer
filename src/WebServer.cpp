@@ -494,6 +494,12 @@ std::string WebServer::findRequest(pollfd& pollStruct)
 
 	this->responseStatus = NOT_RESPONDED;
 	httpPath = this->clientRequests[pollStruct.fd]->getPath();
+	if (httpPath.empty())
+	{
+		this->sendResponse(pollStruct,"400 Bad Request");
+		this->responseStatus = BAD_REQUEST;
+		return "";
+	}
 	std::cout << "HTTP PATH: " << httpPath << std::endl;
 	LocationConf *loc = HelperClass::findLoc(httpPath, locVec);
 	rootPath = HelperClass::selectLocOrServerRoot(loc,serverConf->getRoot());
@@ -547,7 +553,6 @@ void WebServer::pollOutEvent(pollfd& pollStruct)
 	// std::string method = this->clientRequests[pollStruct.fd]->getMethod();
 	this->resultPath = findRequest(pollStruct);
 	std::cout << ">>>> RESULT PATH: " << this->resultPath << "<<<<" << std::endl;
-	std::cout << "Content-Type: " << this->clientRequests[pollStruct.fd]->getContentType() << std::endl;
 	if (this->resultPath.empty())
 	{
 		std::cout << ">>>> Result path is empty<<<" << std::endl;
@@ -579,7 +584,7 @@ void	WebServer::runServer()
 	this->pollfdVecCreat();
 	while (true)
 	{
-		int result = poll(pollVec.data(), pollVec.size(), 1000);
+		int result = poll(pollVec.data(), pollVec.size(), -1);
 		if (result < 0)
 			throw std::runtime_error("poll() error. Terminating server.");
 		for (size_t i = 0; i < pollVec.size(); i++)
