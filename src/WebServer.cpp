@@ -214,7 +214,8 @@ void	WebServer::acceptNewClient(pollfd& pollStruct)
 void WebServer::clientRead(pollfd& pollStruct)
 {
 	char buffer[4096];
-    std::string& requestData = this->requestBuffers[pollStruct.fd];
+    // std::string& requestData = this->requestBuffers[pollStruct.fd];
+	std::ofstream requestFile("requestFile.txt", std::ios::app);
     while (true)
     {
         int bytesReceived = recv(pollStruct.fd, buffer, sizeof(buffer), 0);
@@ -234,30 +235,30 @@ void WebServer::clientRead(pollfd& pollStruct)
             closeCliSocket(pollStruct.fd);
             return;
         }
-
-        requestData.append(buffer, bytesReceived);
-        size_t headerEnd = requestData.find("\r\n\r\n");
+		std::string tmpBuffer(buffer, bytesReceived);
+        requestFile << tmpBuffer;
+        size_t headerEnd = tmpBuffer.find("\r\n\r\n");
         if (headerEnd == std::string::npos)
 			continue;
 		this->clientKeepAlive[pollStruct.fd] = false;
-		if (requestData.find("Connection: keep-alive") != std::string::npos ||
-		    (requestData.find("HTTP/1.1") != std::string::npos &&
-		     requestData.find("Connection: close") == std::string::npos)) {
-		    this->clientKeepAlive[pollStruct.fd] = true;
-		}
+		// if (requestData.find("Connection: keep-alive") != std::string::npos ||
+		//     (requestData.find("HTTP/1.1") != std::string::npos &&
+		//      requestData.find("Connection: close") == std::string::npos)) {
+		//     this->clientKeepAlive[pollStruct.fd] = true;
+		// }
 
         this->clientRequests[pollStruct.fd] = this->parseRecv(requestData);
        	this->clientToServerMap[pollStruct.fd] = &this->searchServerConf(this->serverConfVec, this->clientRequests[pollStruct.fd]->getHostName());
 		this->clientRequests[pollStruct.fd]->sepPath(*(this->clientToServerMap[pollStruct.fd]));
 
 		size_t maxBodySizeInBytes = this->clientToServerMap[pollStruct.fd]->getBodySize() * 1024 * 1024;
-        if (requestData.size() > maxBodySizeInBytes)
+        if (HelperClass::getFileSize("requestFile.txt") > maxBodySizeInBytes)
         {
             sendResponse(pollStruct, "413 Payload Too Large");
             this->responseStatus = PAYLOAD_TOO_LARGE;
             return;
         }
-        std::string header = requestData.substr(0, headerEnd);
+        std::string header = HelperClass::takeHeaderInFile("requestFile.txt");
         bool isChunked = header.find("Transfer-Encoding: chunked") != std::string::npos;
         size_t bodyStart = headerEnd + 4;
 

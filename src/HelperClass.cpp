@@ -489,3 +489,55 @@ void HelperClass::freeEnv(std::vector<char*>& env)
 		if (*it) delete[] *it;
 	env.clear();
 }
+
+long HelperClass::getFileSize(const std::string& fileName) 
+{
+        std::ifstream file(fileName.c_str(), std::ios::binary | std::ios::ate);
+        if (file.is_open()) 
+		{
+            long size = static_cast<long>(file.tellg());
+            file.close();
+            return size;
+        } 
+		else
+			return -1;
+}
+
+std::string HelperClass::takeHeaderInFile(const std::string fileName)
+{
+	std::ifstream file(fileName.c_str());
+	if (!file.is_open())
+		return "";
+
+	std::string header;
+	std::string line;
+	while (std::getline(file, line))
+	{
+		header += line + "\r\n";		
+		if (line.find("\r\n\r\n") != std::string::npos || line.empty())
+		{
+			header += "\r\n";
+			break;
+		}
+	}
+	file.close();
+	return header;
+}
+
+std::string HelperClass::takeBodyInFile(const std::string fileName)
+{
+	std::ifstream file(fileName.c_str());
+	 if (!file.is_open())
+	   return "";
+	std::string body;
+	std::string line;
+	while (std::getline(file, line))
+	{
+		if ((line.find("\r\n\r\n") != std::string::npos || line.empty()))
+			break;
+	}
+	while (std::getline(file, line))
+		body += line + "\r\n";
+	file.close();
+	return body;
+}

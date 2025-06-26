@@ -74,5 +74,8 @@ class HelperClass
 		static std::vector<std::string> 	selectTryFiles(const LocationConf* locConf, std::vector<LocationConf>& locVec);
 		static bool 						isItScript(std::string extension);
 		static void 						freeEnv(std::vector<char*>& env);
+		static long getFileSize(const std::string& fileName);
+		static std::string 					takeHeaderInFile(const std::string fileName);
+		static std::string 					takeBodyInFile(const std::string fileName);
 
 	};
