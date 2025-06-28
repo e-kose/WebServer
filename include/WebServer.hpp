@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   WebServer.hpp                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ekose <ekose@student.42.fr>                +#+  +:+       +#+        */
+/*   By: menasy <menasy@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/02 15:40:04 by menasy            #+#    #+#             */
-/*   Updated: 2025/06/25 22:21:34 by menasy           ###   ########.fr       */
+/*   Updated: 2025/06/28 14:09:40 by menasy           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -97,7 +97,9 @@ class WebServer
 										const std::string& statusMessage, const std::string& contentType);
 		int fileIsExecutable(const std::string& extension, const std::map<std::string, std::string>& cgiExtMap);
 		std::string checkCgi(LocationConf* locConf, const ServerConf& conf, pollfd& pollStruct, std::string& newPath, int& status);
-
+		std::string pathCheck(std::string& path, std::string& rootPath, pollfd& pollStruct);
+		std::string callSendResponse(pollfd& polstruct, std::string status);
+		
 		public:
 			WebServer(std::vector<ServerConf>& serverConfVec);
 			WebServer(const WebServer &other);

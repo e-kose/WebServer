@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   WebServer.cpp                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ekose <ekose@student.42.fr>                +#+  +:+       +#+        */
+/*   By: menasy <menasy@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/02 15:50:42 by menasy            #+#    #+#             */
-/*   Updated: 2025/06/25 23:35:35 by menasy           ###   ########.fr       */
+/*   Updated: 2025/06/28 14:21:43 by menasy           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -214,8 +214,7 @@ void	WebServer::acceptNewClient(pollfd& pollStruct)
 void WebServer::clientRead(pollfd& pollStruct)
 {
 	char buffer[4096];
-    // std::string& requestData = this->requestBuffers[pollStruct.fd];
-	std::ofstream requestFile("requestFile.txt", std::ios::app);
+    std::string& requestData = this->requestBuffers[pollStruct.fd];
     while (true)
     {
         int bytesReceived = recv(pollStruct.fd, buffer, sizeof(buffer), 0);
@@ -235,30 +234,29 @@ void WebServer::clientRead(pollfd& pollStruct)
             closeCliSocket(pollStruct.fd);
             return;
         }
-		std::string tmpBuffer(buffer, bytesReceived);
-        requestFile << tmpBuffer;
-        size_t headerEnd = tmpBuffer.find("\r\n\r\n");
+
+        requestData.append(buffer, bytesReceived);
+        size_t headerEnd = requestData.find("\r\n\r\n");
         if (headerEnd == std::string::npos)
 			continue;
 		this->clientKeepAlive[pollStruct.fd] = false;
-		// if (requestData.find("Connection: keep-alive") != std::string::npos ||
-		//     (requestData.find("HTTP/1.1") != std::string::npos &&
-		//      requestData.find("Connection: close") == std::string::npos)) {
-		//     this->clientKeepAlive[pollStruct.fd] = true;
-		// }
+		if (requestData.find("Connection: keep-alive") != std::string::npos ||
+		    (requestData.find("HTTP/1.1") != std::string::npos &&
+		     requestData.find("Connection: close") == std::string::npos)) {
+		    this->clientKeepAlive[pollStruct.fd] = true;
+		}
 
         this->clientRequests[pollStruct.fd] = this->parseRecv(requestData);
        	this->clientToServerMap[pollStruct.fd] = &this->searchServerConf(this->serverConfVec, this->clientRequests[pollStruct.fd]->getHostName());
 		this->clientRequests[pollStruct.fd]->sepPath(*(this->clientToServerMap[pollStruct.fd]));
 
 		size_t maxBodySizeInBytes = this->clientToServerMap[pollStruct.fd]->getBodySize() * 1024 * 1024;
-        if (HelperClass::getFileSize("requestFile.txt") > maxBodySizeInBytes)
+        if (requestData.size() > maxBodySizeInBytes)
         {
             sendResponse(pollStruct, "413 Payload Too Large");
-            this->responseStatus = PAYLOAD_TOO_LARGE;
             return;
         }
-        std::string header = HelperClass::takeHeaderInFile("requestFile.txt");
+        std::string header = requestData.substr(0, headerEnd);
         bool isChunked = header.find("Transfer-Encoding: chunked") != std::string::npos;
         size_t bodyStart = headerEnd + 4;
 
@@ -381,7 +379,6 @@ bool WebServer::methodIsExist(LocationConf* locConf, const std::string& requestM
 	if (!check)
 	{	
 		this->sendResponse(pollStruct, "405 Method Not Allowed");
-		this->responseStatus = METHOD_NOT_ALLOWED;
 		return false;
 	}
 	return true;
@@ -415,9 +412,7 @@ std::string WebServer::tryFiles(std::string tryPath, LocationConf* locConf, cons
 	if (!isFind && this->responseStatus == NOT_RESPONDED)
 	{
 		tryFilesVec.size() > 0 ? errPage = tryFilesVec[tryFilesVec.size() -1] : errPage = "404";
-		this->sendResponse(pollStruct, (errPage + " Not Found"));
-		this->responseStatus = NOT_FOUND;
-		return "";
+		return this->callSendResponse(pollStruct, (errPage + " Not Found"));
 	}
 	return findedPath;
 }
@@ -436,16 +431,12 @@ void WebServer::listDirectory(const std::string& path,LocationConf* locConf, pol
 	else if (locConf != NULL && this->methodIsExist(locConf, this->clientRequests[pollStruct.fd]->getMethod(), pollStruct) == false)
 		return ;
 	else if (locConf == NULL || (locConf != NULL && !locConf->getAutoIndex()))
-	{
 		this->sendResponse(pollStruct, "403 Forbidden");
-		this->responseStatus = FORBIDDEN;
-	}
 	else
 	{
 		std::string httpPath = this->clientRequests[pollStruct.fd]->getPath() + this->clientRequests[pollStruct.fd]->getRequestFile();
 		this->response = HelperClass::generateAutoIndexHtml(path,httpPath);
 		this->sendResponse(pollStruct, "200 OK");
-		this->responseStatus = OK; 
 	}
 }
 std::string WebServer::mergedPathHandler(std::string& newMergedPath, LocationConf *locConf, const ServerConf& serverConf, pollfd& pollStruct, int recCount)
@@ -495,13 +486,9 @@ std::string WebServer::findRequest(pollfd& pollStruct)
 
 	this->responseStatus = NOT_RESPONDED;
 	httpPath = this->clientRequests[pollStruct.fd]->getPath();
-	if (httpPath.empty())
-	{
-		this->sendResponse(pollStruct,"400 Bad Request");
-		this->responseStatus = BAD_REQUEST;
-		return "";
-	}
 	std::cout << "HTTP PATH: " << httpPath << std::endl;
+	if (httpPath.empty() || httpPath[0] != '/')
+		return this->callSendResponse(pollStruct, "400 Bad Request");
 	LocationConf *loc = HelperClass::findLoc(httpPath, locVec);
 	rootPath = HelperClass::selectLocOrServerRoot(loc,serverConf->getRoot());
 	clientReq = this->clientRequests[pollStruct.fd]->getRequestFile();	
@@ -513,9 +500,7 @@ std::string WebServer::findRequest(pollfd& pollStruct)
 	if (retVal.empty() && this->responseStatus == NOT_RESPONDED)
 	{
 		std::cout << "Merged Path Is Not Exists: " << retVal << std::endl;
-		this->sendResponse(pollStruct,"404 Not Found");
-		this->responseStatus = NOT_FOUND;
-		return "";
+		return this->callSendResponse(pollStruct,"404 Not Found");
 	}
 	else if (!retVal.empty() && (loc != NULL && loc->getReturn().size() > 0))
 	{
@@ -524,7 +509,7 @@ std::string WebServer::findRequest(pollfd& pollStruct)
 		else if (loc->getReturn().find(302) != loc->getReturn().end())
 			this->sendResponse(pollStruct, "302 Found");
 	}
-	return retVal;
+	return this->pathCheck(retVal,rootPath,pollStruct);
 }
 
 void WebServer::checkTimeouts() {

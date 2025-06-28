@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   HelperClass.hpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ekose <ekose@student.42.fr>                +#+  +:+       +#+        */
+/*   By: menasy <menasy@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/04 18:10:20 by menasy            #+#    #+#             */
-/*   Updated: 2025/06/25 23:51:21 by menasy           ###   ########.fr       */
+/*   Updated: 2025/06/28 13:10:56 by menasy           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -74,8 +74,6 @@ class HelperClass
 		static std::vector<std::string> 	selectTryFiles(const LocationConf* locConf, std::vector<LocationConf>& locVec);
 		static bool 						isItScript(std::string extension);
 		static void 						freeEnv(std::vector<char*>& env);
-		static long getFileSize(const std::string& fileName);
-		static std::string 					takeHeaderInFile(const std::string fileName);
-		static std::string 					takeBodyInFile(const std::string fileName);
-
+		static 	bool 	resolvePath(const std::string& path, std::string& out);
 	};
+	

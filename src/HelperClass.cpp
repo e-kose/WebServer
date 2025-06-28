@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   HelperClass.cpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ekose <ekose@student.42.fr>                +#+  +:+       +#+        */
+/*   By: menasy <menasy@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/12 07:50:19 by ekose             #+#    #+#             */
-/*   Updated: 2025/06/25 23:51:50 by menasy           ###   ########.fr       */
+/*   Updated: 2025/06/28 13:10:50 by menasy           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -489,55 +489,11 @@ void HelperClass::freeEnv(std::vector<char*>& env)
 		if (*it) delete[] *it;
 	env.clear();
 }
-
-long HelperClass::getFileSize(const std::string& fileName) 
-{
-        std::ifstream file(fileName.c_str(), std::ios::binary | std::ios::ate);
-        if (file.is_open()) 
-		{
-            long size = static_cast<long>(file.tellg());
-            file.close();
-            return size;
-        } 
-		else
-			return -1;
+bool HelperClass::resolvePath(const std::string& path, std::string& out) {
+	char resolved[PATH_MAX];
+	if (realpath(path.c_str(), resolved) == NULL)
+		return false;
+	out = resolved;
+	return true;
 }
 
-std::string HelperClass::takeHeaderInFile(const std::string fileName)
-{
-	std::ifstream file(fileName.c_str());
-	if (!file.is_open())
-		return "";
-
-	std::string header;
-	std::string line;
-	while (std::getline(file, line))
-	{
-		header += line + "\r\n";		
-		if (line.find("\r\n\r\n") != std::string::npos || line.empty())
-		{
-			header += "\r\n";
-			break;
-		}
-	}
-	file.close();
-	return header;
-}
-
-std::string HelperClass::takeBodyInFile(const std::string fileName)
-{
-	std::ifstream file(fileName.c_str());
-	 if (!file.is_open())
-	   return "";
-	std::string body;
-	std::string line;
-	while (std::getline(file, line))
-	{
-		if ((line.find("\r\n\r\n") != std::string::npos || line.empty()))
-			break;
-	}
-	while (std::getline(file, line))
-		body += line + "\r\n";
-	file.close();
-	return body;
-}

@@ -6,7 +6,7 @@
 /*   By: menasy <menasy@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/12 07:52:01 by ekose             #+#    #+#             */
-/*   Updated: 2025/06/25 23:36:55 by menasy           ###   ########.fr       */
+/*   Updated: 2025/06/28 13:24:46 by menasy           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,16 +44,11 @@ void  WebServer::sendResponse(pollfd& pollStruct, const std::string& status)
 		}
 			
 	}
+	this->responseStatus = code;
 	sendHandler(pollStruct, this->response);
 }
 
-bool resolvePath(const std::string& path, std::string& out) {
-	char resolved[PATH_MAX];
-	if (realpath(path.c_str(), resolved) == NULL)
-		return false;
-	out = resolved;
-	return true;
-}
+
 
 bool isPathUnderRoot(const std::string& path, const std::string& root) {
 	return path.find(root) == 0;
@@ -62,7 +57,7 @@ bool isPathUnderRoot(const std::string& path, const std::string& root) {
 void WebServer::deleteMethod(pollfd& pollStruct)
 {
 	std::string finalPath;
-	if (!resolvePath(this->resultPath, finalPath)) 
+	if (!HelperClass::resolvePath(this->resultPath, finalPath)) 
 	{
 		sendResponse(pollStruct, "404 Not Found");
 		return;
@@ -77,15 +72,9 @@ void WebServer::deleteMethod(pollfd& pollStruct)
 	std::string allowedRoot;
 	std::cout << "DELETE RESULT: " << this->resultPath << std::endl;
 	std::vector<LocationConf> locations = clientToServerMap[pollStruct.fd]->getLocations();
-	for (size_t i = 0; i < locations.size(); ++i) {
-		if (this->clientRequests[pollStruct.fd]->getPath() == locations[i].getPath())
-		{
-			allowedRoot = locations[i].getRoot().empty() ?
-			              clientToServerMap[pollStruct.fd]->getRoot() :
-			              locations[i].getRoot();
-			break;
-		}
-	}
+	LocationConf* locConf = HelperClass::findLoc(this->clientRequests[pollStruct.fd]->getPath(), locations);
+	allowedRoot = HelperClass::selectLocOrServerRoot(locConf, clientToServerMap[pollStruct.fd]->getRoot());
+
 	
 	std::cout << "ALLOWEDROOT: " << allowedRoot << std::endl;
 	if (allowedRoot.empty()) {
@@ -94,7 +83,7 @@ void WebServer::deleteMethod(pollfd& pollStruct)
 	}
 
 	std::string resolvedRoot;
-	if (!resolvePath(allowedRoot, resolvedRoot)) {
+	if (!HelperClass::resolvePath(allowedRoot, resolvedRoot)) {
 		sendResponse(pollStruct, "500 Internal Server Error");
 		return;
 	}
