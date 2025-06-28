@@ -129,7 +129,9 @@
 	"span": "cpp",
 	"text_encoding": "cpp",
 	"cinttypes": "cpp",
-	"variant": "cpp"
+	"variant": "cpp",
+	"climits": "cpp",
+	"filesystem": "cpp"
 },
   "C_Cpp.codeAnalysis.clangTidy.enabled": true,
   "C_Cpp.codeAnalysis.clangTidy.checks": "unused-*,-unused-exception-parameter",

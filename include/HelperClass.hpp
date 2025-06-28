@@ -6,7 +6,7 @@
 /*   By: ekose <ekose@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/04 18:10:20 by menasy            #+#    #+#             */
-/*   Updated: 2025/06/25 23:51:21 by menasy           ###   ########.fr       */
+/*   Updated: 2025/06/28 12:24:21 by ekose            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,12 +23,17 @@
 #include <cstdlib>
 #include <sys/socket.h>
 #include <sys/poll.h>
-#include "ServerConf.hpp"
+#include "../include/LocationConf.hpp"
+#include "../include/ServerConf.hpp"
+#include "../include/WebServer.hpp"
 #include <dirent.h>
 #include <sys/stat.h>
 
 class ServerConf;
 class LocationConf;
+class HelperClass;
+class WebServer;
+class HttpRequest;
 class HelperClass
 {
 	private:
@@ -74,5 +79,5 @@ class HelperClass
 		static std::vector<std::string> 	selectTryFiles(const LocationConf* locConf, std::vector<LocationConf>& locVec);
 		static bool 						isItScript(std::string extension);
 		static void 						freeEnv(std::vector<char*>& env);
-
+		static bool 						requestSize(const ServerConf& conf, size_t contentLength);
 	};

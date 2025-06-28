@@ -6,7 +6,7 @@
 /*   By: ekose <ekose@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/02 15:50:42 by menasy            #+#    #+#             */
-/*   Updated: 2025/06/25 23:35:35 by menasy           ###   ########.fr       */
+/*   Updated: 2025/06/28 20:32:09 by ekose            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,6 +34,11 @@ WebServer &WebServer::operator=(const WebServer &other)
 		this->clientKeepAlive = other.clientKeepAlive;
 		this->response = other.response;
 		this->responseStatus = other.responseStatus;
+		this->lastActivity = other.lastActivity;
+		this->headerIsParsed = other.headerIsParsed;
+		this->requestHeader = other.requestHeader;
+		this->requestBody = other.requestBody;
+		this->unchunkedBody = other.unchunkedBody;
 	}
 	return *this;
 }
@@ -44,6 +49,11 @@ WebServer::~WebServer()
 		close(it->first);
 	for (std::vector<pollfd>::iterator it = pollVec.begin(); it != pollVec.end(); ++it)
 		close(it->fd);
+}
+
+const std::map<int, ServerConf*>	 WebServer::getServerConfForFdMap()const
+{
+	return this->clientToServerMap;
 }
 
 void	WebServer::setNonBlocking(int fd)
@@ -133,12 +143,11 @@ ServerConf& WebServer::searchServerConf(std::vector<ServerConf>& confVec, std::s
 }
 HttpRequest* WebServer::parseRecv(const std::string& request)
 {
-	std:: cout << "================== REQUEST ================== \n"  << request << std::endl;
+	// std:: cout << "================== REQUEST ================== \n"  << request << std::endl;
 	
 	HttpRequest* httpRequest = new HttpRequest();
 	httpRequest->parseRequest(request);
 	return httpRequest;
-	
 }
 
 void	WebServer::initSocket()
@@ -208,110 +217,78 @@ void	WebServer::acceptNewClient(pollfd& pollStruct)
 		this->clientToAddrMap[clientSock] = addr;
 		this->lastActivity[clientSock] = time(NULL);
 		this->clientKeepAlive[clientSock] = false;
+		this->headerIsParsed[clientSock] = false;
 	}
 }
 
-void WebServer::clientRead(pollfd& pollStruct)
+bool WebServer::headerHandle(pollfd& pollStruct)
 {
-	char buffer[4096];
+	std::string& requestData = this->requestBuffers[pollStruct.fd];
+	size_t headerEnd = requestData.find("\r\n\r\n");
+	if (headerEnd == std::string::npos)
+		return false;
+	this->requestHeader = requestData.substr(0, headerEnd + 4);
+	this->requestBuffers[pollStruct.fd] = requestData.substr(headerEnd + 4);
+	this->headerIsParsed[pollStruct.fd] = true;
+	this->clientRequests[pollStruct.fd] = this->parseRecv(requestHeader);
+	this->clientToServerMap[pollStruct.fd] = 
+		&this->searchServerConf(this->serverConfVec, this->clientRequests[pollStruct.fd]->getHostName());
+	this->clientRequests[pollStruct.fd]->sepPath( *this->clientToServerMap[pollStruct.fd]);
+	if (this->clientRequests[pollStruct.fd]->getConnection() == "keep-alive" )
+		this->clientKeepAlive[pollStruct.fd] = true;
+	return true;
+}
+bool WebServer::clientRead(pollfd& pollStruct)
+{
+	char buffer[131072];
+	int bytesRecv;
     std::string& requestData = this->requestBuffers[pollStruct.fd];
-    while (true)
-    {
-        int bytesReceived = recv(pollStruct.fd, buffer, sizeof(buffer), 0);
-		std::cout << ">>>> Client Read: " << pollStruct.fd << " <<<<" << std::endl;
-		std::cout << ">>>> Bytes Received: " << bytesReceived << " <<<<" << std::endl;
-        if (bytesReceived < 0)
-        {
-            if (errno == EAGAIN || errno == EWOULDBLOCK)
-                break;
-            std::cerr << ">>>> Error reading from client: " << strerror(errno) << " <<<<" << std::endl;
-            closeCliSocket(pollStruct.fd);
-            return;
-        }
-        else if (bytesReceived == 0)
-        {
-            std::cout << ">>>> Client Ayrıldı <<<<" << std::endl;
-            closeCliSocket(pollStruct.fd);
-            return;
-        }
-
-        requestData.append(buffer, bytesReceived);
-        size_t headerEnd = requestData.find("\r\n\r\n");
-        if (headerEnd == std::string::npos)
-			continue;
-		this->clientKeepAlive[pollStruct.fd] = false;
-		if (requestData.find("Connection: keep-alive") != std::string::npos ||
-		    (requestData.find("HTTP/1.1") != std::string::npos &&
-		     requestData.find("Connection: close") == std::string::npos)) {
-		    this->clientKeepAlive[pollStruct.fd] = true;
-		}
-
-        this->clientRequests[pollStruct.fd] = this->parseRecv(requestData);
-       	this->clientToServerMap[pollStruct.fd] = &this->searchServerConf(this->serverConfVec, this->clientRequests[pollStruct.fd]->getHostName());
-		this->clientRequests[pollStruct.fd]->sepPath(*(this->clientToServerMap[pollStruct.fd]));
-
-		size_t maxBodySizeInBytes = this->clientToServerMap[pollStruct.fd]->getBodySize() * 1024 * 1024;
-        if (requestData.size() > maxBodySizeInBytes)
-        {
-            sendResponse(pollStruct, "413 Payload Too Large");
-            this->responseStatus = PAYLOAD_TOO_LARGE;
-            return;
-        }
-        std::string header = requestData.substr(0, headerEnd);
-        bool isChunked = header.find("Transfer-Encoding: chunked") != std::string::npos;
-        size_t bodyStart = headerEnd + 4;
-
-        if (isChunked)
-        {
-            std::string chunkedBody = requestData.substr(bodyStart);
-            std::string unchunkedBody;
-            if (!HelperClass::unchunkBody(chunkedBody, unchunkedBody))
-                continue;
-            requestData = header + "\r\n\r\n" + unchunkedBody;
+	HttpRequest*& t = this->clientRequests[pollStruct.fd];
+	while(true){
+		if(headerIsParsed[pollStruct.fd]) requestData.clear();
+		memset(buffer, 0, sizeof(buffer));
+		bytesRecv = recv(pollStruct.fd, buffer, sizeof(buffer), 0);
+		if (bytesRecv < 0) 
+    		return false;
+		requestData.append(buffer, bytesRecv);
+		if (headerIsParsed[pollStruct.fd] == false)
+		{
+			std::cout << "Header is not parsed for fd: " << pollStruct.fd << std::endl;
+			if (this->headerHandle(pollStruct) == false)
+				continue;
+			}
+		this->requestBody.append(requestData);
+		std::cout << "Received data for fd: " << pollStruct.fd << std::endl;
+		if (t->getChunkedTransfer()){
+            if (!HelperClass::unchunkBody(requestData, this->unchunkedBody)){
+				if(HelperClass::requestSize(*this->clientToServerMap[pollStruct.fd], this->unchunkedBody.size()) == false){
+					sendResponse(pollStruct, "413 Payload Too Large");
+					closeCliSocket(pollStruct.fd);
+					return false;
+				}
+				continue;
+			}
+			this->requestBody = this->unchunkedBody;
             break;
-        }
-        else
-        {
-            size_t pos = header.find("Content-Length:");
-            if (pos != std::string::npos)
-            {
-                pos += 15;
-                while (pos < header.size() && isspace(header[pos])) pos++;
-                size_t end = header.find("\r\n", pos);
-                std::string lengthStr = header.substr(pos, end - pos);
-                size_t contentLength = std::atoi(lengthStr.c_str());
-
-                if (requestData.size() < headerEnd + 4 + contentLength)
-                    continue;
-                break;
-            }
-            else
-                break;
-        }
-    }
-    if (!requestData.empty())
-    {
-        try
-        {
-            if (this->clientRequests[pollStruct.fd])
-            {
-                delete this->clientRequests[pollStruct.fd];
-                this->clientRequests[pollStruct.fd] = NULL;
-            }
-			this->lastActivity[pollStruct.fd] = time(NULL);
-            this->clientRequests[pollStruct.fd] = this->parseRecv(requestData);
-            this->clientToServerMap[pollStruct.fd] = &this->searchServerConf(this->serverConfVec, this->clientRequests[pollStruct.fd]->getHostName());
-			this->clientRequests[pollStruct.fd]->sepPath(*(this->clientToServerMap[pollStruct.fd]));
-			
-            pollStruct.events = POLLOUT;
-            this->requestBuffers.erase(pollStruct.fd);
-        }
-        catch (const std::exception& e)
-        {
-            std::cerr << "Error parsing request: " << e.what() << std::endl;
-            closeCliSocket(pollStruct.fd);
-        }
-    }
+		}
+		else{
+			if (HelperClass::requestSize(*this->clientToServerMap[pollStruct.fd], t->getContentLength()) == false){
+				sendResponse(pollStruct, "413 Payload Too Large");
+				closeCliSocket(pollStruct.fd);
+				return false;
+			}
+			std::cout << "Content Length: " << t->getContentLength() << std::endl;
+			std::cout << "Request Body Size: " << this->requestBody.size() << std::endl;
+			if (this->requestBody.size() < t->getContentLength())
+				continue;
+			}
+			break;
+		}
+	requestData.clear();
+	requestData.append(this->requestHeader + this->requestBody);
+	this->clientRequests[pollStruct.fd]->addBody(this->requestBody);
+	this->lastActivity[pollStruct.fd] = time(NULL);
+	return true;
 }
 void WebServer::sendHandler(pollfd& pollStruct, std::string& sendMessage)
 {
@@ -360,6 +337,12 @@ void WebServer::sendHandler(pollfd& pollStruct, std::string& sendMessage)
 	}
 	else
 		pollStruct.events = POLLOUT;
+	this->requestBuffers.erase(pollStruct.fd);
+	this->headerIsParsed[pollStruct.fd] = false;
+	this->requestBody.clear();
+	this->unchunkedBody.clear();
+	this->requestHeader.clear();
+	std::cout << "Cevap verildi fd: " << pollStruct.fd << std::endl;
 }
 
 bool WebServer::methodIsExist(LocationConf* locConf, const std::string& requestMethod,pollfd& pollStruct)
@@ -585,12 +568,14 @@ void	WebServer::runServer()
 	while (true)
 	{
 		int result = poll(pollVec.data(), pollVec.size(), -1);
+		std::cout << "poll çalıştı\n";
 		if (result < 0)
-			throw std::runtime_error("poll() error. Terminating server.");
+		throw std::runtime_error("poll() error. Terminating server.");
 		for (size_t i = 0; i < pollVec.size(); i++)
 		{
 			checkTimeouts();
-			std::cout << "FD " << pollVec[i].fd << " has event " << pollVec[i].revents << std::endl;
+			std::cout << "FD " << pollVec[i].fd << " events: " << pollVec[i].events 
+          << " revents: " << pollVec[i].revents << std::endl;
 			 if (pollVec[i].revents & POLLERR) 
 			{
         		HelperClass::writeToFile(this->clientToServerMap[pollVec[i].fd]->getErrorLog(), "POLL ERROR");
@@ -606,8 +591,11 @@ void	WebServer::runServer()
 
 			if (pollVec[i].revents & POLLIN)
 			{
-				this->clientRead(pollVec[i]);
-				continue;
+				if(this->clientRead(pollVec[i]) == false){
+					pollVec[i].events = POLLIN;
+					continue;
+				}
+				pollVec[i].events = POLLOUT;
 			}
 			
 			if (pollVec[i].revents & POLLOUT)

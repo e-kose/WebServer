@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   FileHandler.cpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: menasy <menasy@student.42.fr>              +#+  +:+       +#+        */
+/*   By: ekose <ekose@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/13 21:40:13 by menasy            #+#    #+#             */
-/*   Updated: 2025/06/26 00:47:40 by menasy           ###   ########.fr       */
+/*   Updated: 2025/06/28 20:14:37 by ekose            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,7 +29,7 @@ std::string WebServer::createHttpResponse(pollfd& pollStruct,
 	else
 		response += "Connection: close\r\n"; 
 	response += "\r\n";
-	response += body;	
+	response += body;
 	return response;
 }
 
@@ -283,8 +283,8 @@ std::string WebServer::startCgi(const std::string&filePath, std::string& fileExt
 	if (this->clientRequests[pollStruct.fd]->getMethod() == "POST")
 	{
 		std::cout << ">>>> POST METHOD HANDLER CGI<<<<\n";
-		std::cout << ">>>> POST BODY: " << this->clientRequests[pollStruct.fd]->getBody() << "<<<<\n";
-		std::cout << " SIZE : " << this->clientRequests[pollStruct.fd]->getBody().size() << std::endl;
+		// std::cout << ">>>> POST BODY: " << this->clientRequests[pollStruct.fd]->getBody() << "<<<<\n";
+		// std::cout << " SIZE : " << this->clientRequests[pollStruct.fd]->getBody().size() << std::endl;
 		scriptContent = postCgi(filePath, cgiExecPath, env, this->clientRequests[pollStruct.fd]->getBody());
 	}
 	else if(this->clientRequests[pollStruct.fd]->getMethod() == "GET")

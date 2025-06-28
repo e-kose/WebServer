@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   HttpRequest.cpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: menasy <menasy@student.42.fr>              +#+  +:+       +#+        */
+/*   By: ekose <ekose@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/08 16:36:39 by menasy            #+#    #+#             */
-/*   Updated: 2025/06/26 00:25:59 by menasy           ###   ########.fr       */
+/*   Updated: 2025/06/28 13:17:03 by ekose            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -55,6 +55,10 @@ HttpRequest &HttpRequest::operator=(const HttpRequest &other) {
 	return *this;
 }
 HttpRequest::~HttpRequest() {}
+
+std::string HttpRequest::getConnection() const {
+	return this->connection;
+}
 
 std::string HttpRequest::getMethod() const {
 	return method;
@@ -220,6 +224,9 @@ void HttpRequest::setBody(std::string body) {
 	this->body = body;
 }
 
+void HttpRequest::setConnection(std::string connection) {
+	this->connection = connection;
+}
 
 void HttpRequest::setQueryParams(std::map<std::string, std::string> queryParams) {
 	this->queryParams = queryParams;
@@ -229,6 +236,12 @@ void HttpRequest::setQueryString(std::string queryString) {
 	this->queryString = queryString;
 }
 
+void HttpRequest::addBody(std::string str) {
+	if (this->body.empty())
+		this->body = str;
+	else
+		this->body += str;
+}
 
 std::map<std::string, std::string>  HttpRequest::parseHeader(std::string& parseStr)
 {
@@ -262,6 +275,13 @@ std::map<std::string, std::string>  HttpRequest::parseHeader(std::string& parseS
 			if (line.find_first_of('=') != std::string::npos)
 				this->parseQuery(line);
 		}
+	}
+	if (destMap.find("Connection") != destMap.end())
+	{
+		if (destMap["Connection"] == "close")
+			this->setConnection("close");
+		else if (destMap["Connection"] == "keep-alive")
+			this->setConnection("keep-alive");
 	}
 	return destMap;
 }
@@ -298,10 +318,7 @@ void HttpRequest::parseRequest(const std::string& request)
 	this->setVersion(HelperClass::createAndMove(tmpReq,"\n"));
 	this->setHeaders(this->parseHeader(tmpReq));
 	std:: cout << "*******************************************************************************************\n";
-	std::cout << "TMP REQUEST: " << tmpReq << std::endl;
-	size_t headerEnd = tmpReq.find("\r\n\r\n");
-	if (headerEnd != std::string::npos)
-		this->setBody(tmpReq.substr(headerEnd + 4));
+	// std::cout << "TMP REQUEST: " << tmpReq << std::endl;
 	// this->setBodyMap(this->parseBody()); // key value body bolme 
 
 }
