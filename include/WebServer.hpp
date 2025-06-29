@@ -6,7 +6,7 @@
 /*   By: ekose <ekose@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/02 15:40:04 by menasy            #+#    #+#             */
-/*   Updated: 2025/06/28 21:02:55 by ekose            ###   ########.fr       */
+/*   Updated: 2025/06/29 11:33:44 by ekose            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -58,60 +58,69 @@ class WebServer
 		std::map<int, std::string>				requestBuffers;
 		std::map<int, bool>						clientKeepAlive; 
 		std::map<int, bool>						headerIsParsed;
-		std::string 							resultPath;
-		std::string 							response;
+
+		
+		std::string								unchunkedBody;
 		std::string 							requestHeader;
 		std::string								requestBody;	
-		std::string								unchunkedBody;
+		std::string 							resultPath;
+		std::string 							response;
+		
 		int 									responseStatus;
 
-		void 									checkTimeouts();
-		void									pollfdVecCreat();
-		std::string								socketInfo(sockaddr_in&, int);
-		void									closeCliSocket(int);
-		void 									pollOutEvent(pollfd& pollStruct);
-		void									deleteMethod(pollfd&);
-		bool									indexHandler(std::string& mergedPath, const std::vector<std::string>& indexVec);
-		void									acceptNewClient(pollfd& pollStruct);
-		bool									clientRead(pollfd&);
-		void									setNonBlocking(int);
-		void									initSocket();
-		bool									isExistIpAndPort(ServerConf&);
-		void									runServer();
-		HttpRequest*							parseRecv(const std::string&);
+		int										fileIsExecutable(const std::string& extension, const std::map<std::string, std::string>& cgiExtMap);
 		ServerConf&								searchServerConf(std::vector<ServerConf>& , std::string);			
-		std::string 							findRequest(pollfd& pollStruct);
-		std::string								tryFiles(std::string tryPath,LocationConf* locConf, const ServerConf* serverConfMap,  pollfd& pollStruct, std::vector<LocationConf>& locVec);
+		std::vector<char *>						fillEnv(const ServerConf& conf, const pollfd& pollStruct, const std::string& path);
+		HttpRequest*							parseRecv(const std::string&);
+		
+		
 		bool 									methodIsExist(LocationConf* locConf, const std::string& requestMethod, pollfd&);
-		void									sendHandler(pollfd& pollStruct, std::string& sendMessage);
-		std::string 							readHtmlFile(pollfd& ,std::string& path, const ServerConf& conf); 
+		bool									indexHandler(std::string& mergedPath, const std::vector<std::string>& indexVec);
+		bool									headerHandle(pollfd& pollStruct);
+		bool									isExistIpAndPort(ServerConf&);
+		bool									clientRead(pollfd&);
+		bool 									checkTimeouts();
+		
+		std::string								tryFiles(std::string tryPath,LocationConf* locConf, const ServerConf* serverConfMap, 
+														pollfd& pollStruct, std::vector<LocationConf>& locVec);
+		std::string								checkCgi(LocationConf* locConf, const ServerConf& conf, pollfd& pollStruct, 
+														std::string& newPath, int& status);
 		std::string 							createErrorResponse(pollfd& pollStruct,const std::string& status, const ServerConf& conf, const std::string& rootPAth);
 		std::string 							createHttpResponse(pollfd& pollStruct,
 																const std::string& statusCode, const std::string& statusMessage,
 																const std::string& contentType, const std::string& body);
-		std::string getCgi(const std::string& filePath, const std::string& cgiExecPath, std::vector<char *>& env);
-		std::vector<char *>	fillEnv(const ServerConf& conf, const pollfd& pollStruct, const std::string& path);
-		std::string startCgi(const std::string&filePath, std::string& fileExt, const pollfd& pollStruct, const ServerConf& conf, const std::map<std::string,std::string>&cgiExtMap);
-		std::string postCgi(const std::string& filePath, const std::string& cgiExecPath, std::vector<char *>& env, const std::string& requestBody);
-		std::string mergedPathHandler(std::string& mergedPath, LocationConf *locConf, const ServerConf& serverConf, pollfd& pollStruct, int mergedPathIndex);
-		void 		listDirectory(const std::string& path,LocationConf* locConf, pollfd& pollStruct);
-		std::string changeDir(const std::string& filePath);
-		std::string redirectResponse(pollfd& poolStruct,const std::string& statusCode,
-										const std::string& statusMessage, const std::string& contentType);
-		int fileIsExecutable(const std::string& extension, const std::map<std::string, std::string>& cgiExtMap);
-		std::string checkCgi(LocationConf* locConf, const ServerConf& conf, pollfd& pollStruct, std::string& newPath, int& status);
-		bool headerHandle(pollfd& pollStruct);
-		std::string pathCheck(std::string& path, std::string& rootPath, pollfd& pollStruct);
-		std::string callSendResponse(pollfd& polstruct, std::string status);
+		std::string								pathCheck(std::string& path, std::string& rootPath, pollfd& pollStruct);
+		std::string 							readHtmlFile(pollfd& ,std::string& path, const ServerConf& conf); 
+		std::string								callSendResponse(pollfd& polstruct, std::string status);
+		std::string 							findRequest(pollfd& pollStruct);
+		std::string								socketInfo(sockaddr_in&, int);
+		std::string 							getCgi(const std::string& filePath, const std::string& cgiExecPath, std::vector<char *>& env);
+		std::string 							startCgi(const std::string&filePath, std::string& fileExt, const pollfd& pollStruct, const ServerConf& conf, const std::map<std::string,std::string>&cgiExtMap);
+		std::string 							postCgi(const std::string& filePath, const std::string& cgiExecPath, std::vector<char *>& env, const std::string& requestBody);
+		std::string 							mergedPathHandler(std::string& mergedPath, LocationConf *locConf, const ServerConf& serverConf, pollfd& pollStruct, int mergedPathIndex);
+		std::string 							changeDir(const std::string& filePath);
+		std::string 							redirectResponse(pollfd& poolStruct,const std::string& statusCode,
+																const std::string& statusMessage, const std::string& contentType);
+		
+		void									pollfdVecCreat();
+		void									closeCliSocket(int);
+		void 									pollOutEvent(pollfd& pollStruct);
+		void									deleteMethod(pollfd&);
+		void									acceptNewClient(pollfd& pollStruct);
+		void									setNonBlocking(int);
+		void 									sendResponse(pollfd&, const std::string& status);
+		void									initSocket();
+		void									runServer();
+		void									sendHandler(pollfd& pollStruct, std::string& sendMessage);
+		void 									listDirectory(const std::string& path,LocationConf* locConf, pollfd& pollStruct);		
+		void									cleanReq(pollfd& pollStruct);
 		
 		public:
 			WebServer(std::vector<ServerConf>& serverConfVec);
 			WebServer(const WebServer &other);
 			WebServer &operator=(const WebServer &other);
 			~WebServer();
-			const std::map<int, ServerConf*>				getServerConfForFdMap()const;
-			void 									sendResponse(pollfd&, const std::string& status);
-
+			const std::map<int, ServerConf*>	getServerConfForFdMap()const;
 
 		
 	

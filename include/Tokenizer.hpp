@@ -18,8 +18,8 @@ class Tokenizer : public Parser{
 		Tokenizer& operator=(const Tokenizer& src);
 		~Tokenizer();
 		
-		std::string		getFullText()const;
-		void			setFullText(std::string fullText);
+		std::string					getFullText()const;
+		void						setFullText(std::string fullText);
 		
 		static int					wordCounter(std::vector<std::string> vec, std::string searchWord);
 		LocationConf				createLocConf(std::vector<std::string>::iterator& it, std::vector<std::string> & sepVec);

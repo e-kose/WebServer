@@ -7,8 +7,8 @@
 # include "ServerConf.hpp"
 class Parser {
 	protected:
-		std::string confKey[18];
-		std::vector<ServerConf> serverConfVec;
+		std::string					confKey[18];
+		std::vector<ServerConf>		serverConfVec;
 	public:
 		Parser();
 		~Parser();
@@ -17,7 +17,7 @@ class Parser {
 
 
 	
-		void initKey();
-		std::map<std::string, int> confKeyMap(std::string);
-		void checkKeyCount(std::map<std::string, int>);
+		void							initKey();
+		void							checkKeyCount(std::map<std::string, int>);
+		std::map<std::string, int>		confKeyMap(std::string);
 };

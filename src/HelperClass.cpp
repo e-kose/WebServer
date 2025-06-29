@@ -6,7 +6,7 @@
 /*   By: ekose <ekose@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/12 07:50:19 by ekose             #+#    #+#             */
-/*   Updated: 2025/06/28 21:04:22 by ekose            ###   ########.fr       */
+/*   Updated: 2025/06/29 11:33:35 by ekose            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -376,6 +376,7 @@ LocationConf* HelperClass::findLoc(const std::string& locPath, std::vector<Locat
     }
     return NULL;
 }
+
 bool HelperClass::isItScript(std::string extension)
 {
 	std::vector<std::string> scriptVec = HelperClass::getScriptExtVec();
@@ -387,6 +388,7 @@ bool HelperClass::isItScript(std::string extension)
 	}
 	return false; 	
 }
+
 std::map<std::string, std::string>HelperClass::findLocationCgi(LocationConf* locConf)
 {
 	std::map<std::string, std::string> cgiExtMap;
@@ -394,6 +396,7 @@ std::map<std::string, std::string>HelperClass::findLocationCgi(LocationConf* loc
 		cgiExtMap = locConf->getCgiExt();
 	return cgiExtMap;
 }
+
 std::vector<std::string> HelperClass::selectLocOrServerIndex(const LocationConf* locConf, const std::vector<std::string>& serverIndexVec)
 {
 	std::vector<std::string> resVec;
@@ -442,7 +445,6 @@ std::vector<std::string> HelperClass::selectTryFiles(const LocationConf* locConf
 			return rootLoc->getTryFiles();
 	}	
 	return locConf->getTryFiles();
-	
 }
 
 bool HelperClass::unchunkBody(const std::string& chunked, std::string& out)
@@ -453,28 +455,21 @@ bool HelperClass::unchunkBody(const std::string& chunked, std::string& out)
         size_t newline = chunked.find("\r\n", pos);
         if (newline == std::string::npos)
             return false;
-
         std::string sizeStr = chunked.substr(pos, newline - pos);
         char* endptr = NULL;
         long chunkSize = std::strtol(sizeStr.c_str(), &endptr, 16);
-
         if (endptr == sizeStr.c_str() || *endptr != '\0' || chunkSize < 0)
             return false;
-
         pos = newline + 2;
-
         if (chunkSize == 0) {
             if (chunked.substr(pos, 2) != "\r\n")
                 return false;
             return true;
         }
-
         if (chunked.size() < pos + chunkSize + 2)
             return false;
-
         out.append(chunked, pos, chunkSize);
         pos += chunkSize;
-
         if (chunked.substr(pos, 2) != "\r\n")
             return false;
 

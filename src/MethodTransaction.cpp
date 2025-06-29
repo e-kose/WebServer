@@ -6,7 +6,7 @@
 /*   By: ekose <ekose@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/12 07:52:01 by ekose             #+#    #+#             */
-/*   Updated: 2025/06/28 21:01:01 by ekose            ###   ########.fr       */
+/*   Updated: 2025/06/29 10:03:19 by ekose            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -47,8 +47,6 @@ void  WebServer::sendResponse(pollfd& pollStruct, const std::string& status)
 	this->responseStatus = code;
 	sendHandler(pollStruct, this->response);
 }
-
-
 
 bool isPathUnderRoot(const std::string& path, const std::string& root) {
 	return path.find(root) == 0;
@@ -109,4 +107,85 @@ void WebServer::deleteMethod(pollfd& pollStruct)
 		return;
 	}
 	sendResponse(pollStruct, "200 OK");
+}
+
+void WebServer::sendHandler(pollfd& pollStruct, std::string& sendMessage)
+{
+    size_t totalSent = 0;
+    size_t lengthMessage = sendMessage.size();
+
+    while (totalSent < lengthMessage)
+    {
+        ssize_t sent = send(pollStruct.fd, sendMessage.c_str() + totalSent, lengthMessage - totalSent, 0);
+
+        if (sent == -1)
+        {
+            if (errno == EAGAIN || errno == EWOULDBLOCK)
+            {
+                pollStruct.events = POLLOUT;
+                break;
+            }
+            else
+            {
+                if (errno != EBADF){
+                    shutdown(pollStruct.fd, SHUT_WR);
+					close(pollStruct.fd);
+				}
+                for (std::vector<pollfd>::iterator it = this->pollVec.begin(); it != this->pollVec.end(); ++it)
+                {
+                    if (it->fd == pollStruct.fd)
+                    {
+                        this->pollVec.erase(it);
+                        break;
+                    }
+                }
+                break;
+            }
+        }
+        else
+            totalSent += sent;
+    }
+
+    if (totalSent == lengthMessage)
+    {
+        sendMessage.clear();
+		if (this->clientKeepAlive[pollStruct.fd]) 	
+			pollStruct.events = POLLIN;
+		else
+			this->closeCliSocket(pollStruct.fd);
+	}
+	else
+		pollStruct.events = POLLOUT;
+	this->cleanReq(pollStruct);
+}
+
+bool WebServer::methodIsExist(LocationConf* locConf, const std::string& requestMethod,pollfd& pollStruct)
+{
+	bool check = false;
+	if (locConf != NULL)
+	{
+		std::vector<std::string> locMethodsvec = locConf->getMethods();
+		for (size_t i = 0; i < locMethodsvec.size(); i++)
+		{
+			if (locMethodsvec[i] == requestMethod)
+				check = true;
+		}
+	}
+	else
+		requestMethod == "GET" ? check = true : check = false;
+		
+	if (!check)
+	{	
+		this->sendResponse(pollStruct, "405 Method Not Allowed");
+		return false;
+	}
+	return true;
+}
+
+void WebServer::cleanReq(pollfd& pollStruct){
+	this->requestBuffers.erase(pollStruct.fd);
+	this->headerIsParsed[pollStruct.fd] = false;
+	this->requestBody.clear();
+	this->unchunkedBody.clear();
+	this->requestHeader.clear();
 }

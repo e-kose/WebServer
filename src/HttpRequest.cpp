@@ -6,7 +6,7 @@
 /*   By: ekose <ekose@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/08 16:36:39 by menasy            #+#    #+#             */
-/*   Updated: 2025/06/28 13:17:03 by ekose            ###   ########.fr       */
+/*   Updated: 2025/06/29 11:02:19 by ekose            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -318,8 +318,6 @@ void HttpRequest::parseRequest(const std::string& request)
 	this->setVersion(HelperClass::createAndMove(tmpReq,"\n"));
 	this->setHeaders(this->parseHeader(tmpReq));
 	std:: cout << "*******************************************************************************************\n";
-	// std::cout << "TMP REQUEST: " << tmpReq << std::endl;
-	// this->setBodyMap(this->parseBody()); // key value body bolme 
 
 }
 

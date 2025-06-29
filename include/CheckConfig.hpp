@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   CheckConfig.hpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: menasy <menasy@student.42.fr>              +#+  +:+       +#+        */
+/*   By: ekose <ekose@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/30 12:42:07 by menasy            #+#    #+#             */
-/*   Updated: 2025/06/09 14:16:27 by menasy           ###   ########.fr       */
+/*   Updated: 2025/06/29 11:01:49 by ekose            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,16 +29,13 @@ class CheckConfig : public Tokenizer
 		CheckConfig(const CheckConfig &other);
 		CheckConfig &operator=(const CheckConfig &other);
 	
-		void checkConfig();
-		void checkFileExtensions() ;
-		std::string fileHandler();
-		void bracketsCheck(std::string str);
-		void checkElements(std::string str);
-		void checkConfKey(const std::string& element);
-		void checkRequiredElements();
-		void emptyValueCheck();
-		void checkValue();
-
-
+		std::string		fileHandler();
+		
+		void			checkConfig();
+		void			checkFileExtensions() ;
+		void 			bracketsCheck(std::string str);
+		void 			checkElements(std::string str);
+		void 			checkConfKey(const std::string& element);
+		void 			checkRequiredElements();
 };
 #endif
