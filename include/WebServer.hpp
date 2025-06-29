@@ -6,7 +6,7 @@
 /*   By: ekose <ekose@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/02 15:40:04 by menasy            #+#    #+#             */
-/*   Updated: 2025/06/28 20:28:01 by ekose            ###   ########.fr       */
+/*   Updated: 2025/06/28 21:02:55 by ekose            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -101,6 +101,9 @@ class WebServer
 		int fileIsExecutable(const std::string& extension, const std::map<std::string, std::string>& cgiExtMap);
 		std::string checkCgi(LocationConf* locConf, const ServerConf& conf, pollfd& pollStruct, std::string& newPath, int& status);
 		bool headerHandle(pollfd& pollStruct);
+		std::string pathCheck(std::string& path, std::string& rootPath, pollfd& pollStruct);
+		std::string callSendResponse(pollfd& polstruct, std::string status);
+		
 		public:
 			WebServer(std::vector<ServerConf>& serverConfVec);
 			WebServer(const WebServer &other);

@@ -6,7 +6,7 @@
 /*   By: ekose <ekose@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/12 07:50:19 by ekose             #+#    #+#             */
-/*   Updated: 2025/06/28 12:24:09 by ekose            ###   ########.fr       */
+/*   Updated: 2025/06/28 21:04:22 by ekose            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -489,7 +489,6 @@ void HelperClass::freeEnv(std::vector<char*>& env)
 	env.clear();
 }
 
-
 bool HelperClass::requestSize(ServerConf const& conf, size_t contentLength)
 {
 	if (contentLength == 0)
@@ -497,6 +496,14 @@ bool HelperClass::requestSize(ServerConf const& conf, size_t contentLength)
 	size_t maxSize = conf.getBodySize() * 1024 * 1024;
 	if (contentLength > maxSize)
 		return false;
+	return true;
+}
+
+bool HelperClass::resolvePath(const std::string& path, std::string& out) {
+	char resolved[PATH_MAX];
+	if (realpath(path.c_str(), resolved) == NULL)
+		return false;
+	out = resolved;
 	return true;
 }
 

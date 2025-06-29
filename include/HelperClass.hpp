@@ -6,7 +6,7 @@
 /*   By: ekose <ekose@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/04 18:10:20 by menasy            #+#    #+#             */
-/*   Updated: 2025/06/28 12:24:21 by ekose            ###   ########.fr       */
+/*   Updated: 2025/06/28 21:02:37 by ekose            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -80,4 +80,6 @@ class HelperClass
 		static bool 						isItScript(std::string extension);
 		static void 						freeEnv(std::vector<char*>& env);
 		static bool 						requestSize(const ServerConf& conf, size_t contentLength);
+		static 	bool 	resolvePath(const std::string& path, std::string& out);
 	};
+	

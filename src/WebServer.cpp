@@ -6,7 +6,7 @@
 /*   By: ekose <ekose@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/02 15:50:42 by menasy            #+#    #+#             */
-/*   Updated: 2025/06/28 20:32:09 by ekose            ###   ########.fr       */
+/*   Updated: 2025/06/28 21:02:09 by ekose            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -363,7 +363,6 @@ bool WebServer::methodIsExist(LocationConf* locConf, const std::string& requestM
 	if (!check)
 	{	
 		this->sendResponse(pollStruct, "405 Method Not Allowed");
-		this->responseStatus = METHOD_NOT_ALLOWED;
 		return false;
 	}
 	return true;
@@ -397,9 +396,7 @@ std::string WebServer::tryFiles(std::string tryPath, LocationConf* locConf, cons
 	if (!isFind && this->responseStatus == NOT_RESPONDED)
 	{
 		tryFilesVec.size() > 0 ? errPage = tryFilesVec[tryFilesVec.size() -1] : errPage = "404";
-		this->sendResponse(pollStruct, (errPage + " Not Found"));
-		this->responseStatus = NOT_FOUND;
-		return "";
+		return this->callSendResponse(pollStruct, (errPage + " Not Found"));
 	}
 	return findedPath;
 }
@@ -418,16 +415,12 @@ void WebServer::listDirectory(const std::string& path,LocationConf* locConf, pol
 	else if (locConf != NULL && this->methodIsExist(locConf, this->clientRequests[pollStruct.fd]->getMethod(), pollStruct) == false)
 		return ;
 	else if (locConf == NULL || (locConf != NULL && !locConf->getAutoIndex()))
-	{
 		this->sendResponse(pollStruct, "403 Forbidden");
-		this->responseStatus = FORBIDDEN;
-	}
 	else
 	{
 		std::string httpPath = this->clientRequests[pollStruct.fd]->getPath() + this->clientRequests[pollStruct.fd]->getRequestFile();
 		this->response = HelperClass::generateAutoIndexHtml(path,httpPath);
 		this->sendResponse(pollStruct, "200 OK");
-		this->responseStatus = OK; 
 	}
 }
 std::string WebServer::mergedPathHandler(std::string& newMergedPath, LocationConf *locConf, const ServerConf& serverConf, pollfd& pollStruct, int recCount)
@@ -477,13 +470,9 @@ std::string WebServer::findRequest(pollfd& pollStruct)
 
 	this->responseStatus = NOT_RESPONDED;
 	httpPath = this->clientRequests[pollStruct.fd]->getPath();
-	if (httpPath.empty())
-	{
-		this->sendResponse(pollStruct,"400 Bad Request");
-		this->responseStatus = BAD_REQUEST;
-		return "";
-	}
 	std::cout << "HTTP PATH: " << httpPath << std::endl;
+	if (httpPath.empty() || httpPath[0] != '/')
+		return this->callSendResponse(pollStruct, "400 Bad Request");
 	LocationConf *loc = HelperClass::findLoc(httpPath, locVec);
 	rootPath = HelperClass::selectLocOrServerRoot(loc,serverConf->getRoot());
 	clientReq = this->clientRequests[pollStruct.fd]->getRequestFile();	
@@ -495,9 +484,7 @@ std::string WebServer::findRequest(pollfd& pollStruct)
 	if (retVal.empty() && this->responseStatus == NOT_RESPONDED)
 	{
 		std::cout << "Merged Path Is Not Exists: " << retVal << std::endl;
-		this->sendResponse(pollStruct,"404 Not Found");
-		this->responseStatus = NOT_FOUND;
-		return "";
+		return this->callSendResponse(pollStruct,"404 Not Found");
 	}
 	else if (!retVal.empty() && (loc != NULL && loc->getReturn().size() > 0))
 	{
@@ -506,7 +493,7 @@ std::string WebServer::findRequest(pollfd& pollStruct)
 		else if (loc->getReturn().find(302) != loc->getReturn().end())
 			this->sendResponse(pollStruct, "302 Found");
 	}
-	return retVal;
+	return this->pathCheck(retVal,rootPath,pollStruct);
 }
 
 void WebServer::checkTimeouts() {
@@ -568,7 +555,6 @@ void	WebServer::runServer()
 	while (true)
 	{
 		int result = poll(pollVec.data(), pollVec.size(), -1);
-		std::cout << "poll çalıştı\n";
 		if (result < 0)
 		throw std::runtime_error("poll() error. Terminating server.");
 		for (size_t i = 0; i < pollVec.size(); i++)

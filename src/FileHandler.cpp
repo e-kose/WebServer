@@ -6,7 +6,7 @@
 /*   By: ekose <ekose@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/13 21:40:13 by menasy            #+#    #+#             */
-/*   Updated: 2025/06/28 20:14:37 by ekose            ###   ########.fr       */
+/*   Updated: 2025/06/28 20:59:52 by ekose            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -85,6 +85,11 @@ std::string WebServer::redirectResponse(pollfd& pollStruct,
 	return response;
 }
 
+std::string WebServer::callSendResponse(pollfd& polstruct, std::string status)
+{
+	this->sendResponse(polstruct, status);
+	return "";
+}
 int WebServer::fileIsExecutable(const std::string& extension, const std::map<std::string, std::string>& cgiExtMap)
 {
 	bool isItScript = HelperClass::isItScript(extension);
@@ -103,6 +108,56 @@ int WebServer::fileIsExecutable(const std::string& extension, const std::map<std
 	}
 	return 0;
 }
+std::string WebServer::pathCheck(std::string& path, std::string&rootPath, pollfd& pollStruct)
+{
+	// Çoklu slash'leri tek slash'e dönüştür (// -> /)
+	std::string normalizedPath = path;
+	size_t pos = 0;
+	while ((pos = normalizedPath.find("//", pos)) != std::string::npos)
+		normalizedPath.replace(pos, 2, "/");
+	path = normalizedPath;
+	std::cout << "NORMALİZED PATH: " << path << std::endl;
+	// Path çok uzun mu kontrolü (4096 karakter limit)
+	if (path.length() > 4096)
+		return this->callSendResponse(pollStruct, "414 URI Too Long");
+	// Null byte injection kontrolü
+	if (path.find('\0') != std::string::npos)
+		return this->callSendResponse(pollStruct, "400 Bad Request");
+	// realpath ile path çözümleme ve var olma kontrolü
+	char resolved[PATH_MAX];
+	if (realpath(path.c_str(), resolved) == NULL) 
+		return this->callSendResponse(pollStruct, "404 Not Found");
+	std::string resolvedPath = resolved;
+	struct stat st;
+	if (stat(resolvedPath.c_str(), &st) != 0)
+		return this->callSendResponse(pollStruct, "404 Not Found");
+	// Dosya türü kontrolü - sadece regular file ve directory kabul et
+	if ((!S_ISREG(st.st_mode) && !S_ISDIR(st.st_mode)) || resolvedPath.find("..") != std::string::npos)
+		return this->callSendResponse(pollStruct, "403 Forbidden");
+	// Root dizin güvenlik kontrolü (chroot jail)
+	// Mevcut working directory'yi al
+	char cwd[PATH_MAX];
+	if (getcwd(cwd, sizeof(cwd)) != NULL) 
+	{
+		std::string allowedRoot = std::string(cwd) + "/" + rootPath;
+		if (resolvedPath.find(allowedRoot) != 0) 
+			return this->callSendResponse(pollStruct, "403 Forbidden");
+	}
+	// Zararlı dosya uzantıları kontrolü
+	const std::string dangerousExts[] = {
+		".exe", ".bat", ".cmd", ".com", ".scr", ".pif", 
+		".msi", ".dll", ".sh", ".bash"
+	};
+	size_t extCount = sizeof(dangerousExts) / sizeof(dangerousExts[0]);
+	for (size_t i = 0; i < extCount; i++) {
+		if (resolvedPath.length() >= dangerousExts[i].length()) {
+			if (resolvedPath.substr(resolvedPath.length() - dangerousExts[i].length()) == dangerousExts[i])
+				return this->callSendResponse(pollStruct, "403 Forbidden");
+		}
+	}
+	std::cout << "============================== Path validation successful =============================" << resolvedPath << std::endl;
+	return resolvedPath;
+}
 std::string WebServer::checkCgi(LocationConf* locConf, const ServerConf& conf, pollfd& pollStruct, std::string& newPath, int& status)
 {
 	std::cout << "================== CHECK_CGI ======================= "<< std::endl;
@@ -115,6 +170,11 @@ std::string WebServer::checkCgi(LocationConf* locConf, const ServerConf& conf, p
 		status = fileIsExecutable(ext, cgiMap);
 		if (status == 1)
 		{
+			if (access(newPath.c_str(), X_OK) != 0)
+			{
+				std::cout << ">>>> Cgi Calistirma izni yok -<<<<\n";
+				return this->callSendResponse(pollStruct, "403 Forbidden");
+			}
 			std::string scriptContetnt;
 			std::cout << ">>>> CGI YA GONDERİLDİ <<<<\n" << ext << std::endl;
 			scriptContetnt = this->startCgi(newPath, ext, pollStruct, conf, cgiMap);
@@ -123,9 +183,7 @@ std::string WebServer::checkCgi(LocationConf* locConf, const ServerConf& conf, p
 		else if (status == -1)
 		{
 			std::cout << ">>>> Cgi YOK -<<<<\n";
-			this->sendResponse(pollStruct, "403 Forbidden");
-			this->responseStatus = FORBIDDEN;
-			return "";
+			return this->callSendResponse(pollStruct, "403 Forbidden");
 		}	
 	}
 	return "";
@@ -155,6 +213,8 @@ std::string WebServer::readHtmlFile(pollfd& pollStruct,std::string& path, const 
     }
 	else
 		return "";
+	if (access(newPath.c_str(), R_OK) != 0)
+		return this->callSendResponse(pollStruct, "403 Forbidden");
 	std::cout << ">>> FILE IS OPENED <<<" << std::endl;
     std::stringstream buffer;
     buffer << file.rdbuf();
