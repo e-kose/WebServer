@@ -342,7 +342,7 @@ void WebServer::sendHandler(pollfd& pollStruct, std::string& sendMessage)
 	this->requestBody.clear();
 	this->unchunkedBody.clear();
 	this->requestHeader.clear();
-	std::cout << "Cevap verildi fd: " << pollStruct.fd << std::endl;
+	std::cout << "================= Cevap verildi fd: " << pollStruct.fd << std::endl;
 }
 
 bool WebServer::methodIsExist(LocationConf* locConf, const std::string& requestMethod,pollfd& pollStruct)
@@ -502,7 +502,7 @@ void WebServer::checkTimeouts() {
     for (std::map<int, time_t>::iterator it = lastActivity.begin(); it != lastActivity.end(); ) {
         int fd = it->first;
         time_t last = it->second;
-		std::cout << "Checking timeout for fd: " << fd << std::endl;
+		// std::cout << "Checking timeout for fd: " << fd << std::endl;
         if (now - last > TIMEOUT_SEC) {
             std::cout << ">>>> Timeout. Closing idle connection: " << fd << std::endl;
             closeCliSocket(fd);
@@ -560,8 +560,8 @@ void	WebServer::runServer()
 		for (size_t i = 0; i < pollVec.size(); i++)
 		{
 			checkTimeouts();
-			std::cout << "FD " << pollVec[i].fd << " events: " << pollVec[i].events 
-          << " revents: " << pollVec[i].revents << std::endl;
+		// 	std::cout << "FD " << pollVec[i].fd << " events: " << pollVec[i].events 
+        //   << " revents: " << pollVec[i].revents << std::endl;
 			 if (pollVec[i].revents & POLLERR) 
 			{
         		HelperClass::writeToFile(this->clientToServerMap[pollVec[i].fd]->getErrorLog(), "POLL ERROR");

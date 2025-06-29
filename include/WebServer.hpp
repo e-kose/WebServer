@@ -85,7 +85,7 @@ class WebServer
 		bool 									methodIsExist(LocationConf* locConf, const std::string& requestMethod, pollfd&);
 		void									sendHandler(pollfd& pollStruct, std::string& sendMessage);
 		std::string 							readHtmlFile(pollfd& ,std::string& path, const ServerConf& conf); 
-		std::string 							createErrorResponse(pollfd& pollStruct,const std::string& status, const ServerConf& conf, const std::string& rootPAth);
+		std::string 		createErrorResponse(pollfd& pollStruct, const std::string& status, const ServerConf& conf, const std::string& rootPAth);
 		std::string 							createHttpResponse(pollfd& pollStruct,
 																const std::string& statusCode, const std::string& statusMessage,
 																const std::string& contentType, const std::string& body);

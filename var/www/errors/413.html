@@ -1,26 +1,20 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="tr">
 <head>
     <meta charset="UTF-8">
-    <title>413 Payload Too Large</title>
-    <link rel="stylesheet" href="/static/css/style.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>413 - Dosya Çok Büyük</title>
     <link rel="stylesheet" href="/static/css/errors.css">
-    <style>
-        .error-container { border-color: #ff66b3; }
-        .error-code { color: #ff66b3; }
-    </style>
 </head>
 <body>
-    <div class="container">
-        <div class="error-container">
-            <div class="error-code">413</div>
-            <h1 class="error-title">Payload Too Large</h1>
-            <p class="error-description">
-                The request entity exceeds server limits.<br>
-                Maximum allowed size is 100MB.
-            </p>
-            <a href="/index.html" class="btn-home">Return to Homepage</a>
-        </div>
+    <div class="error-container">
+        <div class="emoji">📦</div>
+        <h1 class="error-code">413</h1>
+        <h2 class="error-title">Dosya Çok Büyük</h2>
+        <p class="error-message">
+            Göndermeye çalıştığınız dosya maksimum boyut sınırını aşıyor. Lütfen daha küçük bir dosya seçin.
+        </p>
+        <a href="/" class="home-button">🏠 Ana Sayfaya Dön</a>
     </div>
 </body>
 </html>

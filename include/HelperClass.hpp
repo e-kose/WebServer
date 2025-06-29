@@ -80,6 +80,8 @@ class HelperClass
 		static bool 						isItScript(std::string extension);
 		static void 						freeEnv(std::vector<char*>& env);
 		static bool 						requestSize(const ServerConf& conf, size_t contentLength);
-		static 	bool 	resolvePath(const std::string& path, std::string& out);
+		static 	bool 						resolvePath(const std::string& path, std::string& out);
+		static std::string 					findContentType(const std::string& path); 
+
 	};
 	

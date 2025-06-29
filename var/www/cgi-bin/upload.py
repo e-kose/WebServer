@@ -3,9 +3,9 @@ import os
 import sys
 import cgi
 import cgitb
-import uuid
 import json
 from datetime import datetime
+import re
 
 # Hata ayıklama
 cgitb.enable()
@@ -22,49 +22,67 @@ def log_event(message):
         timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         log.write(f"[{timestamp}] {message}\n")
 
+def sanitize_filename(filename):
+    """Güvenli dosya adı oluşturma"""
+    # İzin verilen karakterler: harf, rakam, boşluk, -, _, .
+    # Diğer karakterleri alt çizgiyle değiştir
+    safe_name = re.sub(r'[^\w\s\-_.]', '_', filename)
+    # Birden fazla alt çizgiyi tekilleştir
+    safe_name = re.sub(r'_{2,}', '_', safe_name)
+    # Baştaki ve sondaki boşlukları kaldır
+    return safe_name.strip()
+
 try:
     # İstek kontrolü
     if os.environ['REQUEST_METHOD'] != 'POST':
-        raise Exception("Sadece POST istekleri kabul edilir")
+        raise Exception("Only POST requests are accepted")
     
     form = cgi.FieldStorage()
     
     if 'file' not in form:
-        raise Exception("Dosya alanı bulunamadı")
+        raise Exception("File field not found")
     
     file_item = form['file']
     
     if not file_item.file or not file_item.filename:
-        raise Exception("Geçersiz dosya")
+        raise Exception("Invalid file")
     
-    # Dosya adı ve uzantı
-    filename = os.path.basename(file_item.filename)
-    file_ext = os.path.splitext(filename)[1]
-    safe_name = f"{uuid.uuid4().hex}{file_ext}"
+    # Orijinal dosya adını al ve sanitize et
+    original_filename = os.path.basename(file_item.filename)
+    safe_filename = sanitize_filename(original_filename)
     
     # Dizin kontrolü
     os.makedirs(UPLOAD_DIR, exist_ok=True)
-    save_path = os.path.join(UPLOAD_DIR, safe_name)
+    save_path = os.path.join(UPLOAD_DIR, safe_filename)
+    
+    # Dosya çakışmasını önle (aynı isimde dosya varsa)
+    counter = 1
+    base_name, ext = os.path.splitext(safe_filename)
+    while os.path.exists(save_path):
+        safe_filename = f"{base_name}_{counter}{ext}"
+        save_path = os.path.join(UPLOAD_DIR, safe_filename)
+        counter += 1
     
     # Dosyayı kaydet
+    file_size = 0
     with open(save_path, 'wb') as f:
         while True:
             chunk = file_item.file.read(8192)
             if not chunk:
                 break
             f.write(chunk)
+            file_size += len(chunk)
     
     # Log ve yanıt
-    file_size = os.path.getsize(save_path)
-    log_event(f"UPLOAD: {filename} -> {safe_name} ({file_size} bytes)")
+    log_event(f"UPLOAD: {original_filename} -> {safe_filename} ({file_size} bytes)")
     
     print(json.dumps({
         "status": "success",
-        "message": "Dosya başarıyla yüklendi",
-        "filename": filename,
-        "saved_as": safe_name,
+        "message": "File uploaded successfully",
+        "original_filename": original_filename,
+        "saved_filename": safe_filename,
         "size": file_size,
-        "download_url": f"/uploads/{safe_name}"
+        "download_url": f"/uploads/{safe_filename}"
     }))
 
 except Exception as e:
