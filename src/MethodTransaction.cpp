@@ -6,7 +6,7 @@
 /*   By: ekose <ekose@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/12 07:52:01 by ekose             #+#    #+#             */
-/*   Updated: 2025/06/29 15:04:06 by ekose            ###   ########.fr       */
+/*   Updated: 2025/06/29 15:19:45 by ekose            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,10 +32,8 @@ void  WebServer::sendResponse(pollfd& pollStruct, const std::string& status)
 	{	
 		std::string httpMethod = this->clientRequests[pollStruct.fd]->getMethod();
 		std::string contentType = HelperClass::findContentType(this->resultPath);
-		if ((httpMethod == "GET" && this->response.empty()))
+		if ((httpMethod == "GET" || httpMethod == "POST") && this->response.empty())
 			this->response = this->createHttpResponse(pollStruct,status.substr(0, pos), "OK", contentType, this->readHtmlFile(pollStruct,this->resultPath, *this->clientToServerMap[fd]));
-		else if (httpMethod == "POST" && this->response.empty())
-			this->response = this->createHttpResponse(pollStruct,status.substr(0, pos), "OK", "text/html", this->readHtmlFile(pollStruct,this->resultPath, *this->clientToServerMap[fd]));
 		else if (httpMethod == "DELETE" && this->response.empty())
 		{
 			std::string filePath =HelperClass::indexIsExist(*clientToServerMap[fd],this->clientRequests[pollStruct.fd]->getPath());

@@ -6,7 +6,7 @@
 /*   By: ekose <ekose@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/12 07:50:19 by ekose             #+#    #+#             */
-/*   Updated: 2025/06/29 13:52:18 by ekose            ###   ########.fr       */
+/*   Updated: 2025/06/29 15:17:18 by ekose            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,7 +37,6 @@ void HelperClass::fillScriptExtVec()
 	scriptExtVec.push_back(".py");
 	scriptExtVec.push_back(".pl");
 	scriptExtVec.push_back(".rb");
-	scriptExtVec.push_back(".js");
 }
 void HelperClass::fillFileExtVec() 
 {
