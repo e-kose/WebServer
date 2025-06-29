@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   WebServer.hpp                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: menasy <menasy@student.42.fr>              +#+  +:+       +#+        */
+/*   By: ekose <ekose@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/02 15:40:04 by menasy            #+#    #+#             */
-/*   Updated: 2025/06/28 14:09:40 by menasy           ###   ########.fr       */
+/*   Updated: 2025/06/28 21:02:55 by ekose            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -41,7 +41,7 @@
 #define NOT_RESPONDED 0
 #define PAYLOAD_TOO_LARGE 413
 #define BAD_REQUEST 400
-#define TIMEOUT_SEC 8
+#define TIMEOUT_SEC 5
 
 class WebServer 
 {
@@ -57,8 +57,12 @@ class WebServer
 		std::map<int, HttpRequest*>     		clientRequests;
 		std::map<int, std::string>				requestBuffers;
 		std::map<int, bool>						clientKeepAlive; 
+		std::map<int, bool>						headerIsParsed;
 		std::string 							resultPath;
 		std::string 							response;
+		std::string 							requestHeader;
+		std::string								requestBody;	
+		std::string								unchunkedBody;
 		int 									responseStatus;
 
 		void 									checkTimeouts();
@@ -69,7 +73,7 @@ class WebServer
 		void									deleteMethod(pollfd&);
 		bool									indexHandler(std::string& mergedPath, const std::vector<std::string>& indexVec);
 		void									acceptNewClient(pollfd& pollStruct);
-		void									clientRead(pollfd&);
+		bool									clientRead(pollfd&);
 		void									setNonBlocking(int);
 		void									initSocket();
 		bool									isExistIpAndPort(ServerConf&);
@@ -80,7 +84,6 @@ class WebServer
 		std::string								tryFiles(std::string tryPath,LocationConf* locConf, const ServerConf* serverConfMap,  pollfd& pollStruct, std::vector<LocationConf>& locVec);
 		bool 									methodIsExist(LocationConf* locConf, const std::string& requestMethod, pollfd&);
 		void									sendHandler(pollfd& pollStruct, std::string& sendMessage);
-		void 									sendResponse(pollfd&, const std::string& status);
 		std::string 							readHtmlFile(pollfd& ,std::string& path, const ServerConf& conf); 
 		std::string 							createErrorResponse(pollfd& pollStruct,const std::string& status, const ServerConf& conf, const std::string& rootPAth);
 		std::string 							createHttpResponse(pollfd& pollStruct,
@@ -97,6 +100,7 @@ class WebServer
 										const std::string& statusMessage, const std::string& contentType);
 		int fileIsExecutable(const std::string& extension, const std::map<std::string, std::string>& cgiExtMap);
 		std::string checkCgi(LocationConf* locConf, const ServerConf& conf, pollfd& pollStruct, std::string& newPath, int& status);
+		bool headerHandle(pollfd& pollStruct);
 		std::string pathCheck(std::string& path, std::string& rootPath, pollfd& pollStruct);
 		std::string callSendResponse(pollfd& polstruct, std::string status);
 		
@@ -105,6 +109,10 @@ class WebServer
 			WebServer(const WebServer &other);
 			WebServer &operator=(const WebServer &other);
 			~WebServer();
+			const std::map<int, ServerConf*>				getServerConfForFdMap()const;
+			void 									sendResponse(pollfd&, const std::string& status);
+
+
 		
 	
 };

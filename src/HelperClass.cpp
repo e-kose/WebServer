@@ -3,16 +3,15 @@
 /*                                                        :::      ::::::::   */
 /*   HelperClass.cpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: menasy <menasy@student.42.fr>              +#+  +:+       +#+        */
+/*   By: ekose <ekose@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/12 07:50:19 by ekose             #+#    #+#             */
-/*   Updated: 2025/06/28 13:10:50 by menasy           ###   ########.fr       */
+/*   Updated: 2025/06/28 21:04:22 by ekose            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../include/HelperClass.hpp"
-#include "../include/LocationConf.hpp"
-#include "../include/ServerConf.hpp"
+
 std::vector<std::string> HelperClass::scriptExtVec;
 std::vector<std::string> HelperClass::fileExtVec;
 
@@ -489,6 +488,17 @@ void HelperClass::freeEnv(std::vector<char*>& env)
 		if (*it) delete[] *it;
 	env.clear();
 }
+
+bool HelperClass::requestSize(ServerConf const& conf, size_t contentLength)
+{
+	if (contentLength == 0)
+		return true;
+	size_t maxSize = conf.getBodySize() * 1024 * 1024;
+	if (contentLength > maxSize)
+		return false;
+	return true;
+}
+
 bool HelperClass::resolvePath(const std::string& path, std::string& out) {
 	char resolved[PATH_MAX];
 	if (realpath(path.c_str(), resolved) == NULL)

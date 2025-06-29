@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   MethodTransaction.cpp                              :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: menasy <menasy@student.42.fr>              +#+  +:+       +#+        */
+/*   By: ekose <ekose@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/12 07:52:01 by ekose             #+#    #+#             */
-/*   Updated: 2025/06/28 13:24:46 by menasy           ###   ########.fr       */
+/*   Updated: 2025/06/28 21:01:01 by ekose            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,13 +17,13 @@ void  WebServer::sendResponse(pollfd& pollStruct, const std::string& status)
 	int			fd = pollStruct.fd;
 	size_t		pos = status.find(" ");
 	int			code = std::atoi(status.substr(0,pos).c_str());
+	std::cout << this->clientRequests[pollStruct.fd]<< std::endl;
 	std::string	log = socketInfo(clientToAddrMap[fd], fd) + " " 
 						+ this->clientRequests[pollStruct.fd]->getMethod()+ " " 
 						+ this->clientRequests[pollStruct.fd]->getPath() + "/"
 						+ this->clientRequests[pollStruct.fd]->getRequestFile() 
-						+ " " + status.substr(0,pos);
+						+ " " + status.substr(0,pos);	
 	HelperClass::writeToFile("access.log",log);
-	std::cout<< " RESPONSE DEGER:" << this->resultPath << std::endl;
 	std::cout << ">>>> RESPONSE CODE: " << code << "<<<<" << std::endl;
 	if (code >= 400)
 		this->response = this->createErrorResponse(pollStruct,status, *clientToServerMap[fd], clientToServerMap[fd]->getRoot());

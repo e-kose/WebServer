@@ -40,6 +40,7 @@ class HttpRequest
 		size_t contentLength;						
 		std::map<std::string, std::string> queryParams;
 		std::string pathInfo;
+		std::string connection; // Connection header'ı
 	public:
 		HttpRequest();
 		HttpRequest(const HttpRequest &other);
@@ -66,6 +67,7 @@ class HttpRequest
 		std::map<std::string, std::string> getQueryParams() const;
 		bool getChunkedTransfer() const;
 		std::string getPathInfo() const;
+		std::string getConnection() const;
 
 		void setMethod(std::string method);
 		void setPath(std::string path);
@@ -75,6 +77,7 @@ class HttpRequest
 		void setContentType(std::string contentType);
 		void setRequestFile(std::string requestFile);
 		void setContentLength(size_t length);
+		void setConnection(std::string connection);
 		void setHeaders( std::map<std::string, std::string> headers);
 		void setBody(std::string body);
 		void setBodyMap(std::map<std::string, std::string> bodyMap);
@@ -84,5 +87,6 @@ class HttpRequest
 		void setChunkedTransfer(bool chunked);
 		void sepPath(ServerConf conf);
 		void setPathInfo(std::string pathInfo, ServerConf& conf);
+		void addBody(std::string str);
 };
 	
