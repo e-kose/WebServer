@@ -6,7 +6,7 @@
 /*   By: ekose <ekose@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/02 15:50:42 by menasy            #+#    #+#             */
-/*   Updated: 2025/06/29 11:34:17 by ekose            ###   ########.fr       */
+/*   Updated: 2025/06/29 15:01:07 by ekose            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -262,7 +262,7 @@ bool WebServer::clientRead(pollfd& pollStruct)
             if (!HelperClass::unchunkBody(requestData, this->unchunkedBody)){
 				if(HelperClass::requestSize(*this->clientToServerMap[pollStruct.fd], this->unchunkedBody.size()) == false){
 					sendResponse(pollStruct, "413 Payload Too Large");
-					// closeCliSocket(pollStruct.fd);
+					closeCliSocket(pollStruct.fd);
 					return false;
 				}
 				continue;
@@ -273,7 +273,7 @@ bool WebServer::clientRead(pollfd& pollStruct)
 		else{
 			if (HelperClass::requestSize(*this->clientToServerMap[pollStruct.fd], t->getContentLength()) == false){
 				sendResponse(pollStruct, "413 Payload Too Large");
-				// closeCliSocket(pollStruct.fd);
+				closeCliSocket(pollStruct.fd);
 				return false;
 			}
 			std::cout << "Content Length: " << t->getContentLength() << std::endl;
@@ -424,7 +424,7 @@ bool WebServer::checkTimeouts() {
     for (std::map<int, time_t>::iterator it = lastActivity.begin(); it != lastActivity.end(); ) {
         int fd = it->first;
         time_t last = it->second;
-		std::cout << "Checking timeout for fd: " << fd << std::endl;
+		// std::cout << "Checking timeout for fd: " << fd << std::endl;
         if (now - last > TIMEOUT_SEC) {
             std::cout << ">>>> Timeout. Closing idle connection: " << fd << std::endl;
             closeCliSocket(fd);
@@ -478,7 +478,6 @@ void	WebServer::runServer()
 	this->pollfdVecCreat();
 	while (true)
 	{
-		std::cout << "Tekrar\n";
 		int result = poll(pollVec.data(), pollVec.size(), 1000);
 		if (result < 0)
 			throw std::runtime_error("poll() error. Terminating server.");

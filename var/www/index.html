@@ -1,43 +1,84 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="tr">
 <head>
-  <meta charset="UTF-8">
-  <title>Webserv HTTP Test</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Webserv HTTP Test</title>
+    <link rel="stylesheet" href="/static/css/style.css">
 </head>
 <body>
-  <h1>🧪 Webserv Test Sayfası</h1>
+    <div class="container">
+        <h1>🧪 Webserv Test Sayfası</h1>
+        
+        <div class="test-section get-section">
+            <h2>🔹 GET Testi</h2>
+            <form method="get" action="/new.html">
+                <button type="submit">GET /new.html</button>
+            </form>
+        </div>
+        
+        <div class="test-section post-section">
+            <h2>🔸 POST (Dosya Yükle) Testi</h2>
+            <form id="upload-form" method="post" action="/cgi-bin/upload.py" enctype="multipart/form-data">
+                <input type="file" name="file" id="file-input" required>
+                <button type="submit">Dosya Yükle</button>
+            </form>
+        </div>
+        
+        <div class="test-section delete-section">
+            <h2>🔻 DELETE Testi</h2>
+            <form id="delete-form">
+                <input type="text" id="delete-path" placeholder="/upload/filename.txt" value="/uploads/testfile.txt">
+                <button type="submit">DELETE</button>
+            </form>
+        </div>
+    </div>
 
-  <h2>🔹 GET Testi</h2>
-  <form method="get" action="/new.html">
-    <button type="submit">GET /new.html</button>
-  </form>
+    <script>
+        // Handle file upload form submission
+        document.getElementById("upload-form").addEventListener("submit", async function (e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            const fileInput = document.getElementById("file-input");
+            
+            if (!fileInput.files.length) {
+                alert("❌ Lütfen bir dosya seçin!");
+                return;
+            }
 
-  <h2>🔸 POST (Dosya Yükle) Testi</h2>
-<form method="post" action="/cgi-bin/upload.py" enctype="multipart/form-data">
-  <input type="file" name="file" required> <!-- 'file' yerine 'dosya' -->
-  <button type="submit">Dosya Yükle</button>
-</form>	
+            try {
+                const response = await fetch(this.action, {
+                    method: 'POST',
+                    body: formData
+                });
 
-  <h2>🔻 DELETE Testi</h2>
-  <form id="delete-form">
-    <input type="text" id="delete-path" placeholder="/upload/filename.txt" value="/upload/testfile.txt">
-    <button type="submit">DELETE</button>
-  </form>
+                if (response.ok) {
+                    alert("✅ Dosya Başarıyla Yüklendi!");
+                } else {
+                    alert(`❌ Yükleme Başarısız (${response.status})`);
+                }
+            } catch (err) {
+                alert("❌ Ağ Hatası: Dosya gönderilemedi");
+            }
+        });
 
-  <script>
-    document.getElementById("delete-form").addEventListener("submit", function (e) {
-      e.preventDefault();
-      const path = document.getElementById("delete-path").value;
-      fetch(path, { method: "DELETE" })
-        .then(res => {
-          if (res.ok) {
-            alert("✅ Dosya Silindi");
-          } else {
-            alert("❌ Silinemedi: " + res.status);
-          }
-        })
-        .catch(err => alert("Hata: " + err));
-    });
-  </script>
+        // Handle delete form submission
+        document.getElementById("delete-form").addEventListener("submit", async function (e) {
+            e.preventDefault();
+            const path = document.getElementById("delete-path").value;
+            
+            try {
+                const response = await fetch(path, { method: "DELETE" });
+                if (response.ok) {
+                    alert("✅ Dosya Silindi");
+                } else {
+                    alert(`❌ Silme İşlemi Başarısız (${response.status})`);
+                }
+            } catch (err) {
+                alert("❌ Ağ Hatası: Silme işlemi yapılamadı");
+            }
+        });
+    </script>
 </body>
 </html>

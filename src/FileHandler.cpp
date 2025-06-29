@@ -6,7 +6,7 @@
 /*   By: ekose <ekose@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/13 21:40:13 by menasy            #+#    #+#             */
-/*   Updated: 2025/06/28 20:59:52 by ekose            ###   ########.fr       */
+/*   Updated: 2025/06/29 13:57:26 by ekose            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,7 +35,7 @@ std::string WebServer::createHttpResponse(pollfd& pollStruct,
 
 std::string WebServer::createErrorResponse(pollfd& pollStruct, const std::string& status, const ServerConf& conf, const std::string& rootPAth)
 {
-	std::string content;
+	std::string content, res, contentType;
 	size_t pos = status.find_first_of(" ");
 	std::string statusCode = status.substr(0, pos);
 	std::string statusMessage = status.substr(pos + 1);
@@ -45,10 +45,11 @@ std::string WebServer::createErrorResponse(pollfd& pollStruct, const std::string
 	std::cout << ">>>> ERROR CODE: " << errCode << " <<<<" << std::endl;
 	if (errMap.find(errCode) != errMap.end())
 	{
-		std::string res = HelperClass::mergeDirectory(rootPAth, errMap[errCode]);
+		res = HelperClass::mergeDirectory(rootPAth, errMap[errCode]);
+		contentType = HelperClass::findContentType(res);
 		content = readHtmlFile(pollStruct,res,conf);
 		if (!content.empty() )
-			return createHttpResponse(pollStruct, statusCode, statusMessage, "text/html", content);
+			return createHttpResponse(pollStruct, statusCode, statusMessage, contentType, content);
 	}
 	return createHttpResponse(pollStruct, statusCode, statusMessage, "text/html",defaultErrMap[errCode]);
 }
@@ -72,7 +73,6 @@ std::string WebServer::redirectResponse(pollfd& pollStruct,
 		response += "Location: /\r\n";
 
 	response += "Content-Length: 0\r\n";
-	std::cout << "0*0*0*0*0*0*0*00*0*Keep-Alive: " << this->clientKeepAlive[pollStruct.fd] << std::endl;
 	if (this->clientKeepAlive[pollStruct.fd])
 	{
 		response += "Keep-Alive: timeout=" + HelperClass::intToString(TIMEOUT_SEC) + "\r\n";
@@ -90,6 +90,7 @@ std::string WebServer::callSendResponse(pollfd& polstruct, std::string status)
 	this->sendResponse(polstruct, status);
 	return "";
 }
+
 int WebServer::fileIsExecutable(const std::string& extension, const std::map<std::string, std::string>& cgiExtMap)
 {
 	bool isItScript = HelperClass::isItScript(extension);
@@ -155,9 +156,10 @@ std::string WebServer::pathCheck(std::string& path, std::string&rootPath, pollfd
 				return this->callSendResponse(pollStruct, "403 Forbidden");
 		}
 	}
-	std::cout << "============================== Path validation successful =============================" << resolvedPath << std::endl;
+	std::cout << "============================== Path validation successful =============================\n" << resolvedPath << std::endl;
 	return resolvedPath;
 }
+
 std::string WebServer::checkCgi(LocationConf* locConf, const ServerConf& conf, pollfd& pollStruct, std::string& newPath, int& status)
 {
 	std::cout << "================== CHECK_CGI ======================= "<< std::endl;
@@ -188,6 +190,7 @@ std::string WebServer::checkCgi(LocationConf* locConf, const ServerConf& conf, p
 	}
 	return "";
 }
+
 std::string WebServer::readHtmlFile(pollfd& pollStruct,std::string& path, const ServerConf& conf) 
 {
 	std::cout << "-------------- READ HTML FILE : " << path <<" --------------"<<std::endl;
@@ -222,6 +225,7 @@ std::string WebServer::readHtmlFile(pollfd& pollStruct,std::string& path, const 
 	path = newPath;
 	return buffer.str();
 }
+
 std::vector<char *> WebServer::fillEnv(const ServerConf& conf, const pollfd& pollStruct, const std::string& path)
 {
 	std::vector<char *> env;

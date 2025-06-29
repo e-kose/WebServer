@@ -6,7 +6,7 @@
 /*   By: ekose <ekose@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/12 07:50:19 by ekose             #+#    #+#             */
-/*   Updated: 2025/06/29 11:33:35 by ekose            ###   ########.fr       */
+/*   Updated: 2025/06/29 13:52:18 by ekose            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -234,12 +234,10 @@ std::string HelperClass::mergeDirectory(const std::string& rootPath, const std::
 
 bool HelperClass::fileIsExist(const std::string& path)
 {
-	std::cout << "Checking if file exists: " << path << std::endl;
 	std::ifstream file(path.c_str());
 	if (file.is_open())
 	{
 		file.close();
-		std::cout << "File exists true: " << path << std::endl;
 		return true;
 	}
 	else
@@ -502,3 +500,28 @@ bool HelperClass::resolvePath(const std::string& path, std::string& out) {
 	return true;
 }
 
+std::string HelperClass::findContentType(const std::string& path) 
+{
+	std::cout << "============================== CONTENT TYPE FİNDİNG ==============================" << std::endl;
+	std::cout << "Path: " << path << std::endl;
+	if (path.empty())
+		return "application/octet-stream";
+	std::string extension = path.substr(path.find_last_of('.'));
+	if (extension == ".html" || extension == ".htm")
+		return "text/html";
+	else if (extension == ".css")
+		return "text/css";
+	else if (extension == ".js")
+		return "application/javascript";
+	else if (extension == ".jpg" || extension == ".jpeg")
+		return "image/jpeg";
+	else if (extension == ".png")
+		return "image/png";
+	else if (extension == ".gif")
+		return "image/gif";
+	else if (extension == ".svg")
+		return "image/svg+xml";
+	else if (extension == ".ico")
+		return "image/x-icon";
+	return "application/octet-stream"; 
+}

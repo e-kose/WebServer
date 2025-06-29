@@ -1,16 +1,20 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="tr">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Hata Oluştu</title>
-    <style>
-        body { font-family: Arial; background: #f2dede; color: #a94442; text-align: center; padding: 50px; }
-        h1 { font-size: 48px; }
-        p { font-size: 18px; }
-    </style>
+    <link rel="stylesheet" href="/static/css/errors.css">
 </head>
 <body>
-    <h1>Bir Hata Oluştu!</h1>
-    <p>İstediğiniz sayfa bulunamadı ya da bir sunucu hatası meydana geldi.</p>
+    <div class="error-container">
+        <div class="emoji">⚠️</div>
+        <h1 class="error-code">ERROR</h1>
+        <h2 class="error-title">Bir Hata Oluştu</h2>
+        <p class="error-message">
+            Beklenmeyen bir hata oluştu. Lütfen daha sonra tekrar deneyin veya ana sayfaya geri dönün.
+        </p>
+        <a href="/" class="home-button">🏠 Ana Sayfaya Dön</a>
+    </div>
 </body>
 </html>

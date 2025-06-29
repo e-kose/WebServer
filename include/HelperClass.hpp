@@ -6,7 +6,7 @@
 /*   By: ekose <ekose@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/04 18:10:20 by menasy            #+#    #+#             */
-/*   Updated: 2025/06/29 11:34:04 by ekose            ###   ########.fr       */
+/*   Updated: 2025/06/29 12:31:32 by ekose            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -57,7 +57,8 @@ class HelperClass
 		static void 									printVector(const std::vector<std::string>& vec);
 		static void										writeToFile(std::string, std::string);
 		static void 									freeEnv(std::vector<char*>& env);
-			
+		
+		static std::string								findContentType(const std::string& path);
 		static std::string 								intToString(int value);
 		static std::string								trimLine(const std::string& str);
 		static std::string								trimWithCharacter(const std::string& str, std::string characters);

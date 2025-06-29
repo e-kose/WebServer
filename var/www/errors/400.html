@@ -1,26 +1,20 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="tr">
 <head>
     <meta charset="UTF-8">
-    <title>400 Bad Request</title>
-    <link rel="stylesheet" href="/static/css/style.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>400 - Hatalı İstek</title>
     <link rel="stylesheet" href="/static/css/errors.css">
-    <style>
-        .error-container { border-color: #ff6b6b; }
-        .error-code { color: #ff6b6b; }
-    </style>
 </head>
 <body>
-    <div class="container">
-        <div class="error-container">
-            <div class="error-code">400</div>
-            <h1 class="error-title">Bad Request</h1>
-            <p class="error-description">
-                The server cannot process the request due to a client error.<br>
-                Please check your request and try again.
-            </p>
-            <a href="/index.html" class="btn-home">Return to Homepage</a>
-        </div>
+    <div class="error-container">
+        <div class="emoji">❌</div>
+        <h1 class="error-code">400</h1>
+        <h2 class="error-title">Hatalı İstek</h2>
+        <p class="error-message">
+            Gönderdiğiniz istek hatalı veya geçersiz. Lütfen isteğinizi kontrol edip tekrar deneyin.
+        </p>
+        <a href="/" class="home-button">🏠 Ana Sayfaya Dön</a>
     </div>
 </body>
 </html>

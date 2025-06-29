@@ -261,6 +261,7 @@ std::map<std::string, std::string>  HttpRequest::parseHeader(std::string& parseS
 		if (key.empty() || value.empty())
 			throw std::runtime_error("Key or value is empty"); // Bnu geçici kodum kaldırılabilir.
 		destMap[key] = value;
+		std::cout<< key <<":"<< value << std::endl;
 	}
 	this->setHostName(destMap["Host"]);
 	this->setContentType(destMap["Content-Type"]);

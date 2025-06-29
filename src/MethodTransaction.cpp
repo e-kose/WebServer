@@ -6,7 +6,7 @@
 /*   By: ekose <ekose@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/12 07:52:01 by ekose             #+#    #+#             */
-/*   Updated: 2025/06/29 10:03:19 by ekose            ###   ########.fr       */
+/*   Updated: 2025/06/29 15:04:06 by ekose            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,7 +17,6 @@ void  WebServer::sendResponse(pollfd& pollStruct, const std::string& status)
 	int			fd = pollStruct.fd;
 	size_t		pos = status.find(" ");
 	int			code = std::atoi(status.substr(0,pos).c_str());
-	std::cout << this->clientRequests[pollStruct.fd]<< std::endl;
 	std::string	log = socketInfo(clientToAddrMap[fd], fd) + " " 
 						+ this->clientRequests[pollStruct.fd]->getMethod()+ " " 
 						+ this->clientRequests[pollStruct.fd]->getPath() + "/"
@@ -30,14 +29,17 @@ void  WebServer::sendResponse(pollfd& pollStruct, const std::string& status)
 	else if (code == 301 || code == 302)
 		this->response = redirectResponse(pollStruct, status.substr(0, pos), status.substr(pos + 1), "text/html");
 	else if(code >= 200 && code <= 205)
-	{
+	{	
 		std::string httpMethod = this->clientRequests[pollStruct.fd]->getMethod();
-		if ((httpMethod == "GET"  || httpMethod == "POST") && this->response.empty())
+		std::string contentType = HelperClass::findContentType(this->resultPath);
+		if ((httpMethod == "GET" && this->response.empty()))
+			this->response = this->createHttpResponse(pollStruct,status.substr(0, pos), "OK", contentType, this->readHtmlFile(pollStruct,this->resultPath, *this->clientToServerMap[fd]));
+		else if (httpMethod == "POST" && this->response.empty())
 			this->response = this->createHttpResponse(pollStruct,status.substr(0, pos), "OK", "text/html", this->readHtmlFile(pollStruct,this->resultPath, *this->clientToServerMap[fd]));
 		else if (httpMethod == "DELETE" && this->response.empty())
 		{
 			std::string filePath =HelperClass::indexIsExist(*clientToServerMap[fd],this->clientRequests[pollStruct.fd]->getPath());
-			this->response = this->createHttpResponse(pollStruct,status.substr(0, pos), "OK", "text/html",
+			this->response = this->createHttpResponse(pollStruct,status.substr(0, pos), "OK", contentType,
 												this->readHtmlFile(pollStruct,
 												filePath,
 												*this->clientToServerMap[fd]));
