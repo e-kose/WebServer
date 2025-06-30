@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   HelperClass.cpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ekose <ekose@student.42.fr>                +#+  +:+       +#+        */
+/*   By: menasy <menasy@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/12 07:50:19 by ekose             #+#    #+#             */
-/*   Updated: 2025/06/29 15:17:18 by ekose            ###   ########.fr       */
+/*   Updated: 2025/06/30 12:42:47 by menasy           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -150,14 +150,6 @@ std::string HelperClass::checkEmptyAndTrim(std::string& value, std::string errCo
 	if (trimmedValue.empty() || isJustCharacter(trimmedValue, ';'))
 		throw std::runtime_error(errCode + ": Value can not be empty");
 	return trimmedValue;
-}
-
-void HelperClass::printVector(const std::vector<std::string>& vec)
-{
-	for (size_t i = 0; i < vec.size(); i++)
-	{
-		std::cout << "vec[" << i << "] = " << vec[i] << std::endl;
-	}
 }
 
 void	HelperClass::writeToFile(std::string fileName, std::string message)
@@ -377,7 +369,6 @@ LocationConf* HelperClass::findLoc(const std::string& locPath, std::vector<Locat
 bool HelperClass::isItScript(std::string extension)
 {
 	std::vector<std::string> scriptVec = HelperClass::getScriptExtVec();
-	std::cout << "Extension ısIt:" << extension << std::endl;
 	for(size_t i = 0; i < scriptVec.size(); i++)
 	{
 		if(extension == scriptVec[i])
@@ -501,8 +492,6 @@ bool HelperClass::resolvePath(const std::string& path, std::string& out) {
 
 std::string HelperClass::findContentType(const std::string& path) 
 {
-	std::cout << "============================== CONTENT TYPE FİNDİNG ==============================" << std::endl;
-	std::cout << "Path: " << path << std::endl;
 	if (path.empty())
 		return "application/octet-stream";
 	std::string extension = path.substr(path.find_last_of('.'));

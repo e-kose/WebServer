@@ -6,7 +6,7 @@
 /*   By: menasy <menasy@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/30 12:42:10 by menasy            #+#    #+#             */
-/*   Updated: 2025/06/25 23:54:28 by menasy           ###   ########.fr       */
+/*   Updated: 2025/06/30 12:40:50 by menasy           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -168,7 +168,7 @@ void CheckConfig::checkConfig() {
 		this->checkRequiredElements(); // serverde mutlaka olması gerekenleri kotnrol ediyorum.
 		HelperClass::fillScriptExtVec();
 	 	HelperClass::fillFileExtVec();		
-		std::cout << "==================SUCCESFULY FİNİSHED=================== \n";
+		std::cout << "================== PARSE SUCCESFULY FİNİSHED=================== \n";
 		WebServer web(serverConfVec);
 	}
 	catch(const std::exception& e)

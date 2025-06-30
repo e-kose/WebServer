@@ -3,16 +3,16 @@
 /*                                                        :::      ::::::::   */
 /*   FileHandler.cpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ekose <ekose@student.42.fr>                +#+  +:+       +#+        */
+/*   By: menasy <menasy@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/13 21:40:13 by menasy            #+#    #+#             */
-/*   Updated: 2025/06/29 13:57:26 by ekose            ###   ########.fr       */
+/*   Updated: 2025/06/30 12:42:09 by menasy           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../include/WebServer.hpp"
 
-std::string WebServer::createHttpResponse(pollfd& pollStruct,
+std::string WebServer::createHttpResponse(const int& pollIndex,
 	const std::string& statusCode, const std::string& statusMessage,
 	const std::string& contentType, const std::string& body) 
 {
@@ -21,7 +21,7 @@ std::string WebServer::createHttpResponse(pollfd& pollStruct,
 	std::string response = "HTTP/1.1 " + statusCode + " " + statusMessage + "\r\n";
 	response += "Content-Type: " + contentType + "\r\n";
 	response += "Content-Length: " + ss.str() + "\r\n";
-	if (this->clientKeepAlive[pollStruct.fd])
+	if (this->clientKeepAlive[this->pollVec[pollIndex].fd])
 	{
 		response += "Keep-Alive: timeout=" + HelperClass::intToString(TIMEOUT_SEC) + "\r\n";
 		response += "Connection: keep-alive\r\n";
@@ -33,7 +33,7 @@ std::string WebServer::createHttpResponse(pollfd& pollStruct,
 	return response;
 }
 
-std::string WebServer::createErrorResponse(pollfd& pollStruct, const std::string& status, const ServerConf& conf, const std::string& rootPAth)
+std::string WebServer::createErrorResponse(const int& pollIndex, const std::string& status, const ServerConf& conf, const std::string& rootPAth)
 {
 	std::string content, res, contentType;
 	size_t pos = status.find_first_of(" ");
@@ -42,25 +42,24 @@ std::string WebServer::createErrorResponse(pollfd& pollStruct, const std::string
 	std::map<int, std::string> errMap = conf.getErrorPages();
 	std::map<int, std::string> defaultErrMap = conf.getDfltPage();
 	int errCode = std::atoi(status.c_str());
-	std::cout << ">>>> ERROR CODE: " << errCode << " <<<<" << std::endl;
 	if (errMap.find(errCode) != errMap.end())
 	{
 		res = HelperClass::mergeDirectory(rootPAth, errMap[errCode]);
 		contentType = HelperClass::findContentType(res);
-		content = readHtmlFile(pollStruct,res,conf);
+		content = readHtmlFile(pollIndex,res,conf);
 		if (!content.empty() )
-			return createHttpResponse(pollStruct, statusCode, statusMessage, contentType, content);
+			return createHttpResponse(pollIndex, statusCode, statusMessage, contentType, content);
 	}
-	return createHttpResponse(pollStruct, statusCode, statusMessage, "text/html",defaultErrMap[errCode]);
+	return createHttpResponse(pollIndex, statusCode, statusMessage, "text/html",defaultErrMap[errCode]);
 }
 
-std::string WebServer::redirectResponse(pollfd& pollStruct,
+std::string WebServer::redirectResponse(const int& pollIndex,
 										const std::string& statusCode,
 										const std::string& statusMessage,
 										const std::string& contentType)
 {
-	std::vector<LocationConf> locations = this->clientToServerMap[pollStruct.fd]->getLocations();
-	LocationConf* locConf = HelperClass::findLoc(this->clientRequests[pollStruct.fd]->getPath(), locations);
+	std::vector<LocationConf> locations = this->clientToServerMap[this->pollVec[pollIndex].fd]->getLocations();
+	LocationConf* locConf = HelperClass::findLoc(this->clientRequests[this->pollVec[pollIndex].fd]->getPath(), locations);
 	std::map<int, std::string> retMap = locConf->getReturn();
 	int code = std::atoi(statusCode.c_str());
 
@@ -73,7 +72,7 @@ std::string WebServer::redirectResponse(pollfd& pollStruct,
 		response += "Location: /\r\n";
 
 	response += "Content-Length: 0\r\n";
-	if (this->clientKeepAlive[pollStruct.fd])
+	if (this->clientKeepAlive[this->pollVec[pollIndex].fd])
 	{
 		response += "Keep-Alive: timeout=" + HelperClass::intToString(TIMEOUT_SEC) + "\r\n";
 		response += "Connection: keep-alive\r\n";
@@ -85,9 +84,9 @@ std::string WebServer::redirectResponse(pollfd& pollStruct,
 	return response;
 }
 
-std::string WebServer::callSendResponse(pollfd& polstruct, std::string status)
+std::string WebServer::callSendResponse(const int& pollIndex, std::string status)
 {
-	this->sendResponse(polstruct, status);
+	this->sendResponse(pollIndex, status);
 	return "";
 }
 
@@ -109,7 +108,7 @@ int WebServer::fileIsExecutable(const std::string& extension, const std::map<std
 	}
 	return 0;
 }
-std::string WebServer::pathCheck(std::string& path, std::string&rootPath, pollfd& pollStruct)
+std::string WebServer::pathCheck(std::string& path, std::string&rootPath,const int& pollIndex)
 {
 	// Çoklu slash'leri tek slash'e dönüştür (// -> /)
 	std::string normalizedPath = path;
@@ -120,21 +119,21 @@ std::string WebServer::pathCheck(std::string& path, std::string&rootPath, pollfd
 	std::cout << "NORMALİZED PATH: " << path << std::endl;
 	// Path çok uzun mu kontrolü (4096 karakter limit)
 	if (path.length() > 4096)
-		return this->callSendResponse(pollStruct, "414 URI Too Long");
+		return this->callSendResponse(pollIndex, "414 URI Too Long");
 	// Null byte injection kontrolü
 	if (path.find('\0') != std::string::npos)
-		return this->callSendResponse(pollStruct, "400 Bad Request");
+		return this->callSendResponse(pollIndex, "400 Bad Request");
 	// realpath ile path çözümleme ve var olma kontrolü
 	char resolved[PATH_MAX];
 	if (realpath(path.c_str(), resolved) == NULL) 
-		return this->callSendResponse(pollStruct, "404 Not Found");
+		return this->callSendResponse(pollIndex, "404 Not Found");
 	std::string resolvedPath = resolved;
 	struct stat st;
 	if (stat(resolvedPath.c_str(), &st) != 0)
-		return this->callSendResponse(pollStruct, "404 Not Found");
+		return this->callSendResponse(pollIndex, "404 Not Found");
 	// Dosya türü kontrolü - sadece regular file ve directory kabul et
 	if ((!S_ISREG(st.st_mode) && !S_ISDIR(st.st_mode)) || resolvedPath.find("..") != std::string::npos)
-		return this->callSendResponse(pollStruct, "403 Forbidden");
+		return this->callSendResponse(pollIndex, "403 Forbidden");
 	// Root dizin güvenlik kontrolü (chroot jail)
 	// Mevcut working directory'yi al
 	char cwd[PATH_MAX];
@@ -142,7 +141,7 @@ std::string WebServer::pathCheck(std::string& path, std::string&rootPath, pollfd
 	{
 		std::string allowedRoot = std::string(cwd) + "/" + rootPath;
 		if (resolvedPath.find(allowedRoot) != 0) 
-			return this->callSendResponse(pollStruct, "403 Forbidden");
+			return this->callSendResponse(pollIndex, "403 Forbidden");
 	}
 	// Zararlı dosya uzantıları kontrolü
 	const std::string dangerousExts[] = {
@@ -153,14 +152,14 @@ std::string WebServer::pathCheck(std::string& path, std::string&rootPath, pollfd
 	for (size_t i = 0; i < extCount; i++) {
 		if (resolvedPath.length() >= dangerousExts[i].length()) {
 			if (resolvedPath.substr(resolvedPath.length() - dangerousExts[i].length()) == dangerousExts[i])
-				return this->callSendResponse(pollStruct, "403 Forbidden");
+				return this->callSendResponse(pollIndex, "403 Forbidden");
 		}
 	}
 	std::cout << "============================== Path validation successful =============================\n" << resolvedPath << std::endl;
 	return resolvedPath;
 }
 
-std::string WebServer::checkCgi(LocationConf* locConf, const ServerConf& conf, pollfd& pollStruct, std::string& newPath, int& status)
+std::string WebServer::checkCgi(LocationConf* locConf, const ServerConf& conf, const int& pollIndex, std::string& newPath, int& status)
 {
 	std::cout << "================== CHECK_CGI ======================= "<< std::endl;
 	std::map<std::string, std::string> cgiMap = HelperClass::findLocationCgi(locConf);
@@ -175,23 +174,23 @@ std::string WebServer::checkCgi(LocationConf* locConf, const ServerConf& conf, p
 			if (access(newPath.c_str(), X_OK) != 0)
 			{
 				std::cout << ">>>> Cgi Calistirma izni yok -<<<<\n";
-				return this->callSendResponse(pollStruct, "403 Forbidden");
+				return this->callSendResponse(pollIndex, "403 Forbidden");
 			}
 			std::string scriptContetnt;
 			std::cout << ">>>> CGI YA GONDERİLDİ <<<<\n" << ext << std::endl;
-			scriptContetnt = this->startCgi(newPath, ext, pollStruct, conf, cgiMap);
+			scriptContetnt = this->startCgi(newPath, ext, pollIndex, conf, cgiMap);
 			return scriptContetnt;
 		}
 		else if (status == -1)
 		{
 			std::cout << ">>>> Cgi YOK -<<<<\n";
-			return this->callSendResponse(pollStruct, "403 Forbidden");
+			return this->callSendResponse(pollIndex, "403 Forbidden");
 		}	
 	}
 	return "";
 }
 
-std::string WebServer::readHtmlFile(pollfd& pollStruct,std::string& path, const ServerConf& conf) 
+std::string WebServer::readHtmlFile(const int& pollIndex,std::string& path, const ServerConf& conf) 
 {
 	std::cout << "-------------- READ HTML FILE : " << path <<" --------------"<<std::endl;
 	if (path.empty())
@@ -200,14 +199,14 @@ std::string WebServer::readHtmlFile(pollfd& pollStruct,std::string& path, const 
 		return conf.getDfltPage().at(404);
 	std::string newPath;
 	int status = 0;	
-	std::string locPath = this->clientRequests[pollStruct.fd]->getPath();
+	std::string locPath = this->clientRequests[this->pollVec[pollIndex].fd]->getPath();
 	std::vector<LocationConf> locVec = conf.getLocations();
 	LocationConf* locConf = HelperClass::findLoc(locPath, locVec);
 	newPath = HelperClass::checkFileWithExtension(path);
     std::ifstream file(newPath.c_str());	
 	if (file.is_open()) 
 	{
-		std::string retValCgi = checkCgi(locConf, conf, pollStruct, newPath, status);
+		std::string retValCgi = checkCgi(locConf, conf, pollIndex, newPath, status);
 		if (status != 0)
 		{
 			file.close();
@@ -217,7 +216,7 @@ std::string WebServer::readHtmlFile(pollfd& pollStruct,std::string& path, const 
 	else
 		return "";
 	if (access(newPath.c_str(), R_OK) != 0)
-		return this->callSendResponse(pollStruct, "403 Forbidden");
+		return this->callSendResponse(pollIndex, "403 Forbidden");
 	std::cout << ">>> FILE IS OPENED <<<" << std::endl;
     std::stringstream buffer;
     buffer << file.rdbuf();
@@ -226,11 +225,11 @@ std::string WebServer::readHtmlFile(pollfd& pollStruct,std::string& path, const 
 	return buffer.str();
 }
 
-std::vector<char *> WebServer::fillEnv(const ServerConf& conf, const pollfd& pollStruct, const std::string& path)
+std::vector<char *> WebServer::fillEnv(const ServerConf& conf, const int& pollIndex, const std::string& path)
 {
 	std::vector<char *> env;
 	std::vector<std::string> envVec;
-	const int& fd = pollStruct.fd;
+	const int& fd = this->pollVec[pollIndex].fd;
 	envVec.push_back("REQUEST_METHOD=" + this->clientRequests[fd]->getMethod());
 	envVec.push_back("SCRIPT_NAME=" + path);
 	envVec.push_back("QUERY_STRING=" + this->clientRequests[fd]->getQueryString());
@@ -336,22 +335,20 @@ std::string WebServer::getCgi(const std::string& filePath, const std::string& cg
 	return scriptContent;
 }
 
-std::string WebServer::startCgi(const std::string&filePath, std::string& fileExt, const pollfd& pollStruct, const ServerConf& conf, const std::map<std::string,std::string>&cgiExtMap)
+std::string WebServer::startCgi(const std::string&filePath, std::string& fileExt, const int& pollIndex, const ServerConf& conf, const std::map<std::string,std::string>&cgiExtMap)
 {
 	std::string cgiExecPath = cgiExtMap.at(fileExt);
 	std::string scriptContent;
 	std::cout << ">>>> CGI EXEC PATH: " << cgiExecPath << "<<<<\n";
 	std::cout << ">>>> CGI FILE PATH: " << filePath << "<<<<\n";
-	std::cout  << "Fd: " << pollStruct.fd << std::endl;
-	std::vector<char *> env = this->fillEnv(conf, pollStruct, filePath);
-	if (this->clientRequests[pollStruct.fd]->getMethod() == "POST")
+	std::cout  << "Fd: " << this->pollVec[pollIndex].fd << std::endl;
+	std::vector<char *> env = this->fillEnv(conf, pollIndex, filePath);
+	if (this->clientRequests[this->pollVec[pollIndex].fd]->getMethod() == "POST")
 	{
 		std::cout << ">>>> POST METHOD HANDLER CGI<<<<\n";
-		// std::cout << ">>>> POST BODY: " << this->clientRequests[pollStruct.fd]->getBody() << "<<<<\n";
-		// std::cout << " SIZE : " << this->clientRequests[pollStruct.fd]->getBody().size() << std::endl;
-		scriptContent = postCgi(filePath, cgiExecPath, env, this->clientRequests[pollStruct.fd]->getBody());
+		scriptContent = postCgi(filePath, cgiExecPath, env, this->clientRequests[this->pollVec[pollIndex].fd]->getBody());
 	}
-	else if(this->clientRequests[pollStruct.fd]->getMethod() == "GET")
+	else if(this->clientRequests[this->pollVec[pollIndex].fd]->getMethod() == "GET")
 	{
 		std::cout << ">>>> GET METHOD HANDLER  CGI <<<<\n";
 		scriptContent = getCgi(filePath, cgiExecPath, env);

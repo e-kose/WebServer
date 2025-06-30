@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   HttpRequest.cpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ekose <ekose@student.42.fr>                +#+  +:+       +#+        */
+/*   By: menasy <menasy@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/08 16:36:39 by menasy            #+#    #+#             */
-/*   Updated: 2025/06/29 11:02:19 by ekose            ###   ########.fr       */
+/*   Updated: 2025/06/30 12:43:32 by menasy           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -249,6 +249,7 @@ std::map<std::string, std::string>  HttpRequest::parseHeader(std::string& parseS
 	std::string line;
 	std::string::size_type pos;
 	std::istringstream strStream(parseStr);
+	std::cout << "================== PARSEEEE HEADER ================== \n" << std::endl;
 	while (std::getline(strStream, line)) 
 	{
 		if (line.find_first_of("{}") != std::string::npos || line.empty())
