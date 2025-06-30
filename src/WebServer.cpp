@@ -6,7 +6,7 @@
 /*   By: menasy <menasy@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/02 15:50:42 by menasy            #+#    #+#             */
-/*   Updated: 2025/06/30 17:20:06 by menasy           ###   ########.fr       */
+/*   Updated: 2025/06/30 23:25:12 by menasy           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -455,7 +455,9 @@ std::string WebServer::findRequest(const int& pollIndex)
 		else if (loc->getReturn().find(302) != loc->getReturn().end())
 			this->sendResponse(pollIndex, "302 Found");
 	}
-	return this->pathCheck(retVal,rootPath,pollIndex);
+	if (this->responseStatus == NOT_RESPONDED)
+		retVal = this->pathCheck(retVal,rootPath,pollIndex);
+	return retVal;
 }
 
 bool WebServer::checkTimeouts() {
