@@ -131,7 +131,8 @@
 	"cinttypes": "cpp",
 	"variant": "cpp",
 	"climits": "cpp",
-	"filesystem": "cpp"
+	"filesystem": "cpp",
+	"csignal": "cpp"
 },
   "C_Cpp.codeAnalysis.clangTidy.enabled": true,
   "C_Cpp.codeAnalysis.clangTidy.checks": "unused-*,-unused-exception-parameter",

@@ -6,7 +6,7 @@
 /*   By: menasy <menasy@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/02 15:40:04 by menasy            #+#    #+#             */
-/*   Updated: 2025/06/30 12:37:50 by menasy           ###   ########.fr       */
+/*   Updated: 2025/06/30 17:18:09 by menasy           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,11 +43,14 @@
 #define BAD_REQUEST 400
 #define TIMEOUT_SEC 5
 
+extern bool g_signal; // Global shutdown flag
+
 class WebServer 
 {
 	// TUM HER ŞEY BİTTİKTEN SONRA COPY CONSTRUCTORLAR FALAN KONTROL ET DEĞERLERİ ATA !!!!!!!!
 	private:
 		WebServer();
+		bool									isCleanedUp; // Cleanup durumunu takip eden flag
 		std::vector<pollfd>						pollVec;
 		std::vector<ServerConf>&				serverConfVec;
 		std::map<int, std::vector<ServerConf> >	socketMap;
@@ -113,7 +116,9 @@ class WebServer
 		void									runServer();
 		void									sendHandler(const int& pollIndex, std::string& sendMessage);
 		void 									listDirectory(const std::string& path,LocationConf* locConf, const int& pollIndex);		
-		void									cleanReq(const int& pollIndex);
+		void									fullFree();
+		void 					cleanReq(const int& pollIndex);
+ 
 		
 		public:
 			WebServer(std::vector<ServerConf>& serverConfVec);

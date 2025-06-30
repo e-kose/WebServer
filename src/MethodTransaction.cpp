@@ -6,7 +6,7 @@
 /*   By: menasy <menasy@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/12 07:52:01 by ekose             #+#    #+#             */
-/*   Updated: 2025/06/30 12:44:10 by menasy           ###   ########.fr       */
+/*   Updated: 2025/06/30 16:57:52 by menasy           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -108,14 +108,14 @@ void WebServer::deleteMethod(const int& pollIndex)
 
 void WebServer::sendHandler(const int& pollIndex, std::string& sendMessage)
 {
-    size_t totalSent = 0;
+    size_t totalSend = 0;
     size_t lengthMessage = sendMessage.size();
 
-    while (totalSent < lengthMessage)
+    while (totalSend < lengthMessage)
     {
-        ssize_t sent = send(this->pollVec[pollIndex].fd, sendMessage.c_str() + totalSent, lengthMessage - totalSent, 0);
+        ssize_t sendVal = send(this->pollVec[pollIndex].fd, sendMessage.c_str() + totalSend, lengthMessage - totalSend, 0);
 
-        if (sent == -1)
+        if (sendVal == -1)
         {
             if (errno == EAGAIN || errno == EWOULDBLOCK)
             {
@@ -140,10 +140,10 @@ void WebServer::sendHandler(const int& pollIndex, std::string& sendMessage)
             }
         }
         else
-            totalSent += sent;
+            totalSend += sendVal;
     }
 
-    if (totalSent == lengthMessage)
+    if (totalSend == lengthMessage)
     {
         sendMessage.clear();
 		if (this->clientKeepAlive[this->pollVec[pollIndex].fd]) 	
@@ -179,7 +179,8 @@ bool WebServer::methodIsExist(LocationConf* locConf, const std::string& requestM
 	return true;
 }
 
-void WebServer::cleanReq(const int& pollIndex){
+void WebServer::cleanReq(const int& pollIndex)
+{
 	this->requestBuffers.erase(this->pollVec[pollIndex].fd);
 	this->headerIsParsed[this->pollVec[pollIndex].fd] = false;
 	this->requestBody.clear();

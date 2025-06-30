@@ -6,7 +6,7 @@
 /*   By: menasy <menasy@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/12 07:50:19 by ekose             #+#    #+#             */
-/*   Updated: 2025/06/30 12:42:47 by menasy           ###   ########.fr       */
+/*   Updated: 2025/06/30 15:19:38 by menasy           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,6 +44,8 @@ void HelperClass::fillFileExtVec()
 	fileExtVec.push_back(".htm");
 	fileExtVec.push_back(".css");
 	fileExtVec.push_back(".txt");
+	fileExtVec.push_back(".js");
+	fileExtVec.push_back(".json");
 	fileExtVec.push_back(".jpg");
 	fileExtVec.push_back(".jpeg");
 	fileExtVec.push_back(".png");

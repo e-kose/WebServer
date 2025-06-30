@@ -6,13 +6,15 @@
 /*   By: menasy <menasy@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/02 15:50:42 by menasy            #+#    #+#             */
-/*   Updated: 2025/06/30 14:40:16 by menasy           ###   ########.fr       */
+/*   Updated: 2025/06/30 17:20:06 by menasy           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../include/WebServer.hpp"
 
-WebServer::WebServer(std::vector<ServerConf>& serverConfVec) : serverConfVec(serverConfVec)
+extern bool g_signal; 
+
+WebServer::WebServer(std::vector<ServerConf>& serverConfVec) : isCleanedUp(false), serverConfVec(serverConfVec)
 {
 	initSocket();
 	runServer();
@@ -45,10 +47,49 @@ WebServer &WebServer::operator=(const WebServer &other)
 
 WebServer::~WebServer()
 {
+	if (!isCleanedUp)
+		fullFree();
+}
+
+void WebServer::fullFree()
+{
+	if (isCleanedUp)
+		return;
+	for (std::map<int, HttpRequest*>::iterator it = clientRequests.begin(); it != clientRequests.end(); ++it)
+	{
+		if (it->second)
+		{
+			delete it->second;
+			it->second = NULL;
+		}
+	}
+	clientRequests.clear();
+	std::vector<int> clientFds;
+	for (std::vector<pollfd>::iterator it = pollVec.begin(); it != pollVec.end(); ++it)
+		if (socketMap.find(it->fd) == socketMap.end()) 
+			clientFds.push_back(it->fd);
+	for (std::vector<int>::iterator it = clientFds.begin(); it != clientFds.end(); ++it)
+		close(*it);
 	for (std::map<int, std::vector<ServerConf> >::iterator it = socketMap.begin(); it != socketMap.end(); ++it)
 		close(it->first);
-	for (std::vector<pollfd>::iterator it = pollVec.begin(); it != pollVec.end(); ++it)
-		close(it->fd);
+
+	pollVec.clear();
+	socketMap.clear();
+	clientToServerMap.clear();
+	lastActivity.clear();
+	clientToAddrMap.clear();
+	requestBuffers.clear();
+	clientKeepAlive.clear();
+	headerIsParsed.clear();
+	unchunkedBody.clear(); 
+	requestHeader.clear();    
+	requestBody.clear();      
+	resultPath.clear();       
+	response.clear();
+	
+	this->responseStatus = NOT_RESPONDED;
+	isCleanedUp = true;
+	std::cout << "----------------- FULL FREE ------------------------" << std::endl;
 }
 
 const std::map<int, ServerConf*>	 WebServer::getServerConfForFdMap()const
@@ -217,6 +258,7 @@ void	WebServer::acceptNewClient(const int& pollIndex)
 		this->lastActivity[clientSock] = time(NULL);
 		this->clientKeepAlive[clientSock] = false;
 		this->headerIsParsed[clientSock] = false;
+		this->clientRequests[clientSock] = NULL; // NULL olarak initialize et
 	}
 }
 
@@ -229,6 +271,13 @@ bool WebServer::headerHandle(const int& pollIndex)
 	this->requestHeader = requestData.substr(0, headerEnd + 4);
 	this->requestBuffers[this->pollVec[pollIndex].fd] = requestData.substr(headerEnd + 4);
 	this->headerIsParsed[this->pollVec[pollIndex].fd] = true;
+	
+	if (this->clientRequests[this->pollVec[pollIndex].fd])
+	{
+		delete this->clientRequests[this->pollVec[pollIndex].fd];
+		this->clientRequests[this->pollVec[pollIndex].fd] = NULL;
+	}
+	
 	this->clientRequests[this->pollVec[pollIndex].fd] = this->parseRecv(requestHeader);
 	this->clientToServerMap[this->pollVec[pollIndex].fd] = 
 		&this->searchServerConf(this->serverConfVec, this->clientRequests[this->pollVec[pollIndex].fd]->getHostName());
@@ -467,11 +516,15 @@ void WebServer::pollOutEvent(const int& pollIndex)
 void	WebServer::runServer()
 {
 	this->pollfdVecCreat();
-	while (true)
+	while (!g_signal) 
 	{
 		int result = poll(pollVec.data(), pollVec.size(), 1000);
 		if (result < 0)
+		{
+			if (errno == EINTR && g_signal)
+				break;
 			throw std::runtime_error("poll() error. Terminating server.");
+		}
 		if(checkTimeouts())continue;
 		for (size_t i = 0; i < pollVec.size(); i++)
 		{
@@ -506,4 +559,5 @@ void	WebServer::runServer()
 			}
 		}
 	}
+	fullFree();
 }
