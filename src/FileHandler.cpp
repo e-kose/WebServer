@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   FileHandler.cpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: menasy <menasy@student.42.fr>              +#+  +:+       +#+        */
+/*   By: ekose <ekose@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/13 21:40:13 by menasy            #+#    #+#             */
-/*   Updated: 2025/06/30 12:42:09 by menasy           ###   ########.fr       */
+/*   Updated: 2025/07/01 10:20:32 by ekose            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -131,11 +131,13 @@ std::string WebServer::pathCheck(std::string& path, std::string&rootPath,const i
 	struct stat st;
 	if (stat(resolvedPath.c_str(), &st) != 0)
 		return this->callSendResponse(pollIndex, "404 Not Found");
+	
 	// Dosya türü kontrolü - sadece regular file ve directory kabul et
 	if ((!S_ISREG(st.st_mode) && !S_ISDIR(st.st_mode)) || resolvedPath.find("..") != std::string::npos)
 		return this->callSendResponse(pollIndex, "403 Forbidden");
 	// Root dizin güvenlik kontrolü (chroot jail)
 	// Mevcut working directory'yi al
+
 	char cwd[PATH_MAX];
 	if (getcwd(cwd, sizeof(cwd)) != NULL) 
 	{
@@ -231,7 +233,8 @@ std::vector<char *> WebServer::fillEnv(const ServerConf& conf, const int& pollIn
 	std::vector<std::string> envVec;
 	const int& fd = this->pollVec[pollIndex].fd;
 	envVec.push_back("REQUEST_METHOD=" + this->clientRequests[fd]->getMethod());
-	envVec.push_back("SCRIPT_NAME=" + path);
+	envVec.push_back("SCRIPT_FILENAME=" + path);
+	envVec.push_back("SCRIPT_NAME=" + this->clientRequests[fd]->getPath() + this->clientRequests[fd]->getRequestFile());
 	envVec.push_back("QUERY_STRING=" + this->clientRequests[fd]->getQueryString());
 	envVec.push_back("CONTENT_TYPE=" + this->clientRequests[fd]->getContentType());
 	envVec.push_back("CONTENT_LENGTH=" + HelperClass::intToString(this->clientRequests[fd]->getContentLength()));
@@ -243,7 +246,6 @@ std::vector<char *> WebServer::fillEnv(const ServerConf& conf, const int& pollIn
 	envVec.push_back("REMOTE_ADDR=" + this->socketInfo(this->clientToAddrMap[fd], fd));
 	envVec.push_back("PATH_INFO=" + this->clientRequests[fd]->getPathInfo());
 	envVec.push_back("REDIRECT_STATUS=200");
-	
 	for (size_t i = 0; i < envVec.size(); i++) {
     // Her bir string için yeni bir karakter dizisi (char array) ayır.
     char* var = new char[envVec[i].size() + 1]; // +1 for null terminator
@@ -339,9 +341,6 @@ std::string WebServer::startCgi(const std::string&filePath, std::string& fileExt
 {
 	std::string cgiExecPath = cgiExtMap.at(fileExt);
 	std::string scriptContent;
-	std::cout << ">>>> CGI EXEC PATH: " << cgiExecPath << "<<<<\n";
-	std::cout << ">>>> CGI FILE PATH: " << filePath << "<<<<\n";
-	std::cout  << "Fd: " << this->pollVec[pollIndex].fd << std::endl;
 	std::vector<char *> env = this->fillEnv(conf, pollIndex, filePath);
 	if (this->clientRequests[this->pollVec[pollIndex].fd]->getMethod() == "POST")
 	{

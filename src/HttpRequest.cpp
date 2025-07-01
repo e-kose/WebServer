@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   HttpRequest.cpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: menasy <menasy@student.42.fr>              +#+  +:+       +#+        */
+/*   By: ekose <ekose@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/08 16:36:39 by menasy            #+#    #+#             */
-/*   Updated: 2025/06/30 12:43:32 by menasy           ###   ########.fr       */
+/*   Updated: 2025/07/01 15:05:29 by ekose            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -206,8 +206,10 @@ void HttpRequest::setVersion(std::string version) {
 
 void HttpRequest::setHostName(std::string hostName) {
 	std::string::size_type pos = hostName.find_first_of(':');
-	if (pos != std::string::npos)
+	if (pos != std::string::npos){
 		this->hostName = hostName.substr(0, pos);
+		this->setPort(std::atoi(hostName.substr(pos + 1).c_str()));
+	}
 	else
 		this->hostName = hostName;
 }

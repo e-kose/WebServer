@@ -6,13 +6,14 @@ import cgitb
 import json
 from datetime import datetime
 import re
+import warnings
 
+warnings.filterwarnings("ignore", category=DeprecationWarning)
 # Hata ayıklama
 cgitb.enable()
 
 # Yapılandırma
 UPLOAD_DIR = os.path.abspath("../uploads")
-MAX_SIZE = 100 * 1024 * 1024  # 100MB
 LOG_FILE = "/tmp/webserver_upload.log"
 
 print("Content-Type: application/json\n")
