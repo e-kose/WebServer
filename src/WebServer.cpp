@@ -372,7 +372,7 @@ std::string WebServer::tryFiles(std::string tryPath, LocationConf* locConf, cons
 void WebServer::listDirectory(const std::string& path,LocationConf* locConf, const int& pollIndex)
 {
 	std::cout << ">>>>>>>>>>>>>>>>>>>>>> LIST DIRECTORY <<<<<<<<<<<<<<<<<<<<<<<<<" << std::endl;
-	if ((locConf != NULL && locConf->getReturn().size() > 0))
+	if (locConf != NULL && locConf->getReturn().size() > 0)
 	{
 		if (locConf->getReturn().find(301) != locConf->getReturn().end())
 			this->sendResponse(pollIndex, "301 Moved Permanently");
@@ -395,10 +395,23 @@ std::string WebServer::mergedPathHandler(std::string& newMergedPath, LocationCon
 	// /upload sonunda / olmadan  gelirse ne olur bunu mutlaka test edicem
 	std::cout << "================= MERGED PATH HANDLER ===============" << std::endl;
 	std::cout << "Merged Path: " << newMergedPath << std::endl;
+	
+	if (locConf != NULL && locConf->getReturn().size() > 0)
+	{
+		if (locConf->getReturn().find(301) != locConf->getReturn().end())
+			this->sendResponse(pollIndex, "301 Moved Permanently");
+		else if (locConf->getReturn().find(302) != locConf->getReturn().end())
+			this->sendResponse(pollIndex, "302 Found");
+		return "";
+	}
 	if (HelperClass::isDirectory(newMergedPath) && (recCount == 0))
 	{
 		if (newMergedPath[newMergedPath.length() - 1] != '/')
+		{
 			newMergedPath += '/';
+			std::vector<LocationConf> locVec = serverConf.getLocations();
+			locConf = HelperClass::findLoc(newMergedPath.substr(HelperClass::selectLocOrServerRoot(locConf, serverConf.getRoot()).length()), locVec);
+		}
 		std::vector <std::string> indexVec = HelperClass::selectLocOrServerIndex(locConf, serverConf.getIndex());
 		std::string indexVal = HelperClass::indexHandler(newMergedPath, indexVec);
 		if (!indexVal.empty())
@@ -434,6 +447,7 @@ std::string WebServer::findRequest(const int& pollIndex)
 	std::string rootPath, clientReq,  newMergedPath, httpPath, retVal;
 
 	this->responseStatus = NOT_RESPONDED;
+	this->isCgi = false;
 	httpPath = this->clientRequests[this->pollVec[pollIndex].fd]->getPath();
 	std::cout << "HTTP PATH: " << httpPath << std::endl;
 	if (httpPath.empty() || httpPath[0] != '/')

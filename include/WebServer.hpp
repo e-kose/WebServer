@@ -68,6 +68,7 @@ class WebServer
 		std::string								requestBody;	
 		std::string 							resultPath;
 		std::string 							response;
+		bool									isCgi;
 		
 		int 									responseStatus;
 
