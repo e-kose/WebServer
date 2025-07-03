@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   MethodTransaction.cpp                              :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ekose <ekose@student.42.fr>                +#+  +:+       +#+        */
+/*   By: menasy <menasy@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/12 07:52:01 by ekose             #+#    #+#             */
-/*   Updated: 2025/07/01 16:55:55 by ekose            ###   ########.fr       */
+/*   Updated: 2025/07/04 00:23:09 by menasy           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -129,9 +129,19 @@ void WebServer::sendHandler(const int &pollIndex, std::string &sendMessage)
 				this->closeCliSocket(this->pollVec[pollIndex].fd);
 			break;
 		}
+		else if (sendVal == 0)
+		{
+			this->closeCliSocket(this->pollVec[pollIndex].fd);
+			break;
+		}
 		else
+		{
 			totalSend += sendVal;
+			this->retryCountMap[this->pollVec[pollIndex].fd] = 0;
+		}
+		std::cout<< "TOTALSEND: " << totalSend << std::endl;
 	}
+	
 	if (totalSend == lengthMessage)
 	{
 		sendMessage.clear();

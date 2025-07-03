@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   WebServer.hpp                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ekose <ekose@student.42.fr>                +#+  +:+       +#+        */
+/*   By: menasy <menasy@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/02 15:40:04 by menasy            #+#    #+#             */
-/*   Updated: 2025/07/01 16:03:18 by ekose            ###   ########.fr       */
+/*   Updated: 2025/07/03 23:55:39 by menasy           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,7 +42,7 @@
 #define PAYLOAD_TOO_LARGE 413
 #define BAD_REQUEST 400
 #define TIMEOUT_SEC 15
-#define MAX_RETRY_COUNT 3
+#define MAX_RETRY_COUNT 2
 
 extern bool g_signal; // Global shutdown flag
 

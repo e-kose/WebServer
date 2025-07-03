@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   HelperClass.cpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ekose <ekose@student.42.fr>                +#+  +:+       +#+        */
+/*   By: menasy <menasy@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/12 07:50:19 by ekose             #+#    #+#             */
-/*   Updated: 2025/07/01 16:52:46 by ekose            ###   ########.fr       */
+/*   Updated: 2025/07/04 00:25:39 by menasy           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,10 +33,10 @@ HelperClass::~HelperClass() {
 
 void HelperClass::fillScriptExtVec() 
 {
-	scriptExtVec.push_back(".php");
 	scriptExtVec.push_back(".py");
 	scriptExtVec.push_back(".pl");
 	scriptExtVec.push_back(".rb");
+	scriptExtVec.push_back(".php");
 }
 void HelperClass::fillFileExtVec() 
 {
@@ -49,7 +49,8 @@ void HelperClass::fillFileExtVec()
 	fileExtVec.push_back(".jpg");
 	fileExtVec.push_back(".jpeg");
 	fileExtVec.push_back(".png");
-	fileExtVec.push_back(".gif");
+	fileExtVec.push_back(".pdf");
+	fileExtVec.push_back(".docx");
 	fileExtVec.push_back(".svg");
 	fileExtVec.push_back(".ico");
 }
