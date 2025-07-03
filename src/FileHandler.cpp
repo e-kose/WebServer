@@ -6,7 +6,7 @@
 /*   By: ekose <ekose@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/13 21:40:13 by menasy            #+#    #+#             */
-/*   Updated: 2025/07/01 10:20:32 by ekose            ###   ########.fr       */
+/*   Updated: 2025/07/03 10:42:53 by ekose            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,10 +17,23 @@ std::string WebServer::createHttpResponse(const int& pollIndex,
 	const std::string& contentType, const std::string& body) 
 {
 	std::ostringstream ss;
-	ss << body.size();	
+	std::string tmpBody, contentTypeTmp;
 	std::string response = "HTTP/1.1 " + statusCode + " " + statusMessage + "\r\n";
-	response += "Content-Type: " + contentType + "\r\n";
+	contentTypeTmp = contentType;
+	tmpBody = body;
+	if (this->isCgi)
+	{
+		std::string::size_type pos = body.find("\n");
+		if (pos != std::string::npos)
+		{
+			contentTypeTmp = body.substr(0, pos);
+			tmpBody = body.substr(pos + 1 , body.length() - (pos + 1));
+		}	
+	}
+	ss << tmpBody.length();
 	response += "Content-Length: " + ss.str() + "\r\n";
+	response += "Content-Type: " + contentTypeTmp + "\r\n";
+
 	if (this->clientKeepAlive[this->pollVec[pollIndex].fd])
 	{
 		response += "Keep-Alive: timeout=" + HelperClass::intToString(TIMEOUT_SEC) + "\r\n";
@@ -29,7 +42,7 @@ std::string WebServer::createHttpResponse(const int& pollIndex,
 	else
 		response += "Connection: close\r\n"; 
 	response += "\r\n";
-	response += body;
+	response += tmpBody;
 	return response;
 }
 
@@ -181,6 +194,7 @@ std::string WebServer::checkCgi(LocationConf* locConf, const ServerConf& conf, c
 			std::string scriptContetnt;
 			std::cout << ">>>> CGI YA GONDERİLDİ <<<<\n" << ext << std::endl;
 			scriptContetnt = this->startCgi(newPath, ext, pollIndex, conf, cgiMap);
+			this->isCgi = true;
 			return scriptContetnt;
 		}
 		else if (status == -1)

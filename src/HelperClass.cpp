@@ -308,37 +308,119 @@ std::string HelperClass::generateAutoIndexHtml(const std::string& path, const st
 {
 	DIR* dir = opendir(path.c_str());
 	if (!dir) {
-		std::string body = "<html><body><h1>403 Forbidden</h1></body></html>";
+		std::stringstream body;
+		body << "<!DOCTYPE html>\n"
+		     << "<html lang=\"tr\">\n"
+		     << "<head>\n"
+		     << "    <meta charset=\"UTF-8\">\n"
+		     << "    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n"
+		     << "    <title>403 - Erişim Engellendi</title>\n"
+		     << "    <link rel=\"stylesheet\" href=\"/static/css/errors.css\">\n"
+		     << "</head>\n"
+		     << "<body>\n"
+		     << "    <div class=\"error-container\">\n"
+		     << "        <div class=\"emoji\">🔒</div>\n"
+		     << "        <h1 class=\"error-code\">403</h1>\n"
+		     << "        <h2 class=\"error-title\">Erişim Engellendi</h2>\n"
+		     << "        <p class=\"error-message\">\n"
+		     << "            Bu dizine erişim izniniz yok. Ana sayfaya geri dönebilirsiniz.\n"
+		     << "        </p>\n"
+		     << "        <a href=\"/\" class=\"home-button\">🏠 Ana Sayfaya Dön</a>\n"
+		     << "    </div>\n"
+		     << "</body>\n"
+		     << "</html>";
+		
+		std::string html = body.str();
 		std::stringstream header;
 		header << "HTTP/1.1 403 Forbidden\r\n"
 		       << "Content-Type: text/html\r\n"
-		       << "Content-Length: " << body.size() << "\r\n"
+		       << "Content-Length: " << html.size() << "\r\n"
 		       << "Connection: close\r\n\r\n"
-		       << body;
+		       << html;
 		return header.str();
 	}
 	
 	std::stringstream body;
-	body << "<html><head><title>Index of " << uriPath << "</title></head><body>";
-	body << "<h1>Index of " << uriPath << "</h1><ul>";
+	body << "<!DOCTYPE html>\n"
+	     << "<html lang=\"tr\">\n"
+	     << "<head>\n"
+	     << "    <meta charset=\"UTF-8\">\n"
+	     << "    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n"
+	     << "    <title>📁 " << uriPath << " - Dizin Listesi</title>\n"
+	     << "    <link rel=\"stylesheet\" href=\"/static/css/directory.css\">\n"
+	     << "</head>\n"
+	     << "<body>\n"
+	     << "    <div class=\"container\">\n"
+	     << "        <h1>📁 Dizin Listesi</h1>\n"
+	     << "        <div class=\"breadcrumb\">\n"
+	     << "            📍 Konum: " << uriPath << "\n"
+	     << "        </div>\n"
+	     << "        <ul class=\"file-list\">\n";
+	
+	// Add parent directory link if not root
+	if (uriPath != "/" && uriPath != "") {
+		body << "            <li class=\"file-item\">\n"
+		     << "                <a href=\"../\" class=\"file-link\">\n"
+		     << "                    <span class=\"file-icon\">⬆️</span>Üst Dizin\n"
+		     << "                </a>\n"
+		     << "            </li>\n";
+	}
 	
 	struct dirent* entry;
 	while ((entry = readdir(dir)) != NULL) {
-		if (std::string(entry->d_name) == "." || std::string(entry->d_name) == "..") continue;
+		if (std::string(entry->d_name) == "." || std::string(entry->d_name) == "..") 
+			continue;
 
 		std::string fullPath = path + "/" + entry->d_name;
 		struct stat st;
 		if (stat(fullPath.c_str(), &st) == 0) {
-			if (S_ISDIR(st.st_mode))
-				body << "<li><a href=\"" << entry->d_name << "/\">" << entry->d_name << "/</a></li>";
-			else
-				body << "<li><a href=\"" << entry->d_name << "\">" << entry->d_name << "</a></li>";
+			body << "            <li class=\"file-item\">\n";
+			if (S_ISDIR(st.st_mode)) {
+				body << "                <a href=\"" << entry->d_name << "/\" class=\"file-link\">\n"
+				     << "                    <span class=\"file-icon\">📁</span>" << entry->d_name << "/\n"
+				     << "                </a>\n";
+			} else {
+				std::string fileName = entry->d_name;
+				std::string icon = "📄";
+				
+				// Set icons based on file extensions
+				if (fileName.find(".html") != std::string::npos || fileName.find(".htm") != std::string::npos)
+					icon = "🌐";
+				else if (fileName.find(".css") != std::string::npos)
+					icon = "🎨";
+				else if (fileName.find(".js") != std::string::npos)
+					icon = "⚡";
+				else if (fileName.find(".png") != std::string::npos || fileName.find(".jpg") != std::string::npos || 
+				         fileName.find(".jpeg") != std::string::npos || fileName.find(".gif") != std::string::npos)
+					icon = "🖼️";
+				else if (fileName.find(".txt") != std::string::npos)
+					icon = "📝";
+				else if (fileName.find(".py") != std::string::npos)
+					icon = "🐍";
+				else if (fileName.find(".cpp") != std::string::npos || fileName.find(".c") != std::string::npos || 
+				         fileName.find(".hpp") != std::string::npos || fileName.find(".h") != std::string::npos)
+					icon = "⚙️";
+				
+				body << "                <a href=\"" << entry->d_name << "\" class=\"file-link\">\n"
+				     << "                    <span class=\"file-icon\">" << icon << "</span>" << entry->d_name << "\n"
+				     << "                </a>\n";
+			}
+			body << "            </li>\n";
 		} else {
-			body << "<li>" << entry->d_name << " (not accessible)</li>";
+			body << "            <li class=\"file-item not-accessible\">\n"
+			     << "                <span class=\"file-icon\">❌</span>" << entry->d_name << " (erişilemiyor)\n"
+			     << "            </li>\n";
 		}
 	}
 	closedir(dir);
-	body << "</ul></body></html>";
+	
+	body << "        </ul>\n"
+	     << "        <div style=\"text-align: center;\">\n"
+	     << "            <a href=\"/\" class=\"home-button\">🏠 Ana Sayfaya Dön</a>\n"
+	     << "        </div>\n"
+	     << "    </div>\n"
+	     << "</body>\n"
+	     << "</html>";
 
 	std::string html = body.str();
 	std::stringstream header;

@@ -16,7 +16,9 @@ cgitb.enable()
 UPLOAD_DIR = os.path.abspath("../uploads")
 LOG_FILE = "/tmp/webserver_upload.log"
 
-print("Content-Type: application/json\n")
+# CGI HTTP response header
+print("Content-Type: application/json")
+print()  # Boş satır header'ları bitirir
 
 def log_event(message):
     with open(LOG_FILE, "a") as log:
