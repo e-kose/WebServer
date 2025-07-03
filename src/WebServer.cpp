@@ -266,6 +266,7 @@ void	WebServer::acceptNewClient(const int& pollIndex)
 		this->setNonBlocking(clientSock);
 		pollfd clientFd = {clientSock, (POLLIN | POLLOUT | POLLERR), 0};
 		pollVec.push_back(clientFd);
+		this->retryCountMap[clientSock] = 0;
 		this->clientToAddrMap[clientSock] = addr;
 		this->lastActivity[clientSock] = time(NULL);
 		this->clientKeepAlive[clientSock] = false;

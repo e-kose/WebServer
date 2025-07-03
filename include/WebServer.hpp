@@ -42,6 +42,7 @@
 #define PAYLOAD_TOO_LARGE 413
 #define BAD_REQUEST 400
 #define TIMEOUT_SEC 15
+#define MAX_RETRY_COUNT 3
 
 extern bool g_signal; // Global shutdown flag
 
@@ -61,7 +62,7 @@ class WebServer
 		std::map<int, std::string>				requestBuffers;
 		std::map<int, bool>						clientKeepAlive; 
 		std::map<int, bool>						headerIsParsed;
-
+		std::map<int, int>						retryCountMap;
 		
 		std::string								unchunkedBody;
 		std::string 							requestHeader;
