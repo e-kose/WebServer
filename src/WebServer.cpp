@@ -3,7 +3,7 @@
 /*                                                        :::      ::::::::   */
 /*   WebServer.cpp                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: menasy <menasy@student.42.fr>              +#+  +:+       +#+        */
+/*   By: ekose <ekose@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/02 15:50:42 by menasy            #+#    #+#             */
 /*   Updated: 2025/06/30 23:25:12 by menasy           ###   ########.fr       */
@@ -168,19 +168,28 @@ std::string WebServer::socketInfo(sockaddr_in& addr, int clientSock)
 	return oss.str();
 }
 
-ServerConf& WebServer::searchServerConf(std::vector<ServerConf>& confVec, std::string serverName)
+ServerConf& WebServer::searchServerConf(const int& pollIndex)
 {
+	std::string serverName = this->clientRequests[this->pollVec[pollIndex].fd]->getHostName();
+	std::vector<ServerConf>& confVec = this->serverConfVec;
+	int reqPort = (this->clientRequests[this->pollVec[pollIndex].fd]->getPort());
+	std::string connectIp = inet_ntoa(this->clientToAddrMap[this->pollVec[pollIndex].fd].sin_addr);
+	std::vector<int> confIndexVec;
 	for (size_t i = 0; i < confVec.size(); i++)
 	{
-		std::vector<std::string> serverNames = confVec[i].getServerName();
-		for (size_t j = 0; j < serverNames.size(); j++)
-		{
-			if (serverNames[j] == serverName)
-				return confVec[i];
+		if (confVec[i].getIp() == connectIp && confVec[i].getPort() == reqPort){
+			std::vector<std::string> serverNames = confVec[i].getServerName();
+			confIndexVec.push_back(i);
+			for (size_t j = 0; j < serverNames.size(); j++)
+			{
+				if (serverNames[j] == serverName)
+					return confVec[i];
+			}
 		}
 	}
-	return confVec[0];
+	return confVec[confIndexVec.size() > 0 ? confIndexVec[0] : 0];
 }
+
 HttpRequest* WebServer::parseRecv(const std::string& request)
 {
 	// std:: cout << "================== REQUEST ================== \n"  << request << std::endl;
@@ -280,7 +289,7 @@ bool WebServer::headerHandle(const int& pollIndex)
 	
 	this->clientRequests[this->pollVec[pollIndex].fd] = this->parseRecv(requestHeader);
 	this->clientToServerMap[this->pollVec[pollIndex].fd] = 
-		&this->searchServerConf(this->serverConfVec, this->clientRequests[this->pollVec[pollIndex].fd]->getHostName());
+		&this->searchServerConf(pollIndex);
 	this->clientRequests[this->pollVec[pollIndex].fd]->sepPath( *this->clientToServerMap[this->pollVec[pollIndex].fd]);
 	if (this->clientRequests[this->pollVec[pollIndex].fd]->getConnection() == "keep-alive" )
 		this->clientKeepAlive[this->pollVec[pollIndex].fd] = true;
@@ -297,8 +306,12 @@ bool WebServer::clientRead(const int& pollIndex)
 		if(headerIsParsed[this->pollVec[pollIndex].fd]) requestData.clear();
 		memset(buffer, 0, sizeof(buffer));
 		bytesRecv = recv(this->pollVec[pollIndex].fd, buffer, sizeof(buffer), 0);
-		if (bytesRecv < 0) 
+		if (bytesRecv <= 0){
+			if(this->clientRequests[this->pollVec[pollIndex].fd] && 
+				this->clientRequests[this->pollVec[pollIndex].fd]->getMethod() != "POST")
+					return true;
     		return false;
+		}
 		requestData.append(buffer, bytesRecv);
 		if (headerIsParsed[this->pollVec[pollIndex].fd] == false)
 		{
@@ -357,7 +370,7 @@ std::string WebServer::tryFiles(std::string tryPath, LocationConf* locConf, cons
 			resultDirectory = tryFilesVec[i];
 			
 			findedPath = mergedPathHandler(resultDirectory, locConf, *serverConf, pollIndex, 2);
-			if (!findedPath.empty() && this->responseStatus == NOT_RESPONDED) // listelemeye girmedi ve 404 donmeli
+			if (!findedPath.empty() && this->responseStatus == NOT_RESPONDED) 
 				isFind = true;
 		}
 	}
@@ -372,14 +385,7 @@ std::string WebServer::tryFiles(std::string tryPath, LocationConf* locConf, cons
 void WebServer::listDirectory(const std::string& path,LocationConf* locConf, const int& pollIndex)
 {
 	std::cout << ">>>>>>>>>>>>>>>>>>>>>> LIST DIRECTORY <<<<<<<<<<<<<<<<<<<<<<<<<" << std::endl;
-	if (locConf != NULL && locConf->getReturn().size() > 0)
-	{
-		if (locConf->getReturn().find(301) != locConf->getReturn().end())
-			this->sendResponse(pollIndex, "301 Moved Permanently");
-		else if (locConf->getReturn().find(302) != locConf->getReturn().end())
-			this->sendResponse(pollIndex, "302 Found");
-	}
-	else if (locConf != NULL && this->methodIsExist(locConf, this->clientRequests[this->pollVec[pollIndex].fd]->getMethod(), pollIndex) == false)
+	if (locConf != NULL && this->methodIsExist(locConf, this->clientRequests[this->pollVec[pollIndex].fd]->getMethod(), pollIndex) == false)
 		return ;
 	else if (locConf == NULL || (locConf != NULL && !locConf->getAutoIndex()))
 		this->sendResponse(pollIndex, "403 Forbidden");
@@ -398,9 +404,10 @@ std::string WebServer::mergedPathHandler(std::string& newMergedPath, LocationCon
 	
 	if (locConf != NULL && locConf->getReturn().size() > 0)
 	{
-		if (locConf->getReturn().find(301) != locConf->getReturn().end())
+		int code = locConf->getReturn().begin()->first;
+		if (code ==  301)
 			this->sendResponse(pollIndex, "301 Moved Permanently");
-		else if (locConf->getReturn().find(302) != locConf->getReturn().end())
+		else if (code == 302)
 			this->sendResponse(pollIndex, "302 Found");
 		return "";
 	}
@@ -524,19 +531,18 @@ void WebServer::pollOutEvent(const int& pollIndex)
 		std::cout << "---------- DELETE METHOD HANDLER -----------" << std::endl;
 		deleteMethod(pollIndex);
 	}
-	else
-	{
-		std::cout << "----------- UNKNOWN METHOD ---------" << std::endl;
-	}
 }
 void	WebServer::runServer()
 {
 	this->pollfdVecCreat();
 	while (!g_signal) 
 	{
-		int result = poll(pollVec.data(), pollVec.size(), 1000);
+		std::cout << "Başlano..\n";
+		int result = poll(pollVec.data(), pollVec.size(), -1);
+		std::cout << "---------------- POLL RESULT: " << result << " ----------------" << std::endl;
 		if (result < 0)
 		{
+			std::cout << "POLL EROROOR\n";
 			if (errno == EINTR && g_signal)
 				break;
 			throw std::runtime_error("poll() error. Terminating server.");
@@ -544,8 +550,11 @@ void	WebServer::runServer()
 		if(checkTimeouts())continue;
 		for (size_t i = 0; i < pollVec.size(); i++)
 		{
+
 			if (pollVec[i].revents & POLLERR) 
 			{
+			std::cout << "POLL errroorNGÜÜ\n";
+
         		HelperClass::writeToFile(this->clientToServerMap[pollVec[i].fd]->getErrorLog(), "POLL ERROR");
         		closeCliSocket(pollVec[i].fd);
         		continue;
@@ -553,6 +562,8 @@ void	WebServer::runServer()
 			
 			if (this->socketMap.count(pollVec[i].fd) && (pollVec[i].revents & POLLIN))
 			{
+			std::cout << "POLL newwwww\n";
+
 				this->acceptNewClient(i);
 				std::cout << "New client accepted on socket: " << pollVec[i].fd << std::endl;
 				continue;
@@ -560,6 +571,8 @@ void	WebServer::runServer()
 
 			if (pollVec[i].revents & POLLIN)
 			{
+			std::cout << "POLL INNN\n";
+				std::cout << "i" << i << " POLL IN EVENT" << std::endl;
 				if(this->clientRead(i) == false){
 					pollVec[i].events = POLLIN;
 					continue;

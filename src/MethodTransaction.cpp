@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   MethodTransaction.cpp                              :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: menasy <menasy@student.42.fr>              +#+  +:+       +#+        */
+/*   By: ekose <ekose@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/12 07:52:01 by ekose             #+#    #+#             */
-/*   Updated: 2025/06/30 16:57:52 by menasy           ###   ########.fr       */
+/*   Updated: 2025/07/01 16:55:55 by ekose            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,14 +16,13 @@ void  WebServer::sendResponse(const int& pollIndex, const std::string& status)
 {
 	int			fd = this->pollVec[pollIndex].fd;
 	size_t		pos = status.find(" ");
-	int			code = std::atoi(status.substr(0,pos).c_str());
+	int			code = std::atoi(status.substr(0, pos).c_str());
 	std::string	log = socketInfo(clientToAddrMap[fd], fd) + " " 
 						+ this->clientRequests[this->pollVec[pollIndex].fd]->getMethod()+ " " 
-						+ this->clientRequests[this->pollVec[pollIndex].fd]->getPath() + "/"
+						+ this->clientRequests[this->pollVec[pollIndex].fd]->getPath()
 						+ this->clientRequests[this->pollVec[pollIndex].fd]->getRequestFile() 
 						+ " " + status.substr(0,pos);	
-	HelperClass::writeToFile("access.log",log);
-	std::cout << ">>>> RESPONSE CODE: " << code << "<<<<" << std::endl;
+	HelperClass::writeToFile(this->clientToServerMap[fd]->getAccessLog(), log);
 	if (code >= 400)
 		this->response = this->createErrorResponse(pollIndex,status, *clientToServerMap[fd], clientToServerMap[fd]->getRoot());
 	else if (code == 301 || code == 302)
@@ -45,6 +44,7 @@ void  WebServer::sendResponse(const int& pollIndex, const std::string& status)
 			
 	}
 	this->responseStatus = code;
+	std::cout << "Response Code: " << this->responseStatus << std::endl;
 	sendHandler(pollIndex, this->response);
 }
 

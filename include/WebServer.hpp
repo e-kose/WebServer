@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   WebServer.hpp                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: menasy <menasy@student.42.fr>              +#+  +:+       +#+        */
+/*   By: ekose <ekose@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/02 15:40:04 by menasy            #+#    #+#             */
-/*   Updated: 2025/06/30 17:18:09 by menasy           ###   ########.fr       */
+/*   Updated: 2025/07/01 16:03:18 by ekose            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -41,7 +41,7 @@
 #define NOT_RESPONDED 0
 #define PAYLOAD_TOO_LARGE 413
 #define BAD_REQUEST 400
-#define TIMEOUT_SEC 5
+#define TIMEOUT_SEC 15
 
 extern bool g_signal; // Global shutdown flag
 
@@ -73,7 +73,7 @@ class WebServer
 		int 									responseStatus;
 
 		int										fileIsExecutable(const std::string& extension, const std::map<std::string, std::string>& cgiExtMap);
-		ServerConf&								searchServerConf(std::vector<ServerConf>& , std::string);			
+		ServerConf&								searchServerConf(const int& pollIndex);		
 		std::vector<char *>						fillEnv(const ServerConf& conf, const int& pollIndex, const std::string& path);
 		HttpRequest*							parseRecv(const std::string&);
 		
