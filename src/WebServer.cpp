@@ -41,6 +41,8 @@ WebServer &WebServer::operator=(const WebServer &other)
 		this->requestHeader = other.requestHeader;
 		this->requestBody = other.requestBody;
 		this->unchunkedBody = other.unchunkedBody;
+		this->isCgi = other.isCgi;
+		this->isCleanedUp = other.isCleanedUp;
 	}
 	return *this;
 }
@@ -89,6 +91,7 @@ void WebServer::fullFree()
 	
 	this->responseStatus = NOT_RESPONDED;
 	isCleanedUp = true;
+	this->isCgi = false;
 	std::cout << "----------------- FULL FREE ------------------------" << std::endl;
 }
 
