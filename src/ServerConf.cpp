@@ -9,9 +9,9 @@ ServerConf::ServerConf()
 	this->error_log = "";
 	this->body_size = 0;
 	this->error_pages = std::map<int, std::string>();
-	// this->locations = std::vector<LocationConf>();
-	// this->server_name = std::vector<std::string>();
-	// this->index = std::vector<std::string>();
+	this->locations = std::vector<LocationConf>();
+	this->server_name = std::vector<std::string>();
+	this->index = std::vector<std::string>();
 	this->defaultPage();
 }
 ServerConf::ServerConf(const ServerConf &other) {
