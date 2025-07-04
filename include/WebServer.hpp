@@ -6,7 +6,7 @@
 /*   By: ekose <ekose@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/02 15:40:04 by menasy            #+#    #+#             */
-/*   Updated: 2025/07/03 11:10:05 by ekose            ###   ########.fr       */
+/*   Updated: 2025/07/04 09:32:07 by ekose            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,12 +42,14 @@
 #define PAYLOAD_TOO_LARGE 413
 #define BAD_REQUEST 400
 #define TIMEOUT_SEC 60
+#define MAX_RETRY_COUNT 2
+#define BLUE "\033[34m"
+#define RESET "\033[0m"
 
 extern bool g_signal;
 
 class WebServer 
 {
-	// TUM HER ŞEY BİTTİKTEN SONRA COPY CONSTRUCTORLAR FALAN KONTROL ET DEĞERLERİ ATA !!!!!!!!
 	private:
 		WebServer();
 		bool									isCleanedUp;
@@ -61,7 +63,7 @@ class WebServer
 		std::map<int, std::string>				requestBuffers;
 		std::map<int, bool>						clientKeepAlive; 
 		std::map<int, bool>						headerIsParsed;
-
+		std::map<int, int>						retryCountMap;
 		
 		std::string								unchunkedBody;
 		std::string 							requestHeader;

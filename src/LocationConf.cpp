@@ -6,7 +6,7 @@
 /*   By: ekose <ekose@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/11 14:24:16 by ekose             #+#    #+#             */
-/*   Updated: 2025/07/03 10:16:05 by ekose            ###   ########.fr       */
+/*   Updated: 2025/07/04 09:08:21 by ekose            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -77,7 +77,7 @@ void LocationConf::setPath(std::string path) {
 	std::string tmpValue = HelperClass::checkEmptyAndTrim(path, "Path");
 	this->path = tmpValue;
 }
-void LocationConf::setMethods(std::vector<std::string> methods) {//Kullanılmıyor
+void LocationConf::setMethods(std::vector<std::string> methods) {
 
 	std::string tmpValue;
 	for (size_t i = 0; i < methods.size(); i++) {
@@ -89,7 +89,7 @@ void LocationConf::setMethods(std::vector<std::string> methods) {//Kullanılmıy
 			throw std::runtime_error("Invalid method"); 
 	}
 }
-void LocationConf::setAutoIndex(bool autoIndex) {// Bunun kontrolu alındığı yerde yapıldı
+void LocationConf::setAutoIndex(bool autoIndex) {
 	this->autoIndex = autoIndex;
 }
 void LocationConf::setUploadStore(std::string upload_store) {

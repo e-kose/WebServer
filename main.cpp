@@ -26,7 +26,7 @@ int main(int ac, char **av)
 	signal(SIGINT, signalHandler);
 	signal(SIGTERM, signalHandler);
 	signal(SIGPIPE, SIG_IGN);
-	
+	std::cout << BLUE << "🚀 Initializing server" << RESET << std::endl;
 	CheckConfig checkConf(av[1]);
 	checkConf.checkConfig();
 	return 0;

@@ -6,7 +6,7 @@
 /*   By: ekose <ekose@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/12 07:50:19 by ekose             #+#    #+#             */
-/*   Updated: 2025/07/03 12:31:53 by ekose            ###   ########.fr       */
+/*   Updated: 2025/07/04 09:08:03 by ekose            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,11 +33,10 @@ HelperClass::~HelperClass() {
 
 void HelperClass::fillScriptExtVec() 
 {
-	scriptExtVec.push_back(".php");
 	scriptExtVec.push_back(".py");
 	scriptExtVec.push_back(".pl");
 	scriptExtVec.push_back(".rb");
-	scriptExtVec.push_back(".cgi");
+	scriptExtVec.push_back(".php");
 }
 void HelperClass::fillFileExtVec() 
 {
@@ -50,7 +49,8 @@ void HelperClass::fillFileExtVec()
 	fileExtVec.push_back(".jpg");
 	fileExtVec.push_back(".jpeg");
 	fileExtVec.push_back(".png");
-	fileExtVec.push_back(".gif");
+	fileExtVec.push_back(".pdf");
+	fileExtVec.push_back(".docx");
 	fileExtVec.push_back(".svg");
 	fileExtVec.push_back(".ico");
 }
@@ -358,7 +358,6 @@ std::string HelperClass::generateAutoIndexHtml(const std::string& path, const st
 	     << "        </div>\n"
 	     << "        <ul class=\"file-list\">\n";
 	
-	// Add parent directory link if not root
 	if (uriPath != "/" && uriPath != "") {
 		body << "            <li class=\"file-item\">\n"
 		     << "                <a href=\"../\" class=\"file-link\">\n"
@@ -383,8 +382,6 @@ std::string HelperClass::generateAutoIndexHtml(const std::string& path, const st
 			} else {
 				std::string fileName = entry->d_name;
 				std::string icon = "📄";
-				
-				// Set icons based on file extensions
 				if (fileName.find(".html") != std::string::npos || fileName.find(".htm") != std::string::npos)
 					icon = "🌐";
 				else if (fileName.find(".css") != std::string::npos)

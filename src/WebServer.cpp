@@ -6,7 +6,7 @@
 /*   By: ekose <ekose@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/02 15:50:42 by menasy            #+#    #+#             */
-/*   Updated: 2025/07/03 12:08:43 by ekose            ###   ########.fr       */
+/*   Updated: 2025/07/04 09:37:00 by ekose            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -41,6 +41,8 @@ WebServer &WebServer::operator=(const WebServer &other)
 		this->requestHeader = other.requestHeader;
 		this->requestBody = other.requestBody;
 		this->unchunkedBody = other.unchunkedBody;
+		this->isCgi = other.isCgi;
+		this->isCleanedUp = other.isCleanedUp;
 	}
 	return *this;
 }
@@ -85,11 +87,12 @@ void WebServer::fullFree()
 	requestHeader.clear();    
 	requestBody.clear();      
 	resultPath.clear();       
-	response.clear();
-	
+	response.clear();	
 	this->responseStatus = NOT_RESPONDED;
 	isCleanedUp = true;
-	std::cout << "----------------- FULL FREE ------------------------" << std::endl;
+	this->isCgi = false;
+	std::cout << BLUE << "🛑 Server is closed" << RESET << std::endl;
+
 }
 
 const std::map<int, ServerConf*>	 WebServer::getServerConfForFdMap()const
@@ -104,7 +107,6 @@ void	WebServer::setNonBlocking(int fd)
 
 void 	WebServer::closeCliSocket(int fd)
 {
-	std::cout << ">>>>>>>>>>>>> Closing client socket: " << fd <<" <<<<<<<<<<<<<<"<< std::endl;
 	if (fd >= 0)
 	{
 		for (std::vector<pollfd>::iterator it = pollVec.begin(); it != pollVec.end(); it++)
@@ -191,9 +193,7 @@ ServerConf& WebServer::searchServerConf(const int& pollIndex)
 }
 
 HttpRequest* WebServer::parseRecv(const std::string& request)
-{
-	// std:: cout << "================== REQUEST ================== \n"  << request << std::endl;
-	
+{	
 	HttpRequest* httpRequest = new HttpRequest();
 	httpRequest->parseRequest(request);
 	return httpRequest;
@@ -263,11 +263,12 @@ void	WebServer::acceptNewClient(const int& pollIndex)
 		this->setNonBlocking(clientSock);
 		pollfd clientFd = {clientSock, (POLLIN | POLLOUT | POLLERR), 0};
 		pollVec.push_back(clientFd);
+		this->retryCountMap[clientSock] = 0;
 		this->clientToAddrMap[clientSock] = addr;
 		this->lastActivity[clientSock] = time(NULL);
 		this->clientKeepAlive[clientSock] = false;
 		this->headerIsParsed[clientSock] = false;
-		this->clientRequests[clientSock] = NULL; // NULL olarak initialize et
+		this->clientRequests[clientSock] = NULL;
 	}
 }
 
@@ -350,8 +351,6 @@ bool WebServer::clientRead(const int& pollIndex)
 }
 std::string WebServer::tryFiles(std::string tryPath, LocationConf* locConf, const ServerConf* serverConf,  const int& pollIndex, std::vector<LocationConf>& locVec)
 {
-	std::cout << ">>>>>>>>>>>>>>>>>>> TRYFİLES <<<<<<<<<<<<<<<<<<<<<<: " << std::endl;
-	std::cout << "Try Path: " << tryPath << std::endl;
 	std::vector<std::string> tryFilesVec = HelperClass::selectTryFiles(locConf, locVec);
 	std::string findedPath, errPage, resultDirectory;
 	std::string::size_type pos1;
@@ -370,7 +369,7 @@ std::string WebServer::tryFiles(std::string tryPath, LocationConf* locConf, cons
 			resultDirectory = tryFilesVec[i];
 			
 			findedPath = mergedPathHandler(resultDirectory, locConf, *serverConf, pollIndex, 2);
-			if (!findedPath.empty() && this->responseStatus == NOT_RESPONDED) // listelemeye girmedi ve 404 donmeli
+			if (!findedPath.empty() && this->responseStatus == NOT_RESPONDED) 
 				isFind = true;
 		}
 	}
@@ -384,15 +383,7 @@ std::string WebServer::tryFiles(std::string tryPath, LocationConf* locConf, cons
 
 void WebServer::listDirectory(const std::string& path,LocationConf* locConf, const int& pollIndex)
 {
-	std::cout << ">>>>>>>>>>>>>>>>>>>>>> LIST DIRECTORY <<<<<<<<<<<<<<<<<<<<<<<<<" << std::endl;
-	if (locConf != NULL && locConf->getReturn().size() > 0)
-	{
-		if (locConf->getReturn().find(301) != locConf->getReturn().end())
-			this->sendResponse(pollIndex, "301 Moved Permanently");
-		else if (locConf->getReturn().find(302) != locConf->getReturn().end())
-			this->sendResponse(pollIndex, "302 Found");
-	}
-	else if (locConf != NULL && this->methodIsExist(locConf, this->clientRequests[this->pollVec[pollIndex].fd]->getMethod(), pollIndex) == false)
+	if (locConf != NULL && this->methodIsExist(locConf, this->clientRequests[this->pollVec[pollIndex].fd]->getMethod(), pollIndex) == false)
 		return ;
 	else if (locConf == NULL || (locConf != NULL && !locConf->getAutoIndex()))
 		this->sendResponse(pollIndex, "403 Forbidden");
@@ -404,11 +395,7 @@ void WebServer::listDirectory(const std::string& path,LocationConf* locConf, con
 	}
 }
 std::string WebServer::mergedPathHandler(std::string& newMergedPath, LocationConf *locConf, const ServerConf& serverConf, const int& pollIndex , int recCount)
-{
-	// /upload sonunda / olmadan  gelirse ne olur bunu mutlaka test edicem
-	std::cout << "================= MERGED PATH HANDLER ===============" << std::endl;
-	std::cout << "Merged Path: " << newMergedPath << std::endl;
-	
+{	
 	if (locConf != NULL && locConf->getReturn().size() > 0)
 	{
 		int code = locConf->getReturn().begin()->first;
@@ -455,7 +442,6 @@ std::string WebServer::mergedPathHandler(std::string& newMergedPath, LocationCon
 }
 std::string WebServer::findRequest(const int& pollIndex)
 {
-	std::cout << ">>>>>>>>>>>>>>>>>>>>>>>>>> FIND REQUEST <<<<<<<<<<<<<<<<<<<<<<<<<<<" << std::endl;
 	ServerConf* serverConf = this->clientToServerMap[this->pollVec[pollIndex].fd];
 	std::vector<LocationConf> locVec = serverConf->getLocations();
 	std::string rootPath, clientReq,  newMergedPath, httpPath, retVal;
@@ -463,7 +449,6 @@ std::string WebServer::findRequest(const int& pollIndex)
 	this->responseStatus = NOT_RESPONDED;
 	this->isCgi = false;
 	httpPath = this->clientRequests[this->pollVec[pollIndex].fd]->getPath();
-	std::cout << "HTTP PATH: " << httpPath << std::endl;
 	if (httpPath.empty() || httpPath[0] != '/')
 		return this->callSendResponse(pollIndex, "400 Bad Request");
 	LocationConf *loc = HelperClass::findLoc(httpPath, locVec);
@@ -473,7 +458,6 @@ std::string WebServer::findRequest(const int& pollIndex)
 	
 	retVal = this->mergedPathHandler(newMergedPath, loc, *serverConf, pollIndex, 0);
 	
-	std::cout << "RETURN PATH AFTER MERGEDPATH HANDLER: " << retVal << std::endl;
 	if (retVal.empty() && this->responseStatus == NOT_RESPONDED)
 		return this->callSendResponse(pollIndex,"404 Not Found");
 	else if (!retVal.empty() && (loc != NULL && loc->getReturn().size() > 0))
@@ -495,13 +479,11 @@ bool WebServer::checkTimeouts() {
         int fd = it->first;
         time_t last = it->second;
         if (now - last > TIMEOUT_SEC) {
-            // std::cout << ">>>> Timeout. Closing idle connection: " << fd << std::endl;
             closeCliSocket(fd);
 			lastActivity.erase(it++);
 			check = true;
-        } else {
+        } else
             ++it;
-        }
     }
 	return check;
 }
@@ -509,51 +491,27 @@ bool WebServer::checkTimeouts() {
 void WebServer::pollOutEvent(const int& pollIndex)
 {
 	if (this->clientRequests[this->pollVec[pollIndex].fd] == NULL)
-	{
-		std::cout << ">>>> ClientRequest["<< this->pollVec[pollIndex].fd << "] = NULL <<<"<< std::endl;
 		return;
-	}
-	// std::string method = this->clientRequests[this->pollVec[pollIndex].fd]->getMethod();
 	this->resultPath = findRequest(pollIndex);
-	std::cout << ">>>>>>>>>>>>>>>>>>>>>>>>>>>>> RESULT PATH <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<\n";
-	std::cout << "\t\t" << this->resultPath << std::endl;
 	if (this->resultPath.empty())
-	{
-		std::cout << ">>>> Result path is empty<<<" << std::endl;
 		return ;
-	}
 	if (this->clientRequests[this->pollVec[pollIndex].fd]->getMethod() == "GET")
-	{
-		std::cout << "------------- GET METHOD --------------- "<< std::endl;
 		this->sendResponse(pollIndex, "200 OK");
-	}
 	else if (this->clientRequests[this->pollVec[pollIndex].fd]->getMethod() == "POST")
-	{
-		std::cout << "------------ POST METHOD ---------" << std::endl;
 		this->sendResponse(pollIndex, "200 OK");
-
-	}
 	else if (this->clientRequests[this->pollVec[pollIndex].fd]->getMethod() == "DELETE")
-	{
-		std::cout << "---------- DELETE METHOD HANDLER -----------" << std::endl;
 		deleteMethod(pollIndex);
-	}
-	else
-	{
-		std::cout << "----------- UNKNOWN METHOD ---------" << std::endl;
-	}
 }
+
 void	WebServer::runServer()
 {
 	this->pollfdVecCreat();
+	std::cout << BLUE << "✅ WebServer is running..." << RESET << std::endl;
 	while (!g_signal) 
 	{
-		std::cout << "Başlano..\n";
 		int result = poll(pollVec.data(), pollVec.size(), -1);
-		std::cout << "---------------- POLL RESULT: " << result << " ----------------" << std::endl;
 		if (result < 0)
 		{
-			std::cout << "POLL EROROOR\n";
 			if (errno == EINTR && g_signal)
 				break;
 			throw std::runtime_error("poll() error. Terminating server.");
@@ -561,12 +519,8 @@ void	WebServer::runServer()
 		if(checkTimeouts())continue;
 		for (size_t i = 0; i < pollVec.size(); i++)
 		{
-			std::cout << "POLL DÖNGÜÜ\n";
-
 			if (pollVec[i].revents & POLLERR) 
 			{
-			std::cout << "POLL errroorNGÜÜ\n";
-
         		HelperClass::writeToFile(this->clientToServerMap[pollVec[i].fd]->getErrorLog(), "POLL ERROR");
         		closeCliSocket(pollVec[i].fd);
         		continue;
@@ -574,17 +528,12 @@ void	WebServer::runServer()
 			
 			if (this->socketMap.count(pollVec[i].fd) && (pollVec[i].revents & POLLIN))
 			{
-			std::cout << "POLL newwwww\n";
-
 				this->acceptNewClient(i);
-				std::cout << "New client accepted on socket: " << pollVec[i].fd << std::endl;
 				continue;
 			}
 
 			if (pollVec[i].revents & POLLIN)
 			{
-			std::cout << "POLL INNN\n";
-				std::cout << "i" << i << " POLL IN EVENT" << std::endl;
 				if(this->clientRead(i) == false){
 					pollVec[i].events = POLLIN;
 					continue;
@@ -594,7 +543,6 @@ void	WebServer::runServer()
 			
 			if (pollVec[i].revents & POLLOUT)
 			{
-				std::cout << "---------------- POLL OUT EVENT ------------" << std::endl;
 				this->pollOutEvent(i);	
 				pollVec[i].events = POLLIN;
 			}

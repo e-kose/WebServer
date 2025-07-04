@@ -6,7 +6,7 @@
 /*   By: ekose <ekose@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/08 16:36:39 by menasy            #+#    #+#             */
-/*   Updated: 2025/07/01 15:05:29 by ekose            ###   ########.fr       */
+/*   Updated: 2025/07/04 09:03:20 by ekose            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -167,10 +167,6 @@ void HttpRequest::setPathInfo(std::string sepInfoPath, ServerConf& conf)
 			{
 				this->pathInfo = fullPath.substr(j, fullPath.length() - j);
 				this->setRequestFile(sepInfoPath.substr(this->path.length(), sepInfoPath.length() - this->path.length() - this->pathInfo.length()));
-				std::cout << "SEPERATED PATH___________:" << this->path <<std::endl;
-				std::cout << "REQUEST FILE___________:" << this->requestFile << std::endl;
-				std::cout << "PATH INFO___________:" << this->pathInfo << std::endl;
-				std::cout << "QUERY STRING___________:" << this->queryString << std::endl;
 				return ;
 			}
 		}
@@ -182,7 +178,6 @@ void HttpRequest::setPathInfo(std::string sepInfoPath, ServerConf& conf)
 
 void HttpRequest::sepPath(ServerConf conf)
 {
-	std::cout << ">>>>>>>>>>>> SEP_PATH <<<<<<<<<<<<<<<<<<" << std::endl;
 	std::vector<LocationConf> locVec = conf.getLocations(); 
 	if (this->path == "/")
 		return;
@@ -194,10 +189,6 @@ void HttpRequest::sepPath(ServerConf conf)
 		return ;
 	}
 	this->setRequestFile(tmpPath.substr(this->path.length(), tmpPath.length() - this->path.length()));
-	std::cout << "SEPERATED PATH___________:" << this->path <<std::endl;
-	std::cout << "REQ FİLE___________:" << this->requestFile << std::endl;
-	std::cout << "QUERY STRING___________:" << this->queryString << std::endl;
-
 }
 
 void HttpRequest::setVersion(std::string version) {
@@ -251,7 +242,6 @@ std::map<std::string, std::string>  HttpRequest::parseHeader(std::string& parseS
 	std::string line;
 	std::string::size_type pos;
 	std::istringstream strStream(parseStr);
-	std::cout << "================== PARSEEEE HEADER ================== \n" << std::endl;
 	while (std::getline(strStream, line)) 
 	{
 		if (line.find_first_of("{}") != std::string::npos || line.empty())
@@ -262,9 +252,8 @@ std::map<std::string, std::string>  HttpRequest::parseHeader(std::string& parseS
 		std::string key = HelperClass::trimLine(line.substr(0, pos));
 		std::string value = HelperClass::trimLine(line.substr(pos + 1, line.length() - pos));
 		if (key.empty() || value.empty())
-			throw std::runtime_error("Key or value is empty"); // Bnu geçici kodum kaldırılabilir.
+			throw std::runtime_error("Key or value is empty");
 		destMap[key] = value;
-		std::cout<< key <<":"<< value << std::endl;
 	}
 	this->setHostName(destMap["Host"]);
 	this->setContentType(destMap["Content-Type"]);
@@ -315,14 +304,11 @@ std::map<std::string, std::string>  HttpRequest::parseBody()
 }
 void HttpRequest::parseRequest(const std::string& request) 
 {
-	std:: cout << "================== PARSEEEE REQUEST ================== \n" << std::endl;
 	std::string tmpReq = request;
 	this->setMethod(HelperClass::createAndMove(tmpReq," "));
 	this->setPath(HelperClass::createAndMove(tmpReq," "));
 	this->setVersion(HelperClass::createAndMove(tmpReq,"\n"));
 	this->setHeaders(this->parseHeader(tmpReq));
-	std:: cout << "*******************************************************************************************\n";
-
 }
 
 void	HttpRequest::parseQuery(std::string query)

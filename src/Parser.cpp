@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Parser.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: menasy <menasy@student.42.fr>              +#+  +:+       +#+        */
+/*   By: ekose <ekose@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/30 12:39:27 by menasy            #+#    #+#             */
-/*   Updated: 2025/06/03 18:51:16 by menasy           ###   ########.fr       */
+/*   Updated: 2025/07/04 08:53:47 by ekose            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,25 +29,24 @@ Parser &Parser::operator=(const Parser &other) {
 
 void Parser::initKey()
 {
-	this->confKey[0]  = "autoindex";     // location
-	this->confKey[1]  = "methods";       // location
-	this->confKey[2]  = "try_files";     // location
-	this->confKey[3]  = "upload_dir";    // location
-	this->confKey[4]  = "return";        // location
-	this->confKey[5]  = "cgi_pass";      // location
-	this->confKey[6]  = "cgi_ext";       // location
-	this->confKey[7]  = "root";          // hem server hem location
-	this->confKey[8]  = "index";         // hem server hem location
-	
-	this->confKey[9] = "listen";        // server
-	this->confKey[10] = "server_name";   // server
-	this->confKey[11] = "client_max_body_size"; // server
-	this->confKey[12] = "access_log";    // server
-	this->confKey[13] = "error_log";     // server
-	this->confKey[14] = "error_page";    // server
-	this->confKey[15]  = "location";      // location başlangıcı
-	this->confKey[16] = "{";             // blok başlangıcı
-	this->confKey[17] = "}";             // blok sonu
+	this->confKey[0]  = "autoindex";
+	this->confKey[1]  = "methods";
+	this->confKey[2]  = "try_files";
+	this->confKey[3]  = "upload_dir";
+	this->confKey[4]  = "return";
+	this->confKey[5]  = "cgi_pass";
+	this->confKey[6]  = "cgi_ext";
+	this->confKey[7]  = "root";
+	this->confKey[8]  = "index";	
+	this->confKey[9] = "listen";
+	this->confKey[10] = "server_name";
+	this->confKey[11] = "client_max_body_size";
+	this->confKey[12] = "access_log";
+	this->confKey[13] = "error_log";
+	this->confKey[14] = "error_page";
+	this->confKey[15]  = "location";
+	this->confKey[16] = "{";
+	this->confKey[17] = "}";
 }
 
 std::map<std::string, int> Parser::confKeyMap(std::string sectionKey)

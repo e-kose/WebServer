@@ -1,1 +1,52 @@
-aaa
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Webserv HTTP Test</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 INDEX 3</h1>
+        
+        <div class="test-section get-section">
+            <h2>🔹 GET Testi</h2>
+            <form id="get-form" method="get">
+                <div class="form-group">
+                    <label for="get-path">GET isteği yapılacak yol:</label>
+                    <input type="text" id="get-path" placeholder="/new.html" value="/new.html">
+                </div>
+                <button type="submit">GET İsteği Gönder</button>
+            </form>
+        </div>
+        
+        <div class="test-section post-section">
+            <h2>🔸 POST (Dosya Yükle) Testi</h2>
+            <form id="upload-form" method="post" action="/cgi-bin/upload.py" enctype="multipart/form-data">
+                <input type="file" name="file" id="file-input" required>
+                <button type="submit">Dosya Yükle</button>
+            </form>
+        </div>
+        
+        <div class="test-section delete-section">
+            <h2>🔻 DELETE Testi</h2>
+            <form id="delete-form">
+                <input type="text" id="delete-path" placeholder="/upload/filename.txt" value="/uploads/testfile.txt">
+                <button type="submit">DELETE</button>
+            </form>
+        </div>
+        <div class="test-section return-section">
+            <h2>🔄 Return/Redirect Testi</h2>
+            <form id="return-form" method="get">
+                <div class="form-group">
+                    <label for="return-path">Redirect yapacak yol:</label>
+                    <input type="text" id="return-path" placeholder="/redirect" value="/redirect-me/">
+                </div>
+                <button type="submit">Return Test</button>
+            </form>
+        </div> 
+    </div>
+    <script src="/static/js/script.js"></script>
+</body>
+</html>

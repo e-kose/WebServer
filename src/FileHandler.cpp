@@ -6,7 +6,7 @@
 /*   By: ekose <ekose@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/13 21:40:13 by menasy            #+#    #+#             */
-/*   Updated: 2025/07/03 12:52:59 by ekose            ###   ########.fr       */
+/*   Updated: 2025/07/04 09:02:20 by ekose            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -123,34 +123,24 @@ int WebServer::fileIsExecutable(const std::string& extension, const std::map<std
 }
 std::string WebServer::pathCheck(std::string& path, std::string&rootPath,const int& pollIndex)
 {
-	// Çoklu slash'leri tek slash'e dönüştür (// -> /)
 	std::string normalizedPath = path;
 	size_t pos = 0;
 	while ((pos = normalizedPath.find("//", pos)) != std::string::npos)
 		normalizedPath.replace(pos, 2, "/");
 	path = normalizedPath;
-	std::cout << "NORMALİZED PATH: " << path << std::endl;
-	// Path çok uzun mu kontrolü (4096 karakter limit)
 	if (path.length() > 4096)
 		return this->callSendResponse(pollIndex, "414 URI Too Long");
-	// Null byte injection kontrolü
 	if (path.find('\0') != std::string::npos)
 		return this->callSendResponse(pollIndex, "400 Bad Request");
-	// realpath ile path çözümleme ve var olma kontrolü
 	char resolved[PATH_MAX];
 	if (realpath(path.c_str(), resolved) == NULL) 
 		return this->callSendResponse(pollIndex, "404 Not Found");
 	std::string resolvedPath = resolved;
 	struct stat st;
 	if (stat(resolvedPath.c_str(), &st) != 0)
-		return this->callSendResponse(pollIndex, "404 Not Found");
-	
-	// Dosya türü kontrolü - sadece regular file ve directory kabul et
+		return this->callSendResponse(pollIndex, "404 Not Found");	
 	if ((!S_ISREG(st.st_mode) && !S_ISDIR(st.st_mode)) || resolvedPath.find("..") != std::string::npos)
 		return this->callSendResponse(pollIndex, "403 Forbidden");
-	// Root dizin güvenlik kontrolü (chroot jail)
-	// Mevcut working directory'yi al
-
 	char cwd[PATH_MAX];
 	if (getcwd(cwd, sizeof(cwd)) != NULL) 
 	{
@@ -158,7 +148,6 @@ std::string WebServer::pathCheck(std::string& path, std::string&rootPath,const i
 		if (resolvedPath.find(allowedRoot) != 0) 
 			return this->callSendResponse(pollIndex, "403 Forbidden");
 	}
-	// Zararlı dosya uzantıları kontrolü
 	const std::string dangerousExts[] = {
 		".exe", ".bat", ".cmd", ".com", ".scr", ".pif", 
 		".msi", ".dll", ".sh", ".bash"
@@ -170,45 +159,34 @@ std::string WebServer::pathCheck(std::string& path, std::string&rootPath,const i
 				return this->callSendResponse(pollIndex, "403 Forbidden");
 		}
 	}
-	std::cout << "============================== Path validation successful =============================\n" << resolvedPath << std::endl;
 	return resolvedPath;
 }
 
 std::string WebServer::checkCgi(LocationConf* locConf, const ServerConf& conf, const int& pollIndex, std::string& newPath, int& status)
 {
-	std::cout << "================== CHECK_CGI ======================= "<< std::endl;
 	std::map<std::string, std::string> cgiMap = HelperClass::findLocationCgi(locConf);
 	std::size_t pos = newPath.find_last_of(".");
 	if (pos != std::string::npos)
 	{
 		std::string ext = newPath.substr(pos, newPath.length());
-		std::cout << "Extension: " << ext << std::endl;
 		status = fileIsExecutable(ext, cgiMap);
 		if (status == 1)
 		{
 			if (access(newPath.c_str(), X_OK) != 0)
-			{
-				std::cout << ">>>> Cgi Calistirma izni yok -<<<<\n";
 				return this->callSendResponse(pollIndex, "403 Forbidden");
-			}
 			std::string scriptContetnt;
-			std::cout << ">>>> CGI YA GONDERİLDİ <<<<\n" << ext << std::endl;
 			scriptContetnt = this->startCgi(newPath, ext, pollIndex, conf, cgiMap);
 			this->isCgi = true;
 			return scriptContetnt;
 		}
 		else if (status == -1)
-		{
-			std::cout << ">>>> Cgi YOK -<<<<\n";
 			return this->callSendResponse(pollIndex, "403 Forbidden");
-		}	
 	}
 	return "";
 }
 
 std::string WebServer::readHtmlFile(const int& pollIndex,std::string& path, const ServerConf& conf) 
 {
-	std::cout << "-------------- READ HTML FILE : " << path <<" --------------"<<std::endl;
 	if (path.empty())
 		return "";
 	if (path == "errorPage")
@@ -233,7 +211,6 @@ std::string WebServer::readHtmlFile(const int& pollIndex,std::string& path, cons
 		return "";
 	if (access(newPath.c_str(), R_OK) != 0)
 		return this->callSendResponse(pollIndex, "403 Forbidden");
-	std::cout << ">>> FILE IS OPENED <<<" << std::endl;
     std::stringstream buffer;
     buffer << file.rdbuf();
 	file.close();
@@ -261,10 +238,9 @@ std::vector<char *> WebServer::fillEnv(const ServerConf& conf, const int& pollIn
 	envVec.push_back("PATH_INFO=" + this->clientRequests[fd]->getPathInfo());
 	envVec.push_back("REDIRECT_STATUS=200");
 	for (size_t i = 0; i < envVec.size(); i++) {
-    // Her bir string için yeni bir karakter dizisi (char array) ayır.
-    char* var = new char[envVec[i].size() + 1]; // +1 for null terminator
+    char* var = new char[envVec[i].size() + 1]; 
 		std::strncpy(var, envVec[i].c_str(), envVec[i].size());
-		var[envVec[i].size()] = '\0'; // Ensure null-termination
+		var[envVec[i].size()] = '\0';
 		env.push_back(var);
 	}
 	env.push_back(NULL);
@@ -354,19 +330,12 @@ std::string WebServer::getCgi(const std::string& filePath, const std::string& cg
 std::string WebServer::startCgi(const std::string&filePath, std::string& fileExt, const int& pollIndex, const ServerConf& conf, const std::map<std::string,std::string>&cgiExtMap)
 {
 	std::string cgiExecPath = cgiExtMap.at(fileExt);
-	std::cout << ">>>> CGI EXEC PATH: " << cgiExecPath << std::endl;
 	std::string scriptContent;
 	std::vector<char *> env = this->fillEnv(conf, pollIndex, filePath);
 	if (this->clientRequests[this->pollVec[pollIndex].fd]->getMethod() == "POST")
-	{
-		std::cout << ">>>> POST METHOD HANDLER CGI<<<<\n";
 		scriptContent = postCgi(filePath, cgiExecPath, env, this->clientRequests[this->pollVec[pollIndex].fd]->getBody());
-	}
 	else if(this->clientRequests[this->pollVec[pollIndex].fd]->getMethod() == "GET")
-	{
-		std::cout << ">>>> GET METHOD HANDLER  CGI <<<<\n";
 		scriptContent = getCgi(filePath, cgiExecPath, env);
-	}
 	else
 		scriptContent = "";
 	HelperClass::freeEnv(env);

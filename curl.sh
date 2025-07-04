@@ -1,1 +1,0 @@
-curl --resolve ekose.com:8081:127.0.0.1 http://ekose.com:8081/redirect-me/

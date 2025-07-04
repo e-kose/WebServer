@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   CheckConfig.cpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: menasy <menasy@student.42.fr>              +#+  +:+       +#+        */
+/*   By: ekose <ekose@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/30 12:42:10 by menasy            #+#    #+#             */
-/*   Updated: 2025/06/30 17:23:13 by menasy           ###   ########.fr       */
+/*   Updated: 2025/07/04 09:00:40 by ekose            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -165,10 +165,9 @@ void CheckConfig::checkConfig() {
 		bracketsCheck(this->fullText);
 		std::vector<std::string> tek = this->seperation();
 		this->serverConfVec =  this->createConfVec(tek);
-		this->checkRequiredElements(); // serverde mutlaka olması gerekenleri kotnrol ediyorum.
+		this->checkRequiredElements();
 		HelperClass::fillScriptExtVec();
 	 	HelperClass::fillFileExtVec();		
-		std::cout << "================== PARSE SUCCESFULY FİNİSHED=================== \n";
 		WebServer web(serverConfVec);
 	}
 	catch(const std::exception& e)
