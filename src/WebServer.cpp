@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   WebServer.cpp                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ekose <ekose@student.42.fr>                +#+  +:+       +#+        */
+/*   By: menasy <menasy@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/02 15:50:42 by menasy            #+#    #+#             */
-/*   Updated: 2025/07/04 09:37:00 by ekose            ###   ########.fr       */
+/*   Updated: 2025/07/04 23:22:58 by menasy           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -509,7 +509,7 @@ void	WebServer::runServer()
 	std::cout << BLUE << "✅ WebServer is running..." << RESET << std::endl;
 	while (!g_signal) 
 	{
-		int result = poll(pollVec.data(), pollVec.size(), -1);
+		int result = poll(pollVec.data(), pollVec.size(), 0);
 		if (result < 0)
 		{
 			if (errno == EINTR && g_signal)
