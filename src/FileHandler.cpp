@@ -6,7 +6,7 @@
 /*   By: ekose <ekose@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/13 21:40:13 by menasy            #+#    #+#             */
-/*   Updated: 2025/07/03 10:42:53 by ekose            ###   ########.fr       */
+/*   Updated: 2025/07/03 12:52:59 by ekose            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -354,6 +354,7 @@ std::string WebServer::getCgi(const std::string& filePath, const std::string& cg
 std::string WebServer::startCgi(const std::string&filePath, std::string& fileExt, const int& pollIndex, const ServerConf& conf, const std::map<std::string,std::string>&cgiExtMap)
 {
 	std::string cgiExecPath = cgiExtMap.at(fileExt);
+	std::cout << ">>>> CGI EXEC PATH: " << cgiExecPath << std::endl;
 	std::string scriptContent;
 	std::vector<char *> env = this->fillEnv(conf, pollIndex, filePath);
 	if (this->clientRequests[this->pollVec[pollIndex].fd]->getMethod() == "POST")
